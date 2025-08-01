@@ -25,7 +25,7 @@ const Header = () => {
   return (
     <header className={`fixed w-full z-50 transition-all duration-300 ${
       isScrolled || !isHomePage        ? 'bg-white shadow-lg' 
-        : 'bg-blue-900'
+        : 'bg-gradient-to-b from-slate-900 to-blue-900'
     }`} >
       {/* Top Bar */}
       <div className={`transition-all duration-300 ${
