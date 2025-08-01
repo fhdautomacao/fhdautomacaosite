@@ -117,7 +117,7 @@ const Hero = () => {
               {/* Industrial Equipment Visualization */}
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-2xl font-bold text-white">Sistemas Integrados</h3>
+                  <h3 className="text-2xl font-bold text-white">Nossos Diferenciais</h3>
                   <div className="bg-green-500 w-3 h-3 rounded-full animate-pulse"></div>
                 </div>
                 
@@ -125,31 +125,31 @@ const Hero = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl p-4 border border-blue-400/30">
                     <Wrench className="text-blue-400 mb-2" size={24} />
-                    <div className="text-white font-semibold text-sm">Hidráulica</div>
-                    <div className="text-blue-300 text-xs">Sistema Ativo</div>
+                    <div className="text-white font-semibold text-sm">Experiência</div>
+                    <div className="text-blue-300 text-xs">Mais de 10 anos</div>
                   </div>
                   <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-xl p-4 border border-yellow-400/30">
                     <Users className="text-yellow-400 mb-2" size={24} />
-                    <div className="text-white font-semibold text-sm">Pneumática</div>
-                    <div className="text-yellow-300 text-xs">Operacional</div>
+                    <div className="text-white font-semibold text-sm">Preço Justo</div>
+                    <div className="text-yellow-300 text-xs">Soluções que cabem no seu bolso</div>
                   </div>
                   <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-xl p-4 border border-green-400/30">
                     <Award className="text-green-400 mb-2" size={24} />
-                    <div className="text-white font-semibold text-sm">Controle</div>
-                    <div className="text-green-300 text-xs">Monitorado</div>
+                    <div className="text-white font-semibold text-sm">Qualidade</div>
+                    <div className="text-green-300 text-xs">Certificada</div>
                   </div>
                   <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-xl p-4 border border-purple-400/30">
                     <CheckCircle className="text-purple-400 mb-2" size={24} />
-                    <div className="text-white font-semibold text-sm">Automação</div>
-                    <div className="text-purple-300 text-xs">Integrado</div>
+                    <div className="text-white font-semibold text-sm">Atendimento</div>
+                    <div className="text-purple-300 text-xs">Vamos até sua empresa</div>
                   </div>
                 </div>
 
                 {/* Performance Indicator */}
                 <div className="bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl p-4 border border-green-400/30">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-white font-semibold">Eficiência do Sistema</span>
-                    <span className="text-green-400 font-bold">98.5%</span>
+                    <span className="text-white font-semibold">Satisfação do Cliente</span>
+                    <span className="text-green-400 font-bold">100%</span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
                     <div className="bg-gradient-to-r from-green-400 to-blue-400 h-2 rounded-full w-[98.5%]"></div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Phone, Mail, MapPin, ChevronDown } from 'lucide-react'
+import { Menu, X, Phone, Mail, MapPin, ChevronDown, Home, Users, Settings, UserCheck, MessageCircle } from 'lucide-react'
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -57,11 +57,12 @@ const Header = () => {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link to="/" className="flex items-center group">
-            <div className="relative">
-              <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white p-3 rounded-xl mr-4 shadow-lg group-hover:shadow-xl transition-all duration-300">
-                <div className="text-2xl font-bold">FHD</div>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-              </div>
+            <div className="relative mr-4">
+              <img 
+                src="/logo_no_bg.png" 
+                alt="FHD Automação Industrial Logo" 
+                className="h-12 w-auto transition-transform duration-300 group-hover:scale-105"
+              />
             </div>
             <div>
               <h1 className={`text-xl font-bold transition-colors duration-300 ${
@@ -81,60 +82,65 @@ const Header = () => {
           <nav className="hidden lg:flex items-center space-x-8">
             <Link 
               to="/" 
-              className={`relative font-medium transition-all duration-300 hover:scale-105 ${
+              className={`relative font-medium transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
                 (isScrolled || !isHomePage)
                   ? 'text-gray-700 hover:text-blue-600' 
                   : 'text-white hover:text-blue-300'
               } group ${location.pathname === '/' ? 'text-blue-600' : ''}`}
             >
-              Home
+              <Home size={18} className="transition-transform duration-300 group-hover:scale-110" />
+              <span>Home</span>
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
             </Link>
             <Link 
               to="/quem-somos" 
-              className={`relative font-medium transition-all duration-300 hover:scale-105 ${
+              className={`relative font-medium transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
                 (isScrolled || !isHomePage)
                   ? 'text-gray-700 hover:text-blue-600' 
                   : 'text-white hover:text-blue-300'
               } group ${location.pathname === '/quem-somos' ? 'text-blue-600' : ''}`}
             >
-              Quem Somos
+              <Users size={18} className="transition-transform duration-300 group-hover:scale-110" />
+              <span>Quem Somos</span>
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
             </Link>
             <div className="relative group">
               <Link 
                 to="/servicos" 
-                className={`flex items-center font-medium transition-all duration-300 hover:scale-105 ${
+                className={`flex items-center space-x-2 font-medium transition-all duration-300 hover:scale-105 ${
                   (isScrolled || !isHomePage)
                     ? 'text-gray-700 hover:text-blue-600' 
                     : 'text-white hover:text-blue-300'
                 } ${location.pathname === '/servicos' ? 'text-blue-600' : ''}`}
               >
-                Nossos Serviços
+                <Settings size={18} className="transition-transform duration-300 group-hover:scale-110" />
+                <span>Nossos Serviços</span>
                 <ChevronDown size={16} className="ml-1 transition-transform duration-300 group-hover:rotate-180" />
               </Link>
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
             </div>
             <a 
               href={isHomePage ? "#clientes" : "/#clientes"}
-              className={`relative font-medium transition-all duration-300 hover:scale-105 ${
+              className={`relative font-medium transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
                 (isScrolled || !isHomePage)
                   ? 'text-gray-700 hover:text-blue-600' 
                   : 'text-white hover:text-blue-300'
               } group`}
             >
-              Nossos Clientes
+              <UserCheck size={18} className="transition-transform duration-300 group-hover:scale-110" />
+              <span>Nossos Clientes</span>
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
             </a>
             <Link 
               to="/contato" 
-              className={`relative font-medium transition-all duration-300 hover:scale-105 ${
+              className={`relative font-medium transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
                 (isScrolled || !isHomePage)
                   ? 'text-gray-700 hover:text-blue-600' 
                   : 'text-white hover:text-blue-300'
               } group ${location.pathname === '/contato' ? 'text-blue-600' : ''}`}
             >
-              Contato
+              <MessageCircle size={18} className="transition-transform duration-300 group-hover:scale-110" />
+              <span>Contato</span>
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
             </Link>
           </nav>

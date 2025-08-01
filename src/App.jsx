@@ -6,6 +6,8 @@ import HomePage from '@/pages/HomePage'
 import AboutPage from '@/pages/AboutPage'
 import ServicesPage from '@/pages/ServicesPage'
 import ContactPage from '@/pages/ContactPage'
+import TermosDeUso from '@/pages/TermosDeUso'
+import PoliticaPrivacidade from '@/pages/PoliticaPrivacidade'
 import './App.css'
 
 function App() {
@@ -20,6 +22,8 @@ function App() {
               <Route path="/quem-somos" element={<AboutPage />} />
               <Route path="/servicos" element={<ServicesPage />} />
               <Route path="/contato" element={<ContactPage />} />
+              <Route path="/termos-de-uso" element={<TermosDeUso />} />
+              <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />
             </Routes>
           </main>
           <Footer />
