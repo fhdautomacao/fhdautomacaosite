@@ -10,7 +10,10 @@ const Header = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
+      // Define o ponto de rolagem onde o header deve mudar de cor
+      // Ajuste este valor conforme a altura da sua seção azul
+      const scrollThreshold = 1200; // Mude para branco após 1200px de rolagem
+      setIsScrolled(window.scrollY > scrollThreshold)
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
