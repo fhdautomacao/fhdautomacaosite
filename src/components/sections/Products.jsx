@@ -134,17 +134,17 @@ const Products = () => {
         </div>
 
         {/* Search and Filter Bar */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-12 animate-fade-in-up">
-          <div className="flex flex-col lg:flex-row gap-4 items-center">
+        <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 mb-12 animate-fade-in-up">
+          <div className="flex flex-col gap-4">
             {/* Search Input */}
-            <div className="relative flex-1 w-full lg:w-auto">
+            <div className="relative w-full">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="text"
-                placeholder="Buscar produtos, características ou descrições..."
+                placeholder="Buscar produtos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-sm md:text-base"
               />
               {searchTerm && (
                 <button
@@ -172,12 +172,12 @@ const Products = () => {
           {isFilterOpen && (
             <div className="mt-6 pt-6 border-t border-gray-200 animate-fade-in">
               <h4 className="text-sm font-semibold text-gray-700 mb-4">Filtrar por categoria:</h4>
-              <div className="flex flex-wrap gap-3">
+              <div className="grid grid-cols-2 md:flex md:flex-wrap gap-2 md:gap-3">
                 {categories.map((category, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedCategory(category)}
-                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
+                    className={`px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-semibold transition-all duration-300 ${
                       selectedCategory === category
                         ? 'bg-blue-600 text-white shadow-lg'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -205,24 +205,24 @@ const Products = () => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 mb-16">
           {filteredProducts.map((product, index) => (
             <div 
               key={index}
               className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden hover:-translate-y-2 hover:scale-105 animate-fade-in-up"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 h-48 flex items-center justify-center relative overflow-hidden">
-                <div className="text-white text-6xl group-hover:scale-110 transition-transform duration-300">⚙️</div>
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 h-40 md:h-48 flex items-center justify-center relative overflow-hidden">
+                <div className="text-white text-4xl md:text-6xl group-hover:scale-110 transition-transform duration-300">⚙️</div>
                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               
-              <div className="p-6">
-                <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3 border ${getCategoryColor(product.category)}`}>
+              <div className="p-4 md:p-6">
+                <div className={`inline-block px-2 md:px-3 py-1 rounded-full text-xs font-semibold mb-3 border ${getCategoryColor(product.category)}`}>
                   {product.category}
                 </div>
                 
-                <h3 className="text-lg font-bold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors duration-300">
+                <h3 className="text-base md:text-lg font-bold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors duration-300">
                   {product.name}
                 </h3>
                 

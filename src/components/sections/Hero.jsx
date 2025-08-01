@@ -35,7 +35,7 @@ const Hero = () => {
 
             {/* Main Heading */}
             <div className="space-y-6">
-              <h1 className="text-5xl lg:text-7xl font-bold text-white leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-white leading-tight">
                 Automação{' '}
                 <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
                   Hidráulica
@@ -45,7 +45,7 @@ const Hero = () => {
                   Pneumática
                 </span>
               </h1>
-              <p className="text-xl lg:text-2xl text-blue-100 leading-relaxed max-w-2xl">
+              <p className="text-lg md:text-xl lg:text-2xl text-blue-100 leading-relaxed max-w-2xl">
                 Transformamos desafios industriais em soluções eficientes com mais de{' '}
                 <span className="text-yellow-400 font-bold">10 anos</span> de experiência 
                 e tecnologia de ponta.
@@ -53,103 +53,103 @@ const Hero = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-8 py-8">
+            <div className="grid grid-cols-3 gap-4 md:gap-8 py-8">
               <div className="text-center">
-                <div className="text-3xl lg:text-4xl font-bold text-white mb-2">500+</div>
-                <div className="text-blue-300 text-sm">Projetos Realizados</div>
+                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">500+</div>
+                <div className="text-blue-300 text-xs md:text-sm">Projetos Realizados</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl lg:text-4xl font-bold text-white mb-2">100+</div>
-                <div className="text-blue-300 text-sm">Clientes Atendidos</div>
+                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">100+</div>
+                <div className="text-blue-300 text-xs md:text-sm">Clientes Atendidos</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl lg:text-4xl font-bold text-white mb-2">98%</div>
-                <div className="text-blue-300 text-sm">Satisfação</div>
+                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">98%</div>
+                <div className="text-blue-300 text-xs md:text-sm">Satisfação</div>
               </div>
             </div>
 
             {/* Benefits */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4 group">
-                <div className="bg-green-500/20 p-2 rounded-lg group-hover:bg-green-500/30 transition-colors">
-                  <CheckCircle className="text-green-400" size={20} />
+            <div className="space-y-3 md:space-y-4">
+              <div className="flex items-center space-x-3 md:space-x-4 group">
+                <div className="bg-green-500/20 p-2 rounded-lg group-hover:bg-green-500/30 transition-colors flex-shrink-0">
+                  <CheckCircle className="text-green-400" size={18} />
                 </div>
-                <span className="text-blue-100">Projetos personalizados e sob medida</span>
+                <span className="text-blue-100 text-sm md:text-base">Projetos personalizados e sob medida</span>
               </div>
-              <div className="flex items-center space-x-4 group">
-                <div className="bg-green-500/20 p-2 rounded-lg group-hover:bg-green-500/30 transition-colors">
-                  <CheckCircle className="text-green-400" size={20} />
+              <div className="flex items-center space-x-3 md:space-x-4 group">
+                <div className="bg-green-500/20 p-2 rounded-lg group-hover:bg-green-500/30 transition-colors flex-shrink-0">
+                  <CheckCircle className="text-green-400" size={18} />
                 </div>
-                <span className="text-blue-100">Suporte técnico especializado 24/7</span>
+                <span className="text-blue-100 text-sm md:text-base">Suporte técnico especializado 24/7</span>
               </div>
-              <div className="flex items-center space-x-4 group">
-                <div className="bg-green-500/20 p-2 rounded-lg group-hover:bg-green-500/30 transition-colors">
-                  <CheckCircle className="text-green-400" size={20} />
+              <div className="flex items-center space-x-3 md:space-x-4 group">
+                <div className="bg-green-500/20 p-2 rounded-lg group-hover:bg-green-500/30 transition-colors flex-shrink-0">
+                  <CheckCircle className="text-green-400" size={18} />
                 </div>
-                <span className="text-blue-100">Tecnologia de ponta e inovação constante</span>
+                <span className="text-blue-100 text-sm md:text-base">Tecnologia de ponta e inovação constante</span>
               </div>
             </div>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-4">
               <Button 
                 size="lg" 
-                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-8 py-4 rounded-xl shadow-2xl hover:shadow-blue-500/25 transform hover:scale-105 transition-all duration-300"
+                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 md:px-8 py-3 md:py-4 rounded-xl shadow-2xl hover:shadow-blue-500/25 transform hover:scale-105 transition-all duration-300 text-sm md:text-base"
               >
                 Solicitar Orçamento Gratuito
-                <ArrowRight className="ml-2" size={20} />
+                <ArrowRight className="ml-2" size={18} />
               </Button>
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-2 border-white/30 text-white hover:bg-white hover:text-slate-900 font-semibold px-8 py-4 rounded-xl backdrop-blur-sm transition-all duration-300"
+                className="border-2 border-white/30 text-white hover:bg-white hover:text-slate-900 font-semibold px-6 md:px-8 py-3 md:py-4 rounded-xl backdrop-blur-sm transition-all duration-300 text-sm md:text-base"
               >
-                <Play className="mr-2" size={20} />
+                <Play className="mr-2" size={18} />
                 Ver Nossos Projetos
               </Button>
             </div>
           </div>
 
           {/* Visual/Image Section */}
-          <div className="relative">
+          <div className="relative mt-8 lg:mt-0">
             {/* Main Card */}
-            <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-2xl">
+            <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg rounded-3xl p-4 md:p-6 lg:p-8 border border-white/20 shadow-2xl">
               {/* Industrial Equipment Visualization */}
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-2xl font-bold text-white">Nossos Diferenciais</h3>
+                  <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white">Nossos Diferenciais</h3>
                   <div className="bg-green-500 w-3 h-3 rounded-full animate-pulse"></div>
                 </div>
                 
                 {/* Equipment Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl p-4 border border-blue-400/30">
-                    <Wrench className="text-blue-400 mb-2" size={24} />
-                    <div className="text-white font-semibold text-sm">Experiência</div>
+                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                  <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl p-3 md:p-4 border border-blue-400/30">
+                    <Wrench className="text-blue-400 mb-2" size={20} />
+                    <div className="text-white font-semibold text-xs md:text-sm">Experiência</div>
                     <div className="text-blue-300 text-xs">Mais de 10 anos</div>
                   </div>
-                  <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-xl p-4 border border-yellow-400/30">
-                    <Users className="text-yellow-400 mb-2" size={24} />
-                    <div className="text-white font-semibold text-sm">Preço Justo</div>
+                  <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-xl p-3 md:p-4 border border-yellow-400/30">
+                    <Users className="text-yellow-400 mb-2" size={20} />
+                    <div className="text-white font-semibold text-xs md:text-sm">Preço Justo</div>
                     <div className="text-yellow-300 text-xs">Soluções que cabem no seu bolso</div>
                   </div>
-                  <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-xl p-4 border border-green-400/30">
-                    <Award className="text-green-400 mb-2" size={24} />
-                    <div className="text-white font-semibold text-sm">Qualidade</div>
+                  <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-xl p-3 md:p-4 border border-green-400/30">
+                    <Award className="text-green-400 mb-2" size={20} />
+                    <div className="text-white font-semibold text-xs md:text-sm">Qualidade</div>
                     <div className="text-green-300 text-xs">Certificada</div>
                   </div>
-                  <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-xl p-4 border border-purple-400/30">
-                    <CheckCircle className="text-purple-400 mb-2" size={24} />
-                    <div className="text-white font-semibold text-sm">Atendimento</div>
+                  <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-xl p-3 md:p-4 border border-purple-400/30">
+                    <CheckCircle className="text-purple-400 mb-2" size={20} />
+                    <div className="text-white font-semibold text-xs md:text-sm">Atendimento</div>
                     <div className="text-purple-300 text-xs">Vamos até sua empresa</div>
                   </div>
                 </div>
 
                 {/* Performance Indicator */}
-                <div className="bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl p-4 border border-green-400/30">
+                <div className="bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl p-3 md:p-4 border border-green-400/30">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-white font-semibold">Satisfação do Cliente</span>
-                    <span className="text-green-400 font-bold">100%</span>
+                    <span className="text-white font-semibold text-xs md:text-sm">Satisfação do Cliente</span>
+                    <span className="text-green-400 font-bold text-sm md:text-base">100%</span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
                     <div className="bg-gradient-to-r from-green-400 to-blue-400 h-2 rounded-full w-[98.5%]"></div>
@@ -158,11 +158,11 @@ const Hero = () => {
               </div>
 
               {/* Floating Badges */}
-              <div className="absolute -top-4 -right-4 bg-gradient-to-r from-yellow-400 to-orange-400 text-slate-900 rounded-full p-3 shadow-lg">
-                <Award size={24} />
+              <div className="absolute -top-3 -right-3 md:-top-4 md:-right-4 bg-gradient-to-r from-yellow-400 to-orange-400 text-slate-900 rounded-full p-2 md:p-3 shadow-lg">
+                <Award size={20} />
               </div>
-              <div className="absolute -bottom-4 -left-4 bg-gradient-to-r from-blue-400 to-cyan-400 text-white rounded-full p-3 shadow-lg">
-                <Wrench size={24} />
+              <div className="absolute -bottom-3 -left-3 md:-bottom-4 md:-left-4 bg-gradient-to-r from-blue-400 to-cyan-400 text-white rounded-full p-2 md:p-3 shadow-lg">
+                <Wrench size={20} />
               </div>
             </div>
 

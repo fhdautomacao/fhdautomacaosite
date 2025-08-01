@@ -25,8 +25,8 @@ const Header = () => {
   return (
     <header className={`fixed w-full z-50 transition-all duration-300 ${
       isScrolled || !isHomePage
-        ? 'bg-white/95 backdrop-blur-md shadow-lg' 
-        : 'bg-transparent'
+        ? 'bg-white shadow-lg' 
+        : 'bg-blue-800'
     }`}>
       {/* Top Bar */}
       <div className={`transition-all duration-300 ${
@@ -59,7 +59,7 @@ const Header = () => {
           <Link to="/" className="flex items-center group">
             <div className="relative mr-4">
               <img 
-                src="/logo_no_bg.png" 
+                src="/logo.png" 
                 alt="FHD Automação Industrial Logo" 
                 className="h-12 w-auto transition-transform duration-300 group-hover:scale-105"
               />
@@ -71,7 +71,7 @@ const Header = () => {
                 FHD Automação Industrial
               </h1>
               <p className={`text-sm transition-colors duration-300 ${
-                (isScrolled || !isHomePage) ? 'text-gray-600' : 'text-blue-100'
+                (isScrolled || !isHomePage) ? 'text-gray-600' : 'text-white'
               }`}>
                 Excelência em Automação
               </p>
@@ -156,12 +156,13 @@ const Header = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className={`lg:hidden p-2 rounded-lg transition-all duration-300 ${
+            className={`lg:hidden p-3 rounded-lg transition-all duration-300 border-2 ${
               (isScrolled || !isHomePage)
-                ? 'text-gray-700 hover:bg-gray-100' 
-                : 'text-white hover:bg-white/10'
-            }`}
+                ? 'text-gray-700 hover:bg-gray-100 border-gray-300 hover:border-blue-500' 
+                : 'text-white hover:bg-white/20 border-white/30 hover:border-white'
+            } transform hover:scale-105 active:scale-95`}
             onClick={toggleMenu}
+            aria-label="Menu de navegação"
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -169,68 +170,79 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <nav className="lg:hidden mt-4 pb-4 border-t border-gray-200/20 pt-4">
+          <nav className={`lg:hidden mt-4 pb-6 border-t pt-6 rounded-b-lg transition-all duration-300 ${
+            (isScrolled || !isHomePage)
+              ? 'border-gray-200 bg-white/95 backdrop-blur-md shadow-lg' 
+              : 'border-white/20 bg-blue-800/95 backdrop-blur-md'
+          }`}>
             <div className="flex flex-col space-y-4">
               <Link 
                 to="/" 
-                className={`font-medium transition-colors duration-300 ${
+                className={`flex items-center space-x-3 font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ${
                   (isScrolled || !isHomePage)
-                    ? 'text-gray-700 hover:text-blue-600' 
-                    : 'text-white hover:text-blue-300'
-                }`}
+                    ? 'text-gray-700 hover:text-blue-600 hover:bg-blue-50' 
+                    : 'text-white hover:text-blue-200 hover:bg-white/10'
+                } ${location.pathname === '/' ? 'bg-blue-100 text-blue-600' : ''}`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Home
+                <Home size={20} />
+                <span>Home</span>
               </Link>
               <Link 
                 to="/quem-somos" 
-                className={`font-medium transition-colors duration-300 ${
+                className={`flex items-center space-x-3 font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ${
                   (isScrolled || !isHomePage)
-                    ? 'text-gray-700 hover:text-blue-600' 
-                    : 'text-white hover:text-blue-300'
-                }`}
+                    ? 'text-gray-700 hover:text-blue-600 hover:bg-blue-50' 
+                    : 'text-white hover:text-blue-200 hover:bg-white/10'
+                } ${location.pathname === '/quem-somos' ? 'bg-blue-100 text-blue-600' : ''}`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Quem Somos
+                <Users size={20} />
+                <span>Quem Somos</span>
               </Link>
               <Link 
                 to="/servicos" 
-                className={`font-medium transition-colors duration-300 ${
+                className={`flex items-center space-x-3 font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ${
                   (isScrolled || !isHomePage)
-                    ? 'text-gray-700 hover:text-blue-600' 
-                    : 'text-white hover:text-blue-300'
-                }`}
+                    ? 'text-gray-700 hover:text-blue-600 hover:bg-blue-50' 
+                    : 'text-white hover:text-blue-200 hover:bg-white/10'
+                } ${location.pathname === '/servicos' ? 'bg-blue-100 text-blue-600' : ''}`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Nossos Serviços
+                <Settings size={20} />
+                <span>Nossos Serviços</span>
               </Link>
               <a 
                 href={isHomePage ? "#clientes" : "/#clientes"}
-                className={`font-medium transition-colors duration-300 ${
+                className={`flex items-center space-x-3 font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ${
                   (isScrolled || !isHomePage)
-                    ? 'text-gray-700 hover:text-blue-600' 
-                    : 'text-white hover:text-blue-300'
+                    ? 'text-gray-700 hover:text-blue-600 hover:bg-blue-50' 
+                    : 'text-white hover:text-blue-200 hover:bg-white/10'
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Nossos Clientes
+                <UserCheck size={20} />
+                <span>Nossos Clientes</span>
               </a>
               <Link 
                 to="/contato" 
-                className={`font-medium transition-colors duration-300 ${
+                className={`flex items-center space-x-3 font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ${
                   (isScrolled || !isHomePage)
-                    ? 'text-gray-700 hover:text-blue-600' 
-                    : 'text-white hover:text-blue-300'
-                }`}
+                    ? 'text-gray-700 hover:text-blue-600 hover:bg-blue-50' 
+                    : 'text-white hover:text-blue-200 hover:bg-white/10'
+                } ${location.pathname === '/contato' ? 'bg-blue-100 text-blue-600' : ''}`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Contato
+                <MessageCircle size={20} />
+                <span>Contato</span>
               </Link>
-              <Link to="/contato" onClick={() => setIsMenuOpen(false)}>
-                <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold w-full rounded-lg shadow-lg">
-                  Solicitar Orçamento
-                </Button>
-              </Link>
+              <div className="pt-4 border-t border-gray-200/20">
+                <Link to="/contato" onClick={() => setIsMenuOpen(false)}>
+                  <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold w-full py-3 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300">
+                    Solicitar Orçamento
+                  </Button>
+                </Link>
+              </div>
             </div>
           </nav>
         )}
