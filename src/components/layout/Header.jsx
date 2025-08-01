@@ -24,12 +24,11 @@ const Header = () => {
 
   return (
     <header className={`fixed w-full z-50 transition-all duration-300 ${
-      isScrolled || !isHomePage        ? 'bg-white shadow-lg' 
-        : 'bg-gradient-to-b from-slate-900 to-blue-900'
+      isScrolled ? 'bg-white shadow-lg' : 'bg-transparent'
     }`} >
       {/* Top Bar */}
       <div className={`transition-all duration-300 ${
-        (isScrolled || !isHomePage) ? 'h-0 overflow-hidden' : 'h-auto'
+        isScrolled ? 'h-0 overflow-hidden' : 'h-auto'
       } bg-slate-900 text-white`}>
         <div className="container mx-auto px-4 py-2">
           <div className="flex flex-col lg:flex-row justify-between items-center text-sm">
@@ -65,12 +64,12 @@ const Header = () => {
             </div>
             <div>
               <h1 className={`text-xl font-bold transition-colors duration-300 ${
-                (isScrolled || !isHomePage) ? 'text-gray-800' : 'text-white'
+                isScrolled ? 'text-gray-800' : 'text-white'
               }`}>
                 FHD Automação Industrial
               </h1>
               <p className={`text-sm transition-colors duration-300 ${
-                (isScrolled || !isHomePage) ? 'text-gray-600' : 'text-white'
+                isScrolled ? 'text-gray-600' : 'text-white'
               }`}>
                 Excelência em Automação
               </p>
@@ -82,7 +81,7 @@ const Header = () => {
             <Link 
               to="/" 
               className={`relative font-medium transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
-                (isScrolled || !isHomePage)
+                isScrolled
                   ? 'text-gray-700 hover:text-blue-600' 
                   : 'text-white hover:text-blue-300'
               } group ${location.pathname === '/' ? 'text-blue-600' : ''}`}
@@ -94,7 +93,7 @@ const Header = () => {
             <Link 
               to="/quem-somos" 
               className={`relative font-medium transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
-                (isScrolled || !isHomePage)
+                isScrolled
                   ? 'text-gray-700 hover:text-blue-600' 
                   : 'text-white hover:text-blue-300'
               } group ${location.pathname === '/quem-somos' ? 'text-blue-600' : ''}`}
@@ -107,7 +106,7 @@ const Header = () => {
               <Link 
                 to="/servicos" 
                 className={`flex items-center space-x-2 font-medium transition-all duration-300 hover:scale-105 ${
-                  (isScrolled || !isHomePage)
+                  isScrolled
                     ? 'text-gray-700 hover:text-blue-600' 
                     : 'text-white hover:text-blue-300'
                 } ${location.pathname === '/servicos' ? 'text-blue-600' : ''}`}
@@ -121,7 +120,7 @@ const Header = () => {
             <a 
               href={isHomePage ? "#clientes" : "/#clientes"}
               className={`relative font-medium transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
-                (isScrolled || !isHomePage)
+                isScrolled
                   ? 'text-gray-700 hover:text-blue-600' 
                   : 'text-white hover:text-blue-300'
               } group`}
@@ -133,7 +132,7 @@ const Header = () => {
             <Link 
               to="/contato" 
               className={`relative font-medium transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
-                (isScrolled || !isHomePage)
+                isScrolled
                   ? 'text-gray-700 hover:text-blue-600' 
                   : 'text-white hover:text-blue-300'
               } group ${location.pathname === '/contato' ? 'text-blue-600' : ''}`}
@@ -156,7 +155,7 @@ const Header = () => {
           {/* Mobile Menu Button */}
           <button
             className={`lg:hidden p-3 rounded-lg transition-all duration-300 border-2 ${
-              (isScrolled || !isHomePage)
+              isScrolled
                 ? 'text-gray-700 hover:bg-gray-100 border-gray-300 hover:border-blue-500' 
                 : 'text-white hover:bg-white/20 border-white/30 hover:border-white'
             } transform hover:scale-105 active:scale-95`}
@@ -170,7 +169,7 @@ const Header = () => {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <nav className={`lg:hidden mt-4 pb-6 border-t pt-6 rounded-b-lg transition-all duration-300 ${
-            (isScrolled || !isHomePage)
+            isScrolled
               ? 'border-gray-200 bg-white/95 backdrop-blur-md shadow-lg' 
               : 'border-white/20 bg-blue-800/95 backdrop-blur-md'
           }`}>
@@ -178,7 +177,7 @@ const Header = () => {
               <Link 
                 to="/" 
                 className={`flex items-center space-x-3 font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ${
-                  (isScrolled || !isHomePage)
+                  isScrolled
                     ? 'text-gray-700 hover:text-blue-600 hover:bg-blue-50' 
                     : 'text-white hover:text-blue-200 hover:bg-white/10'
                 } ${location.pathname === '/' ? 'bg-blue-100 text-blue-600' : ''}`}
@@ -190,7 +189,7 @@ const Header = () => {
               <Link 
                 to="/quem-somos" 
                 className={`flex items-center space-x-3 font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ${
-                  (isScrolled || !isHomePage)
+                  isScrolled
                     ? 'text-gray-700 hover:text-blue-600 hover:bg-blue-50' 
                     : 'text-white hover:text-blue-200 hover:bg-white/10'
                 } ${location.pathname === '/quem-somos' ? 'bg-blue-100 text-blue-600' : ''}`}
@@ -202,7 +201,7 @@ const Header = () => {
               <Link 
                 to="/servicos" 
                 className={`flex items-center space-x-3 font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ${
-                  (isScrolled || !isHomePage)
+                  isScrolled
                     ? 'text-gray-700 hover:text-blue-600 hover:bg-blue-50' 
                     : 'text-white hover:text-blue-200 hover:bg-white/10'
                 } ${location.pathname === '/servicos' ? 'bg-blue-100 text-blue-600' : ''}`}
@@ -214,7 +213,7 @@ const Header = () => {
               <a 
                 href={isHomePage ? "#clientes" : "/#clientes"}
                 className={`flex items-center space-x-3 font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ${
-                  (isScrolled || !isHomePage)
+                  isScrolled
                     ? 'text-gray-700 hover:text-blue-600 hover:bg-blue-50' 
                     : 'text-white hover:text-blue-200 hover:bg-white/10'
                 }`}
@@ -226,7 +225,7 @@ const Header = () => {
               <Link 
                 to="/contato" 
                 className={`flex items-center space-x-3 font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ${
-                  (isScrolled || !isHomePage)
+                  isScrolled
                     ? 'text-gray-700 hover:text-blue-600 hover:bg-blue-50' 
                     : 'text-white hover:text-blue-200 hover:bg-white/10'
                 } ${location.pathname === '/contato' ? 'bg-blue-100 text-blue-600' : ''}`}
