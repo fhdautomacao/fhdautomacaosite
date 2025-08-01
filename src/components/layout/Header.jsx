@@ -24,10 +24,9 @@ const Header = () => {
 
   return (
     <header className={`fixed w-full z-50 transition-all duration-300 ${
-      isScrolled || !isHomePage
-        ? 'bg-white shadow-lg' 
-        : 'bg-blue-800'
-    }`}>
+      isScrolled || !isHomePage        ? 'bg-white shadow-lg' 
+        : 'bg-blue-900'
+    }`} >
       {/* Top Bar */}
       <div className={`transition-all duration-300 ${
         (isScrolled || !isHomePage) ? 'h-0 overflow-hidden' : 'h-auto'
@@ -252,4 +251,3 @@ const Header = () => {
 }
 
 export default Header
-
