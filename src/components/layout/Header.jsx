@@ -61,7 +61,7 @@ const Header = () => {
               <span>Quem Somos</span>
             </Link>
             <Link 
-              to={isHomePage ? "#servicos" : "/servicos"} 
+              to="/servicos" 
               className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 ${
                 location.pathname === '/servicos' 
                   ? 'bg-orange-500 text-white shadow-md' 
@@ -139,7 +139,7 @@ const Header = () => {
                 <span>Quem Somos</span>
               </Link>
               <Link 
-                to={isHomePage ? "#servicos" : "/#servicos"} 
+                to="/servicos" 
                 className={`flex items-center space-x-3 font-medium py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 ${
                   location.pathname === '/servicos' 
                     ? 'bg-orange-500 text-white shadow-md' 
