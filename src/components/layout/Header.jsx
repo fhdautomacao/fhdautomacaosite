@@ -72,7 +72,7 @@ const Header = () => {
               <span>Nossos Serviços</span>
             </Link>
             <Link 
-              to="/#clientes" 
+              to="/clientes" 
               className="px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 bg-gray-100 text-gray-700 hover:bg-yellow-100 hover:text-yellow-700"
             >
               <UserCheck size={16} />
@@ -151,7 +151,7 @@ const Header = () => {
                 <span>Nossos Serviços</span>
               </Link>
               <Link 
-                to="/#clientes" 
+                to="/clientes" 
                 className="flex items-center space-x-3 font-medium py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 bg-gray-100 text-gray-700 hover:bg-yellow-100 hover:text-yellow-700"
                 onClick={() => setIsMenuOpen(false)}
               >
