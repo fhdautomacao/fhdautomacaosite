@@ -17,7 +17,7 @@ const Footer = () => {
             <div className="flex items-center mb-8">
               <div className="mr-4">
                 <img 
-                  src="/logo_no_bg.png" 
+                  src="/logo.png" 
                   alt="FHD Automação Industrial Logo" 
                   className="h-12 w-auto filter brightness-0 invert"
                 />
