@@ -61,7 +61,7 @@ const Header = () => {
               <span>Quem Somos</span>
             </Link>
             <Link 
-              to="/servicos" 
+              to={isHomePage ? "#servicos" : "/servicos"} 
               className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 ${
                 location.pathname === '/servicos' 
                   ? 'bg-orange-500 text-white shadow-md' 
@@ -71,13 +71,13 @@ const Header = () => {
               <Settings size={16} />
               <span>Nossos Serviços</span>
             </Link>
-            <a 
-              href={isHomePage ? "#clientes" : "/#clientes"}
+            <Link 
+              to="/#clientes" 
               className="px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 bg-gray-100 text-gray-700 hover:bg-yellow-100 hover:text-yellow-700"
             >
               <UserCheck size={16} />
               <span>Nossos Clientes</span>
-            </a>
+            </Link>
             <Link 
               to="/contato" 
               className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 ${
@@ -139,7 +139,7 @@ const Header = () => {
                 <span>Quem Somos</span>
               </Link>
               <Link 
-                to="/servicos" 
+                to={isHomePage ? "#servicos" : "/#servicos"} 
                 className={`flex items-center space-x-3 font-medium py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 ${
                   location.pathname === '/servicos' 
                     ? 'bg-orange-500 text-white shadow-md' 
@@ -150,14 +150,14 @@ const Header = () => {
                 <Settings size={18} />
                 <span>Nossos Serviços</span>
               </Link>
-              <a 
-                href={isHomePage ? "#clientes" : "/#clientes"}
+              <Link 
+                to="/#clientes" 
                 className="flex items-center space-x-3 font-medium py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 bg-gray-100 text-gray-700 hover:bg-yellow-100 hover:text-yellow-700"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <UserCheck size={18} />
                 <span>Nossos Clientes</span>
-              </a>
+              </Link>
               <Link 
                 to="/contato" 
                 className={`flex items-center space-x-3 font-medium py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 ${
