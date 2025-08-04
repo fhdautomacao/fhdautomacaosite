@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Users, 
@@ -21,42 +22,37 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 
 const ClientsManager = () => {
-  const [clients, setClients] = useState([
-    {
-      id: 1,
-      name: 'Empresa Industrial A',
-      sector: 'Industrial',
-      description: 'Empresa líder no setor industrial com foco em automação',
-      contact: 'contato@empresaa.com.br',
-      phone: '(19) 99999-9999',
-      location: 'São Paulo - SP',
-      logo: '/clients/empresa-a.png',
-      addedDate: '2024-01-15'
-    },
-    {
-      id: 2,
-      name: 'Metalúrgica B',
-      sector: 'Metalurgia',
-      description: 'Especializada em processos metalúrgicos avançados',
-      contact: 'comercial@metalurgicab.com.br',
-      phone: '(11) 88888-8888',
-      location: 'Campinas - SP',
-      logo: '/clients/metalurgica-b.png',
-      addedDate: '2024-01-10'
-    },
-    {
-      id: 3,
-      name: 'Automobilística C',
-      sector: 'Automotivo',
-      description: 'Montadora de veículos com tecnologia de ponta',
-      contact: 'suporte@autoc.com.br',
-      phone: '(19) 77777-7777',
-      location: 'Sumaré - SP',
-      logo: '/clients/auto-c.png',
-      addedDate: '2024-01-08'
-    }
-  ])
+  const [clients, setClients] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
+  useEffect(() => {
+    const fetchClients = async () => {
+      setLoading(true)
+      try {
+        const { data, error } = await supabase
+          .from("clients")
+          .select("*")
+          .order("display_order", { ascending: true })
+
+        if (error) throw error
+
+        setClients(data.map(client => ({
+          ...client,
+          logo: client.logo_url,
+          addedDate: client.added_date,
+          displayOrder: client.display_order,
+        })))
+      } catch (error) {
+        console.error("Erro ao carregar clientes:", error)
+        setError(error.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchClients()
+  }, [])
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedClient, setSelectedClient] = useState(null)
@@ -95,37 +91,150 @@ const ClientsManager = () => {
     return matchesSearch && matchesSector
   })
 
-  const handleAddClient = () => {
+  const handleAddClient = async () => {
     if (newClient.name && newClient.sector && newClient.description) {
-      const client = {
-        id: Date.now(),
-        ...newClient,
-        addedDate: new Date().toISOString().split('T')[0],
-        logo: newClient.logo || '/clients/placeholder.png'
+      try {
+        let logoUrl = null;
+        if (newClient.logo) {
+          const file = newClient.logo;
+          const filePath = `client_logos/${Date.now()}_${file.name}`;
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from("arquivos")
+            .upload(filePath, file);
+
+          if (uploadError) throw uploadError;
+
+          const { data: publicUrlData } = supabase.storage
+            .from("arquivos")
+            .getPublicUrl(filePath);
+          logoUrl = publicUrlData.publicUrl;
+        }
+
+        const { data, error } = await supabase
+          .from("clients")
+          .insert({
+            name: newClient.name,
+            sector: newClient.sector,
+            description: newClient.description,
+            contact: newClient.contact,
+            phone: newClient.phone,
+            location: newClient.location,
+            logo_url: logoUrl,
+            added_date: new Date().toISOString().split("T")[0],
+            display_order: clients.length + 1,
+          })
+          .select();
+
+        if (error) throw error;
+
+        setClients([...clients, {
+          ...data[0],
+          logo: data[0].logo_url,
+          addedDate: data[0].added_date,
+          displayOrder: data[0].display_order,
+        }]);
+        setNewClient({ name: ", sector: ", description: ", contact: ", phone: ", location: ", logo: null });
+        setIsAddModalOpen(false);
+        alert("Cliente adicionado com sucesso!");
+      } catch (error) {
+        console.error("Erro ao adicionar cliente:", error);
+        alert("Erro ao adicionar cliente: " + error.message);
       }
-      setClients([...clients, client])
-      setNewClient({ name: '', sector: '', description: '', contact: '', phone: '', location: '', logo: null })
-      setIsAddModalOpen(false)
     }
   }
 
-  const handleEditClient = () => {
+  const handleEditClient = async () => {
     if (selectedClient) {
-      setClients(clients.map(client => 
-        client.id === selectedClient.id ? selectedClient : client
-      ))
-      setIsEditModalOpen(false)
-      setSelectedClient(null)
+      try {
+        let logoUrl = selectedClient.logo; // Keep existing logo if no new file is uploaded
+        if (selectedClient.logo instanceof File) {
+          const file = selectedClient.logo;
+          const filePath = `client_logos/${Date.now()}_${file.name}`;
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from("arquivos")
+            .upload(filePath, file);
+
+          if (uploadError) throw uploadError;
+
+          const { data: publicUrlData } = supabase.storage
+            .from("arquivos")
+            .getPublicUrl(filePath);
+          logoUrl = publicUrlData.publicUrl;
+        }
+
+        const { error } = await supabase
+          .from("clients")
+          .update({
+            name: selectedClient.name,
+            sector: selectedClient.sector,
+            description: selectedClient.description,
+            contact: selectedClient.contact,
+            phone: selectedClient.phone,
+            location: selectedClient.location,
+            logo_url: logoUrl,
+            display_order: selectedClient.displayOrder,
+          })
+          .eq("id", selectedClient.id);
+
+        if (error) throw error;
+
+        // Re-fetch clients to update the list
+        const { data, error: fetchError } = await supabase
+          .from("clients")
+          .select("*")
+          .order("display_order", { ascending: true });
+
+        if (fetchError) throw fetchError;
+
+        setClients(data.map(client => ({
+          ...client,
+          logo: client.logo_url,
+          addedDate: client.added_date,
+          displayOrder: client.display_order,
+        })));
+        setIsEditModalOpen(false);
+        setSelectedClient(null);
+        alert("Cliente atualizado com sucesso!");
+      } catch (error) {
+        console.error("Erro ao atualizar cliente:", error);
+        alert("Erro ao atualizar cliente: " + error.message);
+      }
     }
   }
 
-  const handleDeleteClient = (id) => {
-    setClients(clients.filter(client => client.id !== id))
+  const handleDeleteClient = async (id) => {
+    try {
+      const { error } = await supabase
+        .from("clients")
+        .delete()
+        .eq("id", id)
+
+      if (error) throw error
+
+      // Re-fetch clients to update the list
+      const { data, error: fetchError } = await supabase
+        .from("clients")
+        .select("*")
+        .order("display_order", { ascending: true })
+
+      if (fetchError) throw fetchError
+
+      setClients(data.map(client => ({
+        ...client,
+        logo: client.logo_url,
+        addedDate: client.added_date,
+        displayOrder: client.display_order,
+      })))
+      alert("Cliente excluído com sucesso!")
+    } catch (error) {
+      console.error("Erro ao excluir cliente:", error)
+      alert("Erro ao excluir cliente: " + error.message)
+    }
   }
 
   const openEditModal = (client) => {
-    setSelectedClient({ ...client })
-    setIsEditModalOpen(true)
+    setSelectedClient({ ...client, logo: null }); // Set logo to null initially to allow new file selection
+    setIsEditModalOpen(true);
   }
 
   const getSectorIcon = (sector) => {

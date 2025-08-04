@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Wrench,
@@ -24,93 +25,38 @@ import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const ServicesManager = () => {
-  const [services, setServices] = useState([
-    {
-      id: 1,
-      name: 'Automação Hidráulica',
-      description: 'Desenvolvimento e implementação de sistemas hidráulicos automatizados para otimização de processos industriais.',
-      icon: '🔧',
-      category: 'Automação',
-      price: 'Sob Consulta',
-      features: ['Projeto Personalizado', 'Instalação Completa', 'Suporte Técnico'],
-      isActive: true,
-      order: 1,
-      image: '/services/automacao-hidraulica.jpg'
-    },
-    {
-      id: 2,
-      name: 'Automação Pneumática',
-      description: 'Soluções em automação pneumática para controle preciso e eficiente de equipamentos industriais.',
-      icon: '💨',
-      category: 'Automação',
-      price: 'Sob Consulta',
-      features: ['Controle Preciso', 'Baixo Consumo', 'Manutenção Simples'],
-      isActive: true,
-      order: 2,
-      image: '/services/automacao-pneumatica.jpg'
-    },
-    {
-      id: 3,
-      name: 'Projetos Hidráulicos',
-      description: 'Elaboração de projetos hidráulicos customizados para atender necessidades específicas de cada cliente.',
-      icon: '📐',
-      category: 'Projetos',
-      price: 'A partir de R$ 2.500',
-      features: ['Projeto 3D', 'Documentação Técnica', 'Acompanhamento'],
-      isActive: true,
-      order: 3,
-      image: '/services/projetos-hidraulicos.jpg'
-    },
-    {
-      id: 4,
-      name: 'Manutenção de Cilindros',
-      description: 'Serviços especializados de manutenção preventiva e corretiva em cilindros hidráulicos e pneumáticos.',
-      icon: '🔩',
-      category: 'Manutenção',
-      price: 'A partir de R$ 350',
-      features: ['Diagnóstico Completo', 'Peças Originais', 'Garantia Estendida'],
-      isActive: true,
-      order: 4,
-      image: '/services/manutencao-cilindros.jpg'
-    },
-    {
-      id: 5,
-      name: 'Fabricação de Unidades',
-      description: 'Fabricação sob medida de unidades hidráulicas para aplicações industriais específicas.',
-      icon: '⚙️',
-      category: 'Fabricação',
-      price: 'Sob Consulta',
-      features: ['Sob Medida', 'Testes Rigorosos', 'Certificação'],
-      isActive: true,
-      order: 5,
-      image: '/services/fabricacao-unidades.jpg'
-    },
-    {
-      id: 6,
-      name: 'Consertos de Bombas',
-      description: 'Reparo especializado em bombas hidráulicas de diversos tipos e marcas.',
-      icon: '🔄',
-      category: 'Manutenção',
-      price: 'A partir de R$ 450',
-      features: ['Diagnóstico Gratuito', 'Orçamento Sem Compromisso', 'Garantia'],
-      isActive: true,
-      order: 6,
-      image: '/services/consertos-bombas.jpg'
-    },
-    {
-      id: 7,
-      name: 'Instalação de Tubulações',
-      description: 'Instalação profissional de sistemas de tubulação hidráulica e pneumática.',
-      icon: '🔧',
-      category: 'Instalação',
-      price: 'Por metro linear',
-      features: ['Projeto Incluso', 'Materiais de Qualidade', 'Teste de Pressão'],
-      isActive: true,
-      order: 7,
-      image: '/services/instalacao-tubulacoes.jpg'
-    }
-  ])
+  const [services, setServices] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
+  useEffect(() => {
+    const fetchServices = async () => {
+      setLoading(true)
+      try {
+        const { data, error } = await supabase
+          .from("services")
+          .select("*")
+          .order("display_order", { ascending: true })
+
+        if (error) throw error
+
+        setServices(data.map(service => ({
+          ...service,
+          imageUrl: service.image_url,
+          isActive: service.is_active,
+          displayOrder: service.display_order,
+          features: service.features // Assuming features are stored as a JSON array or similar
+        })))
+      } catch (error) {
+        console.error("Erro ao carregar serviços:", error)
+        setError(error.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchServices()
+  }, [])
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedService, setSelectedService] = useState(null)
