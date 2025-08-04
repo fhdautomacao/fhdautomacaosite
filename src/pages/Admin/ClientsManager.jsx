@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Users, 
-  Edit, 
-  Trash2, 
-  Plus, 
+import {
+  Users,
+  Edit,
+  Trash2,
+  Plus,
   Save,
   Search,
   Building,
@@ -42,7 +42,6 @@ const ClientsManager = () => {
     } finally {
       setLoading(false)
     }
-  }
   }
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -410,6 +409,6 @@ const ClientsManager = () => {
       )}
     </div>
   )
+}
 
 export default ClientsManager
-
