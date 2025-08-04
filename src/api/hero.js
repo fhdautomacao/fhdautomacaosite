@@ -10,11 +10,10 @@ export const heroAPI = {
         hero_stats(*),
         hero_features(*)
       `)
-      .eq('is_visible', true)
-      .single()
-    
-    if (error) throw error
-    return data
+      .eq('is_visible', true);
+
+    if (error) throw error;
+    return data;
   },
 
   // Atualizar conteúdo hero

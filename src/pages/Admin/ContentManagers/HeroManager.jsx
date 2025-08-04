@@ -29,12 +29,19 @@ const HeroManager = () => {
     const fetchHeroData = async () => {
       setLoading(true)
       try {
-        const { data: heroContent, error: heroError } = await supabase
+        const { data: heroContentArray, error: heroError } = await supabase
           .from("hero_content")
           .select("*, hero_stats(*), hero_features(*)")
-          .single()
 
         if (heroError) throw heroError
+
+        const heroContent = heroContentArray[0] // Pega o primeiro item do array
+
+        if (!heroContent) {
+          setError("Nenhum conteúdo Hero encontrado. Por favor, adicione um.")
+          setLoading(false)
+          return
+        }
 
         const formattedHeroData = {
           ...heroContent,
