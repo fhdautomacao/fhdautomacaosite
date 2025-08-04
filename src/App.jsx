@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
-import Header from '@/components/layout/Header'
+import Header from '@/components/layout/HeaderImproved'
 import Footer from '@/components/layout/Footer'
 import HomePage from '@/pages/HomePage'
 import AboutPage from '@/pages/AboutPage'
