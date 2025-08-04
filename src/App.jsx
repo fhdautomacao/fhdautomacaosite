@@ -33,7 +33,9 @@ function App() {
               path="/admin-fhd"
               element={
                 <ProtectedRoute>
-                  <AdminPageNew />
+                  <SidebarProvider>
+                    <AdminPageNew />
+                  </SidebarProvider>
                 </ProtectedRoute>
               }
             />
