@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
-import {
-  Shield,
+import { 
+  Shield, 
   BarChart3,
   FileText,
   Target,
@@ -35,9 +35,8 @@ import {
   Bell
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, useSidebar } from '@/components/ui/sidebar'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { useAuth } from '@/contexts/AuthContext'
@@ -52,9 +51,9 @@ import HeroManager from './ContentManagers/HeroManager'
 import ServicesManager from './ContentManagers/ServicesManager'
 
 const AdminPageNew = () => {
-  const [activeSection, setActiveSection] = useState("dashboard")
+  const [activeSection, setActiveSection] = useState('dashboard')
+  const [sidebarOpen, setSidebarOpen] = useState(true)
   const { logout } = useAuth()
-  const { open, toggleSidebar } = useSidebar()
 
   const handleLogout = () => {
     logout()
@@ -496,8 +495,8 @@ const AdminPageNew = () => {
               <h3 className="text-lg font-medium text-gray-900 mb-2">
                 Seção em Desenvolvimento
               </h3>
-              <p className="text-sm text-gray-600">
-                Esta seção ainda está em construção. Volte em breve!
+              <p className="text-gray-600">
+                Esta funcionalidade será implementada em breve.
               </p>
             </div>
           </div>
@@ -506,93 +505,152 @@ const AdminPageNew = () => {
   }
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <>
       <Helmet>
         <title>Administração - FHD Automação Industrial</title>
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
-      <div className="flex min-h-screen bg-gray-100">
+
+      <div className="min-h-screen bg-gray-50 flex">
         {/* Sidebar */}
-        <Sidebar className="w-64 bg-gray-800 text-white flex-shrink-0">
-          <SidebarHeader className="p-4 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Shield className="h-6 w-6 text-blue-400" />
-              <h2 className="text-xl font-semibold">Admin FHD</h2>
-            </div>
-            <Button variant="ghost" size="icon" onClick={toggleSidebar}>
-              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
-          </SidebarHeader>
-          <SidebarContent className="flex-1 overflow-y-auto">
-            <SidebarMenu>
-              {navigationItems.map((item) => (
-                <React.Fragment key={item.id}>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      onClick={() => setActiveSection(item.id)}
-                      isActive={activeSection === item.id}
-                    >
-                      <item.icon className="h-5 w-5 mr-3" />
-                      {open && item.label}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  {item.children && (
-                    <ul className="ml-8 space-y-1">
-                      {item.children.map((child) => (
-                        <li key={child.id}>
-                          <SidebarMenuButton
-                            onClick={() => setActiveSection(child.id)}
-                            isActive={activeSection === child.id}
-                          >
-                            <child.icon className="h-4 w-4 mr-2" />
-                            {open && child.label}
-                          </SidebarMenuButton>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </React.Fragment>
-              ))}
-            </SidebarMenu>
-          </SidebarContent>
-          <div className="p-4 border-t border-gray-700">
-            <div className="flex items-center space-x-3 mb-3">
-              <Avatar>
-                <AvatarFallback>AD</AvatarFallback>
-              </Avatar>
+        <motion.aside
+          initial={{ x: -300 }}
+          animate={{ x: sidebarOpen ? 0 : -300 }}
+          transition={{ duration: 0.3 }}
+          className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <div className="flex items-center justify-between h-16 px-6 border-b">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-blue-600 rounded-lg">
+                <Shield className="h-6 w-6 text-white" />
+              </div>
               <div>
-                <p className="text-sm font-medium">Admin</p>
-                <p className="text-xs text-gray-400">admin@fhdautomacao.com.br</p>
+                <h1 className="text-lg font-bold text-gray-900">Admin FHD</h1>
               </div>
             </div>
-            <Button variant="ghost" className="w-full justify-start text-red-400 hover:text-red-300" onClick={handleLogout}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <nav className="mt-6 px-3">
+            <div className="space-y-1">
+              {navigationItems.map((item) => (
+                <div key={item.id}>
+                  <Button
+                    variant={activeSection === item.id ? "secondary" : "ghost"}
+                    className="w-full justify-start"
+                    onClick={() => setActiveSection(item.id)}
+                  >
+                    <item.icon className="h-4 w-4 mr-3" />
+                    {item.label}
+                  </Button>
+                  {item.children && (
+                    <div className="ml-6 mt-1 space-y-1">
+                      {item.children.map((child) => (
+                        <Button
+                          key={child.id}
+                          variant={activeSection === child.id ? "secondary" : "ghost"}
+                          size="sm"
+                          className="w-full justify-start"
+                          onClick={() => setActiveSection(child.id)}
+                        >
+                          <child.icon className="h-4 w-4 mr-3" />
+                          {child.label}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </nav>
+
+          <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
+            <div className="flex items-center space-x-3 mb-3">
+              <Avatar>
+                <AvatarFallback>A</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900">Admin</p>
+                <p className="text-xs text-gray-500 truncate">admin@fhdautomacao.com.br</p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={handleLogout}
+            >
               <LogOut className="h-4 w-4 mr-2" />
               Sair
             </Button>
           </div>
-        </Sidebar>
+        </motion.aside>
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <header className="bg-white shadow-sm p-4 flex items-center justify-between">
-            <h1 className="text-2xl font-semibold text-gray-800">FHD Automação Industrial</h1>
+          {/* Header */}
+          <header className="bg-white shadow-sm border-b h-16 flex items-center justify-between px-6">
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="icon">
-                <Bell className="h-5 w-5 text-gray-600" />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden"
+              >
+                <Menu className="h-4 w-4" />
               </Button>
-              <Avatar>
-                <AvatarFallback>AD</AvatarFallback>
-              </Avatar>
+              <div className="flex items-center space-x-2">
+                <Home className="h-4 w-4 text-gray-400" />
+                <span className="text-sm text-gray-600">/</span>
+                <span className="text-sm font-medium text-gray-900 capitalize">
+                  {activeSection}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Button variant="outline" size="sm">
+                <Eye className="h-4 w-4 mr-2" />
+                Ver Site
+              </Button>
+              <Button variant="outline" size="sm">
+                <Bell className="h-4 w-4" />
+              </Button>
             </div>
           </header>
-          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
-            {renderContent()}
+
+          {/* Content */}
+          <main className="flex-1 overflow-y-auto p-6">
+            <motion.div
+              key={activeSection}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {renderContent()}
+            </motion.div>
           </main>
         </div>
+
+        {/* Overlay for mobile */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
       </div>
-    </SidebarProvider>
+    </>
   )
 }
 
+export default AdminPageNew
 
-
-export default AdminPageNew;
