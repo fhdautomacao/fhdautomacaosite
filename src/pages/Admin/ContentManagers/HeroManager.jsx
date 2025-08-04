@@ -281,7 +281,6 @@ const HeroManager = () => {
               </div>
             </motion.div>
           ) : (
-            /* Edit Mode */
             <Tabs defaultValue="content" className="space-y-6">
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="content">
