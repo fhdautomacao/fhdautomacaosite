@@ -9,7 +9,7 @@ import { Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const LoginPage = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,12 +21,17 @@ const LoginPage = () => {
     setError('');
     setLoading(true);
 
-    const result = login(username, password);
-    
-    if (result.success) {
-      navigate('/admin-fhd'); // Redireciona para a página de administração após o login
-    } else {
-      setError(result.error);
+    try {
+      const result = await login(email, password);
+      
+      if (result.success) {
+        navigate('/admin-fhd'); // Redireciona para a página de administração após o login
+      } else {
+        setError(result.error);
+      }
+    } catch (error) {
+      console.error('Erro no login:', error);
+      setError('Erro interno. Tente novamente.');
     }
     
     setLoading(false);
@@ -55,15 +60,15 @@ const LoginPage = () => {
           <CardContent>
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
-                <Label htmlFor="username">Nome de Usuário</Label>
+                <Label htmlFor="email">E-mail</Label>
                 <Input
-                  id="username"
-                  name="username"
-                  type="text"
-                  autoComplete="username"
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
                   required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="mt-1"
                 />
               </div>
