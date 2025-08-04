@@ -1,7 +1,51 @@
+import { useState } from 'react'
 import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { contactAPI } from '../../api/contact'
 
 const Contact = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    company: '',
+    email: '',
+    phone: '',
+    service_of_interest: '',
+    message: ''
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState(null)
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setSubmitStatus(null)
+
+    try {
+      await contactAPI.sendMessage(formData)
+      setSubmitStatus('success')
+      setFormData({
+        name: '',
+        company: '',
+        email: '',
+        phone: '',
+        service_of_interest: '',
+        message: ''
+      })
+    } catch (error) {
+      console.error('Erro ao enviar mensagem:', error)
+      setSubmitStatus('error')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
   return (
     <section id="contato" className="py-20 bg-white">
       <div className="container mx-auto px-4">

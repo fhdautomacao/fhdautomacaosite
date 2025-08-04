@@ -1,12 +1,32 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, Filter, Package, ArrowRight, CheckCircle, X } from 'lucide-react'
+import { productsAPI } from '../../api/products'
 
 const Products = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('Todos')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const products = [
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await productsAPI.getAll()
+        setProducts(data)
+      } catch (error) {
+        console.error('Erro ao carregar produtos:', error)
+        // Fallback para dados estáticos em caso de erro
+        setProducts(fallbackProducts)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProducts()
+  }, [])
+
+  const fallbackProducts = [
     {
       name: "Unidade Hidráulica",
       category: "Sistemas Hidráulicos",

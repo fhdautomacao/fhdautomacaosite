@@ -1,57 +1,80 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react'
+import { authAPI } from '../api/auth'
 
-const AuthContext = createContext();
+const AuthContext = createContext()
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider')
   }
-  return context;
-};
+  return context
+}
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Verifica se há um token de autenticação no localStorage
-    const token = localStorage.getItem('admin_token');
-    if (token) {
-      setIsAuthenticated(true);
+    // Verificar sessão atual
+    const checkAuth = async () => {
+      try {
+        const session = await authAPI.getCurrentSession()
+        if (session?.user) {
+          setUser(session.user)
+        }
+      } catch (error) {
+        console.error('Erro ao verificar autenticação:', error)
+      } finally {
+        setLoading(false)
+      }
     }
-    setLoading(false);
-  }, []);
 
-  const login = (username, password) => {
-    // Lógica de autenticação simples para demonstração
-    // Substituir por integração com Supabase futuramente
-    if (username === 'admin' && password === 'admin') {
-      const token = 'admin_token_' + Date.now(); // Token simples para demonstração
-      localStorage.setItem('admin_token', token);
-      setIsAuthenticated(true);
-      return { success: true };
-    } else {
-      return { success: false, error: 'Nome de usuário ou senha inválidos.' };
+    checkAuth()
+
+    // Escutar mudanças de autenticação
+    const { data: { subscription } } = authAPI.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUser(session.user)
+      } else {
+        setUser(null)
+      }
+      setLoading(false)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const login = async (email, password) => {
+    try {
+      const { user } = await authAPI.signIn(email, password)
+      setUser(user)
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: error.message }
     }
-  };
+  }
 
-  const logout = () => {
-    localStorage.removeItem('admin_token');
-    setIsAuthenticated(false);
-  };
+  const logout = async () => {
+    try {
+      await authAPI.signOut()
+      setUser(null)
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error)
+    }
+  }
 
   const value = {
-    isAuthenticated,
+    user,
     login,
     logout,
     loading
-  };
+  }
 
   return (
     <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
-  );
-};
+  )
+}
 

@@ -1,11 +1,31 @@
 import { useState, useEffect } from 'react'
 import { Users, Star, TrendingUp, Award, ArrowRight, Quote } from 'lucide-react'
+import { clientsAPI } from '../../api/clients'
 
 const Clients = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0)
+  const [clients, setClients] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const data = await clientsAPI.getAll()
+        setClients(data)
+      } catch (error) {
+        console.error('Erro ao carregar clientes:', error)
+        // Fallback para dados estáticos em caso de erro
+        setClients(fallbackClients)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchClients()
+  }, [])
 
   // Placeholder client data - in a real implementation, these would be actual client logos/names
-  const clients = [
+  const fallbackClients = [
     { name: "Empresa Industrial A", logo: "🏭", sector: "Industrial" },
     { name: "Metalúrgica B", logo: "⚙️", sector: "Metalurgia" },
     { name: "Automobilística C", logo: "🚗", sector: "Automotivo" },

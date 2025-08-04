@@ -1,13 +1,33 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, X, Camera, Filter, ArrowRight } from 'lucide-react'
+import { galleryAPI } from '../../api/gallery'
 
 const Gallery = () => {
   const [selectedImage, setSelectedImage] = useState(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedCategory, setSelectedCategory] = useState('Todos')
+  const [images, setImages] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchGalleryItems = async () => {
+      try {
+        const data = await galleryAPI.getAll()
+        setImages(data)
+      } catch (error) {
+        console.error('Erro ao carregar galeria:', error)
+        // Fallback para dados estáticos em caso de erro
+        setImages(fallbackImages)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchGalleryItems()
+  }, [])
 
   // Placeholder images with categories - in a real implementation, these would be actual images
-  const images = [
+  const fallbackImages = [
     {
       id: 1,
       title: "Unidade Hidráulica em Operação",
