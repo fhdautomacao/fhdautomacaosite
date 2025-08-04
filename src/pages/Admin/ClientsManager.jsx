@@ -410,7 +410,6 @@ const ClientsManager = () => {
       )}
     </div>
   )
-}
 
 export default ClientsManager
 
