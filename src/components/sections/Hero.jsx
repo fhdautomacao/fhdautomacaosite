@@ -55,16 +55,16 @@ const Hero = () => {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4 md:gap-8 py-8">
               <div className="text-center">
-                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">500+</div>
-                <div className="text-blue-300 text-xs md:text-sm">Projetos Realizados</div>
+                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">25%</div>
+                <div className="text-blue-300 text-xs md:text-sm">Redução de Custos</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">100+</div>
-                <div className="text-blue-300 text-xs md:text-sm">Clientes Atendidos</div>
+                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">30+</div>
+                <div className="text-blue-300 text-xs md:text-sm">Produtos no Catálogo</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">98%</div>
-                <div className="text-blue-300 text-xs md:text-sm">Satisfação</div>
+                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">10+</div>
+                <div className="text-blue-300 text-xs md:text-sm">Setores Atendidos</div>
               </div>
             </div>
 
@@ -186,4 +186,3 @@ const Hero = () => {
 }
 
 export default Hero
-
