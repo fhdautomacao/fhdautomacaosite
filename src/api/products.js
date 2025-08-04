@@ -6,7 +6,7 @@ export const productsAPI = {
     const { data, error } = await supabase
       .from('products')
       .select('*')
-      .order('name')
+      .order('display_order', { ascending: true })
     
     if (error) throw error
     return data
@@ -57,7 +57,6 @@ export const productsAPI = {
       .eq('id', id)
     
     if (error) throw error
-    return true
   },
 
   // Buscar produtos por categoria
@@ -66,7 +65,46 @@ export const productsAPI = {
       .from('products')
       .select('*')
       .eq('category', category)
-      .order('name')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+    
+    if (error) throw error
+    return data
+  },
+
+  // Buscar produtos ativos
+  async getActive() {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+    
+    if (error) throw error
+    return data
+  },
+
+  // Atualizar ordem de exibição
+  async updateDisplayOrder(id, displayOrder) {
+    const { data, error } = await supabase
+      .from('products')
+      .update({ display_order: displayOrder })
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  },
+
+  // Ativar/desativar produto
+  async toggleActive(id, isActive) {
+    const { data, error } = await supabase
+      .from('products')
+      .update({ is_active: isActive })
+      .eq('id', id)
+      .select()
+      .single()
     
     if (error) throw error
     return data

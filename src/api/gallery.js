@@ -6,7 +6,7 @@ export const galleryAPI = {
     const { data, error } = await supabase
       .from('gallery_items')
       .select('*')
-      .order('title')
+      .order('display_order', { ascending: true })
     
     if (error) throw error
     return data
@@ -57,7 +57,6 @@ export const galleryAPI = {
       .eq('id', id)
     
     if (error) throw error
-    return true
   },
 
   // Buscar itens da galeria por categoria
@@ -66,7 +65,46 @@ export const galleryAPI = {
       .from('gallery_items')
       .select('*')
       .eq('category', category)
-      .order('title')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+    
+    if (error) throw error
+    return data
+  },
+
+  // Buscar itens ativos da galeria
+  async getActive() {
+    const { data, error } = await supabase
+      .from('gallery_items')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+    
+    if (error) throw error
+    return data
+  },
+
+  // Atualizar ordem de exibição
+  async updateDisplayOrder(id, displayOrder) {
+    const { data, error } = await supabase
+      .from('gallery_items')
+      .update({ display_order: displayOrder })
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  },
+
+  // Ativar/desativar item da galeria
+  async toggleActive(id, isActive) {
+    const { data, error } = await supabase
+      .from('gallery_items')
+      .update({ is_active: isActive })
+      .eq('id', id)
+      .select()
+      .single()
     
     if (error) throw error
     return data

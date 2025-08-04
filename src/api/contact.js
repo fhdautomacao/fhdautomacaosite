@@ -1,19 +1,7 @@
 import { supabase } from '../lib/supabase'
 
 export const contactAPI = {
-  // Enviar mensagem de contato
-  async sendMessage(message) {
-    const { data, error } = await supabase
-      .from('contact_messages')
-      .insert([message])
-      .select()
-      .single()
-    
-    if (error) throw error
-    return data
-  },
-
-  // Buscar todas as mensagens (apenas para admin)
+  // Buscar todas as mensagens de contato
   async getAllMessages() {
     const { data, error } = await supabase
       .from('contact_messages')
@@ -24,7 +12,7 @@ export const contactAPI = {
     return data
   },
 
-  // Buscar mensagem por ID (apenas para admin)
+  // Buscar mensagem por ID
   async getMessageById(id) {
     const { data, error } = await supabase
       .from('contact_messages')
@@ -36,7 +24,32 @@ export const contactAPI = {
     return data
   },
 
-  // Deletar mensagem (apenas para admin)
+  // Criar nova mensagem de contato
+  async createMessage(message) {
+    const { data, error } = await supabase
+      .from('contact_messages')
+      .insert([message])
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  },
+
+  // Marcar mensagem como lida
+  async markAsRead(id) {
+    const { data, error } = await supabase
+      .from('contact_messages')
+      .update({ is_read: true })
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  },
+
+  // Deletar mensagem
   async deleteMessage(id) {
     const { error } = await supabase
       .from('contact_messages')
@@ -44,7 +57,54 @@ export const contactAPI = {
       .eq('id', id)
     
     if (error) throw error
-    return true
+  },
+
+  // Buscar mensagens não lidas
+  async getUnreadMessages() {
+    const { data, error } = await supabase
+      .from('contact_messages')
+      .select('*')
+      .eq('is_read', false)
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    return data
+  },
+
+  // Buscar informações de contato
+  async getContactInfo() {
+    const { data, error } = await supabase
+      .from('contact_info')
+      .select('*')
+      .single()
+    
+    if (error) throw error
+    return data
+  },
+
+  // Atualizar informações de contato
+  async updateContactInfo(id, updates) {
+    const { data, error } = await supabase
+      .from('contact_info')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  },
+
+  // Criar informações de contato
+  async createContactInfo(contactInfo) {
+    const { data, error } = await supabase
+      .from('contact_info')
+      .insert([contactInfo])
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
   }
 }
 

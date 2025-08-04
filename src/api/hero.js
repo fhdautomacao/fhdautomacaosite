@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabase'
 
 export const heroAPI = {
-  // Buscar conteúdo do hero
+  // Buscar conteúdo hero
   async getContent() {
     const { data, error } = await supabase
       .from('hero_content')
@@ -10,18 +10,19 @@ export const heroAPI = {
         hero_stats(*),
         hero_features(*)
       `)
+      .eq('is_visible', true)
       .single()
     
     if (error) throw error
     return data
   },
 
-  // Atualizar conteúdo do hero
-  async updateContent(content) {
+  // Atualizar conteúdo hero
+  async updateContent(id, updates) {
     const { data, error } = await supabase
       .from('hero_content')
-      .update(content)
-      .eq('id', content.id)
+      .update(updates)
+      .eq('id', id)
       .select()
       .single()
     
@@ -29,7 +30,7 @@ export const heroAPI = {
     return data
   },
 
-  // Criar novo conteúdo do hero
+  // Criar conteúdo hero
   async createContent(content) {
     const { data, error } = await supabase
       .from('hero_content')
@@ -41,56 +42,98 @@ export const heroAPI = {
     return data
   },
 
-  // Gerenciar estatísticas do hero
-  async updateStats(heroId, stats) {
-    // Primeiro, deletar estatísticas existentes
-    await supabase
-      .from('hero_stats')
-      .delete()
-      .eq('hero_id', heroId)
-
-    // Inserir novas estatísticas
-    const statsArray = Object.entries(stats).map(([key, value], index) => ({
-      hero_id: heroId,
-      stat_key: key,
-      value: value.value,
-      label: value.label,
-      display_order: index
-    }))
-
+  // Buscar estatísticas do hero
+  async getStats(heroId) {
     const { data, error } = await supabase
       .from('hero_stats')
-      .insert(statsArray)
-      .select()
+      .select('*')
+      .eq('hero_id', heroId)
+      .order('display_order', { ascending: true })
     
     if (error) throw error
     return data
   },
 
-  // Gerenciar características do hero
-  async updateFeatures(heroId, features) {
-    // Primeiro, deletar características existentes
-    await supabase
-      .from('hero_features')
-      .delete()
-      .eq('hero_id', heroId)
-
-    // Inserir novas características
-    const featuresArray = features.map((feature, index) => ({
-      hero_id: heroId,
-      icon: feature.icon,
-      title: feature.title,
-      description: feature.description,
-      display_order: index
-    }))
-
+  // Criar estatística do hero
+  async createStat(stat) {
     const { data, error } = await supabase
-      .from('hero_features')
-      .insert(featuresArray)
+      .from('hero_stats')
+      .insert([stat])
       .select()
+      .single()
     
     if (error) throw error
     return data
+  },
+
+  // Atualizar estatística do hero
+  async updateStat(id, updates) {
+    const { data, error } = await supabase
+      .from('hero_stats')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  },
+
+  // Deletar estatística do hero
+  async deleteStat(id) {
+    const { error } = await supabase
+      .from('hero_stats')
+      .delete()
+      .eq('id', id)
+    
+    if (error) throw error
+  },
+
+  // Buscar características do hero
+  async getFeatures(heroId) {
+    const { data, error } = await supabase
+      .from('hero_features')
+      .select('*')
+      .eq('hero_id', heroId)
+      .order('display_order', { ascending: true })
+    
+    if (error) throw error
+    return data
+  },
+
+  // Criar característica do hero
+  async createFeature(feature) {
+    const { data, error } = await supabase
+      .from('hero_features')
+      .insert([feature])
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  },
+
+  // Atualizar característica do hero
+  async updateFeature(id, updates) {
+    const { data, error } = await supabase
+      .from('hero_features')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  },
+
+  // Deletar característica do hero
+  async deleteFeature(id) {
+    const { error } = await supabase
+      .from('hero_features')
+      .delete()
+      .eq('id', id)
+    
+    if (error) throw error
   }
 }
 

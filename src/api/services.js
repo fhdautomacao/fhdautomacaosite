@@ -6,19 +6,7 @@ export const servicesAPI = {
     const { data, error } = await supabase
       .from('services')
       .select('*')
-      .order('display_order')
-    
-    if (error) throw error
-    return data
-  },
-
-  // Buscar serviços ativos
-  async getActive() {
-    const { data, error } = await supabase
-      .from('services')
-      .select('*')
-      .eq('is_active', true)
-      .order('display_order')
+      .order('display_order', { ascending: true })
     
     if (error) throw error
     return data
@@ -69,7 +57,6 @@ export const servicesAPI = {
       .eq('id', id)
     
     if (error) throw error
-    return true
   },
 
   // Buscar serviços por categoria
@@ -79,25 +66,48 @@ export const servicesAPI = {
       .select('*')
       .eq('category', category)
       .eq('is_active', true)
-      .order('display_order')
+      .order('display_order', { ascending: true })
     
     if (error) throw error
     return data
   },
 
-  // Atualizar ordem dos serviços
-  async updateOrder(services) {
-    const updates = services.map((service, index) => ({
-      id: service.id,
-      display_order: index
-    }))
-
-    const { error } = await supabase
+  // Buscar serviços ativos
+  async getActive() {
+    const { data, error } = await supabase
       .from('services')
-      .upsert(updates)
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
     
     if (error) throw error
-    return true
+    return data
+  },
+
+  // Atualizar ordem de exibição
+  async updateDisplayOrder(id, displayOrder) {
+    const { data, error } = await supabase
+      .from('services')
+      .update({ display_order: displayOrder })
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  },
+
+  // Ativar/desativar serviço
+  async toggleActive(id, isActive) {
+    const { data, error } = await supabase
+      .from('services')
+      .update({ is_active: isActive })
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
   }
 }
 

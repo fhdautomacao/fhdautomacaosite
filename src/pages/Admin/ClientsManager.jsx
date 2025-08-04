@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Users, 
@@ -11,7 +10,8 @@ import {
   Building,
   Mail,
   Phone,
-  MapPin
+  MapPin,
+  Loader2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,6 +20,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { clientsAPI } from '@/api/clients'
 
 const ClientsManager = () => {
   const [clients, setClients] = useState([])
@@ -27,32 +28,23 @@ const ClientsManager = () => {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    const fetchClients = async () => {
-      setLoading(true)
-      try {
-        const { data, error } = await supabase
-          .from("clients")
-          .select("*")
-          .order("display_order", { ascending: true })
-
-        if (error) throw error
-
-        setClients(data.map(client => ({
-          ...client,
-          logo: client.logo_url,
-          addedDate: client.added_date,
-          displayOrder: client.display_order,
-        })))
-      } catch (error) {
-        console.error("Erro ao carregar clientes:", error)
-        setError(error.message)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchClients()
+    loadClients()
   }, [])
+
+  const loadClients = async () => {
+    try {
+      setLoading(true)
+      const data = await clientsAPI.getAll()
+      setClients(data)
+    } catch (error) {
+      console.error('Erro ao carregar clientes:', error)
+      setError('Erro ao carregar clientes')
+    } finally {
+      setLoading(false)
+    }
+  }
+  }
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedClient, setSelectedClient] = useState(null)
@@ -76,69 +68,34 @@ const ClientsManager = () => {
 
   const [newClient, setNewClient] = useState({
     name: '',
-    sector: '',
-    description: '',
-    contact: '',
-    phone: '',
-    location: '',
-    logo: null
+    industry: '',
+    logo_url: ''
   })
 
   const filteredClients = clients.filter(client => {
-    const matchesSearch = client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         client.description.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesSector = selectedSector === 'all' || client.sector === selectedSector
+    const matchesSearch = client.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSector = selectedSector === 'all' || client.industry === selectedSector
     return matchesSearch && matchesSector
   })
 
   const handleAddClient = async () => {
-    if (newClient.name && newClient.sector && newClient.description) {
+    if (newClient.name && newClient.industry) {
       try {
-        let logoUrl = null;
-        if (newClient.logo) {
-          const file = newClient.logo;
-          const filePath = `client_logos/${Date.now()}_${file.name}`;
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from("arquivos")
-            .upload(filePath, file);
-
-          if (uploadError) throw uploadError;
-
-          const { data: publicUrlData } = supabase.storage
-            .from("arquivos")
-            .getPublicUrl(filePath);
-          logoUrl = publicUrlData.publicUrl;
+        const clientData = {
+          name: newClient.name,
+          industry: newClient.industry,
+          logo_url: newClient.logo_url || null,
+          is_active: true,
+          display_order: clients.length
         }
-
-        const { data, error } = await supabase
-          .from("clients")
-          .insert({
-            name: newClient.name,
-            sector: newClient.sector,
-            description: newClient.description,
-            contact: newClient.contact,
-            phone: newClient.phone,
-            location: newClient.location,
-            logo_url: logoUrl,
-            added_date: new Date().toISOString().split("T")[0],
-            display_order: clients.length + 1,
-          })
-          .select();
-
-        if (error) throw error;
-
-        setClients([...clients, {
-          ...data[0],
-          logo: data[0].logo_url,
-          addedDate: data[0].added_date,
-          displayOrder: data[0].display_order,
-        }]);
-        setNewClient({ name: ", sector: ", description: ", contact: ", phone: ", location: ", logo: null });
-        setIsAddModalOpen(false);
-        alert("Cliente adicionado com sucesso!");
+        
+        await clientsAPI.create(clientData)
+        await loadClients() // Recarregar lista
+        setNewClient({ name: '', industry: '', logo_url: '' })
+        setIsAddModalOpen(false)
       } catch (error) {
-        console.error("Erro ao adicionar cliente:", error);
-        alert("Erro ao adicionar cliente: " + error.message);
+        console.error('Erro ao adicionar cliente:', error)
+        setError('Erro ao adicionar cliente')
       }
     }
   }
@@ -146,437 +103,311 @@ const ClientsManager = () => {
   const handleEditClient = async () => {
     if (selectedClient) {
       try {
-        let logoUrl = selectedClient.logo; // Keep existing logo if no new file is uploaded
-        if (selectedClient.logo instanceof File) {
-          const file = selectedClient.logo;
-          const filePath = `client_logos/${Date.now()}_${file.name}`;
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from("arquivos")
-            .upload(filePath, file);
-
-          if (uploadError) throw uploadError;
-
-          const { data: publicUrlData } = supabase.storage
-            .from("arquivos")
-            .getPublicUrl(filePath);
-          logoUrl = publicUrlData.publicUrl;
+        const updates = {
+          name: selectedClient.name,
+          industry: selectedClient.industry,
+          logo_url: selectedClient.logo_url
         }
-
-        const { error } = await supabase
-          .from("clients")
-          .update({
-            name: selectedClient.name,
-            sector: selectedClient.sector,
-            description: selectedClient.description,
-            contact: selectedClient.contact,
-            phone: selectedClient.phone,
-            location: selectedClient.location,
-            logo_url: logoUrl,
-            display_order: selectedClient.displayOrder,
-          })
-          .eq("id", selectedClient.id);
-
-        if (error) throw error;
-
-        // Re-fetch clients to update the list
-        const { data, error: fetchError } = await supabase
-          .from("clients")
-          .select("*")
-          .order("display_order", { ascending: true });
-
-        if (fetchError) throw fetchError;
-
-        setClients(data.map(client => ({
-          ...client,
-          logo: client.logo_url,
-          addedDate: client.added_date,
-          displayOrder: client.display_order,
-        })));
-        setIsEditModalOpen(false);
-        setSelectedClient(null);
-        alert("Cliente atualizado com sucesso!");
+        
+        await clientsAPI.update(selectedClient.id, updates)
+        await loadClients() // Recarregar lista
+        setIsEditModalOpen(false)
+        setSelectedClient(null)
       } catch (error) {
-        console.error("Erro ao atualizar cliente:", error);
-        alert("Erro ao atualizar cliente: " + error.message);
+        console.error('Erro ao editar cliente:', error)
+        setError('Erro ao editar cliente')
       }
     }
   }
 
   const handleDeleteClient = async (id) => {
-    try {
-      const { error } = await supabase
-        .from("clients")
-        .delete()
-        .eq("id", id)
-
-      if (error) throw error
-
-      // Re-fetch clients to update the list
-      const { data, error: fetchError } = await supabase
-        .from("clients")
-        .select("*")
-        .order("display_order", { ascending: true })
-
-      if (fetchError) throw fetchError
-
-      setClients(data.map(client => ({
-        ...client,
-        logo: client.logo_url,
-        addedDate: client.added_date,
-        displayOrder: client.display_order,
-      })))
-      alert("Cliente excluído com sucesso!")
-    } catch (error) {
-      console.error("Erro ao excluir cliente:", error)
-      alert("Erro ao excluir cliente: " + error.message)
+    if (confirm('Tem certeza que deseja excluir este cliente?')) {
+      try {
+        await clientsAPI.delete(id)
+        await loadClients() // Recarregar lista
+      } catch (error) {
+        console.error('Erro ao excluir cliente:', error)
+        setError('Erro ao excluir cliente')
+      }
     }
   }
 
   const openEditModal = (client) => {
-    setSelectedClient({ ...client, logo: null }); // Set logo to null initially to allow new file selection
-    setIsEditModalOpen(true);
-  }
-
-  const getSectorIcon = (sector) => {
-    const icons = {
-      'Industrial': '🏭',
-      'Metalurgia': '⚙️',
-      'Automotivo': '🚗',
-      'Petroquímica': '🛢️',
-      'Alimentício': '🍽️',
-      'Farmacêutico': '💊',
-      'Têxtil': '🧵',
-      'Papel': '📄',
-      'Mineração': '⛏️',
-      'Siderurgia': '🔩',
-      'Química': '🧪',
-      'Energia': '⚡'
-    }
-    return icons[sector] || '🏢'
+    setSelectedClient({ ...client })
+    setIsEditModalOpen(true)
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900">Gerenciar Clientes</h2>
-          <p className="text-gray-600">Adicione, edite ou remova clientes da seção de clientes</p>
+      {/* Loading */}
+      {loading && (
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Carregando clientes...</span>
         </div>
-        <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-green-600 hover:bg-green-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar Cliente
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Adicionar Novo Cliente</DialogTitle>
-              <DialogDescription>
-                Preencha os dados do novo cliente
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">Nome da Empresa</Label>
-                <Input
-                  id="name"
-                  value={newClient.name}
-                  onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
-                  placeholder="Nome da empresa"
-                />
-              </div>
-              <div>
-                <Label htmlFor="sector">Setor</Label>
-                <Select value={newClient.sector} onValueChange={(value) => setNewClient({ ...newClient, sector: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um setor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sectors.map(sector => (
-                      <SelectItem key={sector} value={sector}>
-                        {getSectorIcon(sector)} {sector}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="description">Descrição</Label>
-                <Textarea
-                  id="description"
-                  value={newClient.description}
-                  onChange={(e) => setNewClient({ ...newClient, description: e.target.value })}
-                  placeholder="Descrição da empresa"
-                  rows={3}
-                />
-              </div>
-              <div>
-                <Label htmlFor="contact">E-mail de Contato</Label>
-                <Input
-                  id="contact"
-                  type="email"
-                  value={newClient.contact}
-                  onChange={(e) => setNewClient({ ...newClient, contact: e.target.value })}
-                  placeholder="contato@empresa.com.br"
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Telefone</Label>
-                <Input
-                  id="phone"
-                  value={newClient.phone}
-                  onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })}
-                  placeholder="(19) 99999-9999"
-                />
-              </div>
-              <div>
-                <Label htmlFor="location">Localização</Label>
-                <Input
-                  id="location"
-                  value={newClient.location}
-                  onChange={(e) => setNewClient({ ...newClient, location: e.target.value })}
-                  placeholder="Cidade - Estado"
-                />
-              </div>
-              <div>
-                <Label htmlFor="logo">Logo da Empresa</Label>
-                <Input
-                  id="logo"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setNewClient({ ...newClient, logo: e.target.files[0] })}
-                />
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleAddClient}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Salvar
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+      )}
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <Label htmlFor="search">Buscar</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  id="search"
-                  placeholder="Buscar por nome ou descrição..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div className="sm:w-48">
-              <Label htmlFor="sector-filter">Setor</Label>
-              <Select value={selectedSector} onValueChange={setSelectedSector}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os setores</SelectItem>
-                  {sectors.map(sector => (
-                    <SelectItem key={sector} value={sector}>
-                      {getSectorIcon(sector)} {sector}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Clients Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <AnimatePresence>
-          {filteredClients.map((client) => (
-            <motion.div
-              key={client.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.2 }}
+      {/* Error */}
+      {error && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-4">
+            <p className="text-red-600">{error}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={loadClients}
+              className="mt-2"
             >
-              <Card className="overflow-hidden">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center text-2xl">
-                      {getSectorIcon(client.sector)}
-                    </div>
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">{client.name}</CardTitle>
-                      <CardDescription>{client.sector}</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-sm text-gray-600 line-clamp-2">{client.description}</p>
-                  
-                  <div className="space-y-2 text-sm text-gray-500">
-                    {client.contact && (
-                      <div className="flex items-center space-x-2">
-                        <Mail className="h-4 w-4" />
-                        <span className="truncate">{client.contact}</span>
-                      </div>
-                    )}
-                    {client.phone && (
-                      <div className="flex items-center space-x-2">
-                        <Phone className="h-4 w-4" />
-                        <span>{client.phone}</span>
-                      </div>
-                    )}
-                    {client.location && (
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="h-4 w-4" />
-                        <span>{client.location}</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <p className="text-xs text-gray-400">Adicionado em: {client.addedDate}</p>
-                  
-                  <div className="flex justify-between pt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openEditModal(client)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Editar
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteClient(client.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Excluir
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {filteredClients.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Nenhum cliente encontrado
-            </h3>
-            <p className="text-gray-600">
-              {searchTerm || selectedSector !== 'all' 
-                ? 'Tente ajustar os filtros de busca'
-                : 'Adicione o primeiro cliente'
-              }
-            </p>
+              Tentar novamente
+            </Button>
           </CardContent>
         </Card>
       )}
 
-      {/* Edit Modal */}
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Editar Cliente</DialogTitle>
-            <DialogDescription>
-              Atualize as informações do cliente
-            </DialogDescription>
-          </DialogHeader>
-          {selectedClient && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="edit-name">Nome da Empresa</Label>
-                <Input
-                  id="edit-name"
-                  value={selectedClient.name}
-                  onChange={(e) => setSelectedClient({ ...selectedClient, name: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-sector">Setor</Label>
-                <Select 
-                  value={selectedClient.sector} 
-                  onValueChange={(value) => setSelectedClient({ ...selectedClient, sector: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sectors.map(sector => (
-                      <SelectItem key={sector} value={sector}>
-                        {getSectorIcon(sector)} {sector}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="edit-description">Descrição</Label>
-                <Textarea
-                  id="edit-description"
-                  value={selectedClient.description}
-                  onChange={(e) => setSelectedClient({ ...selectedClient, description: e.target.value })}
-                  rows={3}
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-contact">E-mail de Contato</Label>
-                <Input
-                  id="edit-contact"
-                  type="email"
-                  value={selectedClient.contact}
-                  onChange={(e) => setSelectedClient({ ...selectedClient, contact: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-phone">Telefone</Label>
-                <Input
-                  id="edit-phone"
-                  value={selectedClient.phone}
-                  onChange={(e) => setSelectedClient({ ...selectedClient, phone: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-location">Localização</Label>
-                <Input
-                  id="edit-location"
-                  value={selectedClient.location}
-                  onChange={(e) => setSelectedClient({ ...selectedClient, location: e.target.value })}
-                />
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleEditClient}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Salvar Alterações
-                </Button>
-              </div>
+      {!loading && !error && (
+        <>
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900">Gerenciar Clientes</h2>
+              <p className="text-gray-600">Adicione, edite ou remova clientes da seção de clientes</p>
             </div>
+            <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-green-600 hover:bg-green-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Adicionar Cliente
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Adicionar Novo Cliente</DialogTitle>
+                  <DialogDescription>
+                    Preencha os dados do novo cliente
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="name">Nome da Empresa</Label>
+                    <Input
+                      id="name"
+                      value={newClient.name}
+                      onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
+                      placeholder="Nome da empresa"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="industry">Setor</Label>
+                    <Select value={newClient.industry} onValueChange={(value) => setNewClient({ ...newClient, industry: value })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um setor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sectors.map(sector => (
+                          <SelectItem key={sector} value={sector}>
+                            {sector}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="logo_url">URL do Logo</Label>
+                    <Input
+                      id="logo_url"
+                      value={newClient.logo_url}
+                      onChange={(e) => setNewClient({ ...newClient, logo_url: e.target.value })}
+                      placeholder="https://exemplo.com/logo.png"
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={handleAddClient}>
+                      <Save className="h-4 w-4 mr-2" />
+                      Salvar
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Filters */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <Label htmlFor="search">Buscar</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      id="search"
+                      placeholder="Buscar por nome..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                <div className="sm:w-48">
+                  <Label htmlFor="sector-filter">Setor</Label>
+                  <Select value={selectedSector} onValueChange={setSelectedSector}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os setores</SelectItem>
+                      {sectors.map(sector => (
+                        <SelectItem key={sector} value={sector}>
+                          {sector}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Clients Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence>
+              {filteredClients.map((client) => (
+                <motion.div
+                  key={client.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Card className="overflow-hidden">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                          {client.logo_url ? (
+                            <img src={client.logo_url} alt={client.name} className="w-full h-full object-contain rounded-lg" />
+                          ) : (
+                            <Building className="h-6 w-6 text-gray-400" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <CardTitle className="text-lg">{client.name}</CardTitle>
+                          <CardDescription>{client.industry}</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <p className="text-xs text-gray-400">
+                        Adicionado em: {new Date(client.created_at).toLocaleDateString('pt-BR')}
+                      </p>
+                      
+                      <div className="flex justify-between pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditModal(client)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Editar
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteClient(client.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Excluir
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {filteredClients.length === 0 && (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Nenhum cliente encontrado
+                </h3>
+                <p className="text-gray-600">
+                  {searchTerm || selectedSector !== 'all' 
+                    ? 'Tente ajustar os filtros de busca'
+                    : 'Adicione o primeiro cliente'
+                  }
+                </p>
+              </CardContent>
+            </Card>
           )}
-        </DialogContent>
-      </Dialog>
+
+          {/* Edit Modal */}
+          <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+            <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Editar Cliente</DialogTitle>
+                <DialogDescription>
+                  Atualize as informações do cliente
+                </DialogDescription>
+              </DialogHeader>
+              {selectedClient && (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="edit-name">Nome da Empresa</Label>
+                    <Input
+                      id="edit-name"
+                      value={selectedClient.name}
+                      onChange={(e) => setSelectedClient({ ...selectedClient, name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-industry">Setor</Label>
+                    <Select 
+                      value={selectedClient.industry} 
+                      onValueChange={(value) => setSelectedClient({ ...selectedClient, industry: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sectors.map(sector => (
+                          <SelectItem key={sector} value={sector}>
+                            {sector}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-logo_url">URL do Logo</Label>
+                    <Input
+                      id="edit-logo_url"
+                      value={selectedClient.logo_url || ''}
+                      onChange={(e) => setSelectedClient({ ...selectedClient, logo_url: e.target.value })}
+                      placeholder="https://exemplo.com/logo.png"
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={handleEditClient}>
+                      <Save className="h-4 w-4 mr-2" />
+                      Salvar Alterações
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        </>
+      )}
     </div>
   )
 }

@@ -1,15 +1,16 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Package, 
-  Edit, 
-  Trash2, 
-  Plus, 
+import {
+  Package,
+  Edit,
+  Trash2,
+  Plus,
   Save,
   Search,
   DollarSign,
   Tag,
-  Info
+  Info,
+  Loader2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,40 +20,12 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
+import { productsAPI } from '@/api/products'
 
 const ProductsManager = () => {
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      name: 'Unidade Hidráulica',
-      category: 'Sistemas Hidráulicos',
-      description: 'Unidades hidráulicas completas para diversas aplicações industriais',
-      features: ['Alta Pressão', 'Controle Preciso', 'Baixo Ruído'],
-      price: 'Sob Consulta',
-      image: '/products/unidade-hidraulica.jpg',
-      addedDate: '2024-01-15'
-    },
-    {
-      id: 2,
-      name: 'Cilindro Hidráulico',
-      category: 'Atuadores',
-      description: 'Cilindros hidráulicos de alta performance e durabilidade',
-      features: ['Vedação Dupla', 'Resistente', 'Longa Vida Útil'],
-      price: 'Sob Consulta',
-      image: '/products/cilindro-hidraulico.jpg',
-      addedDate: '2024-01-12'
-    },
-    {
-      id: 3,
-      name: 'Válvulas Proporcionais',
-      category: 'Controle',
-      description: 'Válvulas proporcionais para controle preciso de fluxo e pressão',
-      features: ['Controle Eletrônico', 'Alta Precisão', 'Resposta Rápida'],
-      price: 'Sob Consulta',
-      image: '/products/valvulas-proporcionais.jpg',
-      addedDate: '2024-01-10'
-    }
-  ])
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -83,6 +56,24 @@ const ProductsManager = () => {
 
   const [newFeature, setNewFeature] = useState('')
 
+  // Carregar produtos do Supabase
+  useEffect(() => {
+    loadProducts()
+  }, [])
+
+  const loadProducts = async () => {
+    try {
+      setLoading(true)
+      const data = await productsAPI.getAll()
+      setProducts(data)
+    } catch (error) {
+      console.error('Erro ao carregar produtos:', error)
+      setError('Erro ao carregar produtos')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -90,32 +81,64 @@ const ProductsManager = () => {
     return matchesSearch && matchesCategory
   })
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     if (newProduct.name && newProduct.category && newProduct.description) {
-      const product = {
-        id: Date.now(),
-        ...newProduct,
-        addedDate: new Date().toISOString().split('T')[0],
-        image: newProduct.image || '/products/placeholder.jpg'
+      try {
+        const productData = {
+          name: newProduct.name,
+          category: newProduct.category,
+          description: newProduct.description,
+          features: newProduct.features,
+          price: newProduct.price || 'Sob Consulta',
+          image_url: newProduct.image || '/products/placeholder.jpg',
+          is_active: true,
+          display_order: products.length
+        }
+        
+        await productsAPI.create(productData)
+        await loadProducts() // Recarregar lista
+        setNewProduct({ name: '', category: '', description: '', features: [], price: '', image: null })
+        setIsAddModalOpen(false)
+      } catch (error) {
+        console.error('Erro ao adicionar produto:', error)
+        setError('Erro ao adicionar produto')
       }
-      setProducts([...products, product])
-      setNewProduct({ name: '', category: '', description: '', features: [], price: '', image: null })
-      setIsAddModalOpen(false)
     }
   }
 
-  const handleEditProduct = () => {
+  const handleEditProduct = async () => {
     if (selectedProduct) {
-      setProducts(products.map(product => 
-        product.id === selectedProduct.id ? selectedProduct : product
-      ))
-      setIsEditModalOpen(false)
-      setSelectedProduct(null)
+      try {
+        const updates = {
+          name: selectedProduct.name,
+          category: selectedProduct.category,
+          description: selectedProduct.description,
+          features: selectedProduct.features,
+          price: selectedProduct.price,
+          image_url: selectedProduct.image_url
+        }
+        
+        await productsAPI.update(selectedProduct.id, updates)
+        await loadProducts() // Recarregar lista
+        setIsEditModalOpen(false)
+        setSelectedProduct(null)
+      } catch (error) {
+        console.error('Erro ao editar produto:', error)
+        setError('Erro ao editar produto')
+      }
     }
   }
 
-  const handleDeleteProduct = (id) => {
-    setProducts(products.filter(product => product.id !== id))
+  const handleDeleteProduct = async (id) => {
+    if (confirm('Tem certeza que deseja excluir este produto?')) {
+      try {
+        await productsAPI.delete(id)
+        await loadProducts() // Recarregar lista
+      } catch (error) {
+        console.error('Erro ao excluir produto:', error)
+        setError('Erro ao excluir produto')
+      }
+    }
   }
 
   const openEditModal = (product) => {
@@ -172,8 +195,35 @@ const ProductsManager = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      {/* Loading */}
+      {loading && (
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Carregando produtos...</span>
+        </div>
+      )}
+
+      {/* Error */}
+      {error && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-4">
+            <p className="text-red-600">{error}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={loadProducts}
+              className="mt-2"
+            >
+              Tentar novamente
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {!loading && !error && (
+        <>
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-3xl font-bold text-gray-900">Gerenciar Produtos</h2>
           <p className="text-gray-600">Adicione, edite ou remova produtos do catálogo</p>
@@ -371,7 +421,9 @@ const ProductsManager = () => {
                     </div>
                   </div>
                   
-                  <p className="text-xs text-gray-400 mb-4">Adicionado em: {product.addedDate}</p>
+                  <p className="text-xs text-gray-400 mb-4">
+                    Adicionado em: {new Date(product.created_at).toLocaleDateString('pt-BR')}
+                  </p>
                   
                   <div className="flex justify-between">
                     <Button
@@ -401,28 +453,20 @@ const ProductsManager = () => {
 
       {filteredProducts.length === 0 && (
         <Card>
-          <CardContent className="p-12 text-center">
-            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Nenhum produto encontrado
-            </h3>
-            <p className="text-gray-600">
-              {searchTerm || selectedCategory !== 'all' 
-                ? 'Tente ajustar os filtros de busca'
-                : 'Adicione o primeiro produto ao catálogo'
-              }
-            </p>
+          <CardContent className="p-12 text-center text-gray-500">
+            <Info className="h-12 w-12 mx-auto mb-4" />
+            <p>Nenhum produto encontrado.</p>
           </CardContent>
         </Card>
       )}
 
-      {/* Edit Modal */}
+      {/* Edit Product Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Produto</DialogTitle>
             <DialogDescription>
-              Atualize as informações do produto
+              Edite os dados do produto selecionado
             </DialogDescription>
           </DialogHeader>
           {selectedProduct && (
@@ -433,16 +477,14 @@ const ProductsManager = () => {
                   id="edit-name"
                   value={selectedProduct.name}
                   onChange={(e) => setSelectedProduct({ ...selectedProduct, name: e.target.value })}
+                  placeholder="Nome do produto"
                 />
               </div>
               <div>
                 <Label htmlFor="edit-category">Categoria</Label>
-                <Select 
-                  value={selectedProduct.category} 
-                  onValueChange={(value) => setSelectedProduct({ ...selectedProduct, category: value })}
-                >
+                <Select value={selectedProduct.category} onValueChange={(value) => setSelectedProduct({ ...selectedProduct, category: value })}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map(category => (
@@ -459,6 +501,7 @@ const ProductsManager = () => {
                   id="edit-description"
                   value={selectedProduct.description}
                   onChange={(e) => setSelectedProduct({ ...selectedProduct, description: e.target.value })}
+                  placeholder="Descrição do produto"
                   rows={3}
                 />
               </div>
@@ -468,6 +511,7 @@ const ProductsManager = () => {
                   id="edit-price"
                   value={selectedProduct.price}
                   onChange={(e) => setSelectedProduct({ ...selectedProduct, price: e.target.value })}
+                  placeholder="Ex: R$ 1.500,00 ou Sob Consulta"
                 />
               </div>
               <div>
@@ -512,9 +556,12 @@ const ProductsManager = () => {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </>
+  )}
+</div>
   )
 }
 
 export default ProductsManager
+
 

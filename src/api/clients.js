@@ -6,7 +6,7 @@ export const clientsAPI = {
     const { data, error } = await supabase
       .from('clients')
       .select('*')
-      .order('name')
+      .order('display_order', { ascending: true })
     
     if (error) throw error
     return data
@@ -57,16 +57,54 @@ export const clientsAPI = {
       .eq('id', id)
     
     if (error) throw error
-    return true
   },
 
-  // Buscar clientes por setor
+  // Buscar clientes ativos
+  async getActive() {
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+    
+    if (error) throw error
+    return data
+  },
+
+  // Buscar clientes por indústria
   async getByIndustry(industry) {
     const { data, error } = await supabase
       .from('clients')
       .select('*')
       .eq('industry', industry)
-      .order('name')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+    
+    if (error) throw error
+    return data
+  },
+
+  // Atualizar ordem de exibição
+  async updateDisplayOrder(id, displayOrder) {
+    const { data, error } = await supabase
+      .from('clients')
+      .update({ display_order: displayOrder })
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  },
+
+  // Ativar/desativar cliente
+  async toggleActive(id, isActive) {
+    const { data, error } = await supabase
+      .from('clients')
+      .update({ is_active: isActive })
+      .eq('id', id)
+      .select()
+      .single()
     
     if (error) throw error
     return data
