@@ -885,8 +885,6 @@ const HeroManager = () => {
           </TabsContent>
         </Tabs>
       )}
-    </div>
-  )
 }
 
 export default HeroManager
