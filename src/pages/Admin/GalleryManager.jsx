@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { storageAPI } from '@/api/storage'
 
 const GalleryManager = () => {
   const [photos, setPhotos] = useState([
@@ -79,20 +80,31 @@ const GalleryManager = () => {
     return matchesSearch && matchesCategory
   })
 
-  const handleAddPhoto = () => {
-    if (newPhoto.title && newPhoto.description && newPhoto.category) {
-      const photo = {
-        id: Date.now(),
-        ...newPhoto,
-        uploadDate: new Date().toISOString().split('T')[0],
-        image: newPhoto.image || '/gallery/placeholder.jpg'
-      }
-      setPhotos([...photos, photo])
-      setNewPhoto({ title: '', description: '', category: '', image: null })
-      setIsAddModalOpen(false)
-    }
-  }
+  const handleAddPhoto = async () => {
+    if (newPhoto.title && newPhoto.description && newPhoto.category && newPhoto.image) {
+      try {
+        const file = newPhoto.image;
+        const filePath = `gallery/${Date.now()}-${file.name}`;
+        const { path } = await storageAPI.uploadFile(file, filePath);
+        const publicUrl = storageAPI.getPublicUrl(path);
 
+        const photo = {
+          id: Date.now(),
+          ...newPhoto,
+          uploadDate: new Date().toISOString().split("T")[0],
+          image: publicUrl
+        };
+        setPhotos([...photos, photo]);
+        setNewPhoto({ title: "", description: "", category: "", image: null });
+        setIsAddModalOpen(false);
+      } catch (error) {
+        console.error("Erro ao fazer upload da imagem:", error);
+        alert("Erro ao fazer upload da imagem. Verifique o console para mais detalhes.");
+      }
+    } else {
+      alert("Por favor, preencha todos os campos e selecione uma imagem.");
+    }
+  };
   const handleEditPhoto = () => {
     if (selectedPhoto) {
       setPhotos(photos.map(photo => 

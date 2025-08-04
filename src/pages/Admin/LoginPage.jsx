@@ -21,6 +21,8 @@ const LoginPage = () => {
     setError('');
     setLoading(true);
 
+    console.log('Valores dos campos:', { email, password: password ? '***' : 'vazio' });
+
     try {
       const result = await login(email, password);
       
@@ -68,7 +70,10 @@ const LoginPage = () => {
                   autoComplete="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    console.log('Email onChange:', e.target.value);
+                    setEmail(e.target.value);
+                  }}
                   className="mt-1"
                 />
               </div>
@@ -81,7 +86,10 @@ const LoginPage = () => {
                   autoComplete="current-password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    console.log('Password onChange:', e.target.value ? '***' : 'vazio');
+                    setPassword(e.target.value);
+                  }}
                   className="mt-1"
                 />
               </div>

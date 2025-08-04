@@ -47,10 +47,13 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
+      console.log('Tentando fazer login com:', { email, password: '***' })
       const { user } = await authAPI.signIn(email, password)
+      console.log('Login bem-sucedido:', user)
       setUser(user)
       return { success: true }
     } catch (error) {
+      console.error('Erro no login:', error)
       return { success: false, error: error.message }
     }
   }
