@@ -9,7 +9,7 @@ import ContactPage from '@/pages/ContactPage'
 import ClientsPage from '@/pages/ClientsPage'
 import TermosDeUso from '@/pages/TermosDeUso'
 import PoliticaPrivacidade from '@/pages/PoliticaPrivacidade'
-import AdminPage from '@/pages/Admin/AdminPage'
+import AdminPageNew from '@/pages/Admin/AdminPageNew'
 import LoginPage from '@/pages/Admin/LoginPage'
 import ProtectedRoute from '@/components/common/ProtectedRoute'
 import { AuthProvider } from '@/contexts/AuthContext'
@@ -33,7 +33,7 @@ function App() {
               path="/admin-fhd"
               element={
                 <ProtectedRoute>
-                  <AdminPage />
+                  <AdminPageNew />
                 </ProtectedRoute>
               }
             />
