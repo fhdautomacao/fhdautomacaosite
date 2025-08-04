@@ -12,7 +12,8 @@ import {
   Edit,
   Trash2,
   Eye,
-  Upload
+  Upload,
+  LogOut
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,9 +21,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import GalleryManager from './GalleryManager'
 import ClientsManager from './ClientsManager'
 import ProductsManager from './ProductsManager'
+import { useAuth } from '@/contexts/AuthContext'
 
 const AdminPage = () => {
   const [activeTab, setActiveTab] = useState('dashboard')
+  const { logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+  }
 
   const stats = [
     {
@@ -105,6 +112,10 @@ const AdminPage = () => {
                 <Button variant="outline" size="sm">
                   <Settings className="h-4 w-4 mr-2" />
                   Configurações
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sair
                 </Button>
                 <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center">
                   <span className="text-white text-sm font-medium">A</span>

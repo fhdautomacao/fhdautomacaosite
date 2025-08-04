@@ -10,28 +10,42 @@ import ClientsPage from '@/pages/ClientsPage'
 import TermosDeUso from '@/pages/TermosDeUso'
 import PoliticaPrivacidade from '@/pages/PoliticaPrivacidade'
 import AdminPage from '@/pages/Admin/AdminPage'
+import LoginPage from '@/pages/Admin/LoginPage'
+import ProtectedRoute from '@/components/common/ProtectedRoute'
+import { AuthProvider } from '@/contexts/AuthContext'
 import './App.css'
 
 function App() {
   return (
     <HelmetProvider>
-      <Router>
-        <Header />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/quem-somos" element={<AboutPage />} />
-          <Route path="/servicos" element={<ServicesPage />} />
-          <Route path="/clientes" element={<ClientsPage />} />
-          <Route path="/contato" element={<ContactPage />} />
-          <Route path="/termos-de-uso" element={<TermosDeUso />} />
-          <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />
-          <Route path="/admin-fhd" element={<AdminPage />} /> {/* Rota da página de administração */}
-        </Routes>
-        <Footer />
-      </Router>
+      <AuthProvider>
+        <Router>
+          <Header />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/quem-somos" element={<AboutPage />} />
+            <Route path="/servicos" element={<ServicesPage />} />
+            <Route path="/clientes" element={<ClientsPage />} />
+            <Route path="/contato" element={<ContactPage />} />
+            <Route path="/termos-de-uso" element={<TermosDeUso />} />
+            <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />
+            <Route
+              path="/admin-fhd"
+              element={
+                <ProtectedRoute>
+                  <AdminPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/login-admin" element={<LoginPage />} />
+          </Routes>
+          <Footer />
+        </Router>
+      </AuthProvider>
     </HelmetProvider>
   )
 }
 
 export default App
+
 
