@@ -213,12 +213,12 @@ const Gallery = () => {
         {/* Gallery Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-16">
           {filteredImages.map((image, index) => (
-            <div 
-              key={image.id}
-              className="group cursor-pointer overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 aspect-square shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:scale-105 animate-fade-in-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
-              onClick={() => openModal(image, index)}
-            >
+              <div 
+                key={image.id}
+                className="group cursor-pointer overflow-hidden rounded-2xl aspect-square shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:scale-105 animate-fade-in-up"
+                style={{ animationDelay: `${index * 0.1}s` }}
+                onClick={() => openModal(image, index)}
+              >
               <div className="relative h-full">
                 <img src={image.image_url} alt={image.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
                 
@@ -290,7 +290,7 @@ const Gallery = () => {
               )}
 
               {/* Image */}
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl aspect-video flex items-center justify-center shadow-2xl overflow-hidden">
+              <div className="rounded-2xl aspect-video flex items-center justify-center shadow-2xl overflow-hidden">
                 <img src={selectedImage.image_url} alt={selectedImage.title} className="w-full h-full object-contain" />
               </div>
 
