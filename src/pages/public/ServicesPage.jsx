@@ -1,47 +1,132 @@
+import { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
+import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowRight, Wrench, Settings, Zap, Shield, Clock, Award } from 'lucide-react'
 
 const ServicesPage = () => {
-  const services = [
+  const [services, setServices] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Função para buscar serviços do banco de dados
+  const fetchServices = async () => {
+    setLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from("services")
+        .select("*")
+        .eq("is_active", true) // Apenas serviços ativos
+        .order("display_order", { ascending: true })
+
+      if (error) throw error
+
+      setServices(data || [])
+    } catch (error) {
+      console.error("Erro ao carregar serviços:", error)
+      setError(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchServices()
+  }, [])
+
+  // Função para mapear ícones baseado no nome ou categoria
+  const getServiceIcon = (iconName, category) => {
+    // Se o ícone for um emoji, retorna ele
+    if (iconName && iconName.length <= 2) {
+      return <span className="text-4xl">{iconName}</span>
+    }
+
+    // Mapear por categoria ou nome do serviço
+    const iconMap = {
+      'Automação': <Wrench className="h-8 w-8 text-blue-600" />,
+      'Projetos': <Settings className="h-8 w-8 text-blue-600" />,
+      'Manutenção': <Clock className="h-8 w-8 text-blue-600" />,
+      'Fabricação': <Shield className="h-8 w-8 text-blue-600" />,
+      'Instalação': <Award className="h-8 w-8 text-blue-600" />,
+      'default': <Zap className="h-8 w-8 text-blue-600" />
+    }
+
+    return iconMap[category] || iconMap['default']
+  }
+
+  // Fallback para serviços hardcoded caso não haja dados no banco
+  const fallbackServices = [
     {
-      icon: <Wrench className="h-8 w-8 text-blue-600" />,
-      title: "Automação Hidráulica e Pneumática",
+      icon: "🔧",
+      name: "Automação Hidráulica e Pneumática",
       description: "Desenvolvemos sistemas avançados de automação hidráulica e pneumática para otimizar a eficiência operacional e reduzir custos.",
-      features: ["Sistemas personalizados", "Controle de precisão", "Monitoramento remoto", "Integração com PLCs"]
+      features: ["Sistemas personalizados", "Controle de precisão", "Monitoramento remoto", "Integração com PLCs"],
+      category: "Automação"
     },
     {
-      icon: <Settings className="h-8 w-8 text-blue-600" />,
-      title: "Projetos Hidráulicos",
+      icon: "⚙️",
+      name: "Projetos Hidráulicos",
       description: "Criamos projetos personalizados de sistemas hidráulicos para atender às exigências específicas de cada cliente.",
-      features: ["Dimensionamento técnico", "Simulação 3D", "Documentação completa", "Suporte na implementação"]
+      features: ["Dimensionamento técnico", "Simulação 3D", "Documentação completa", "Suporte na implementação"],
+      category: "Projetos"
     },
     {
-      icon: <Zap className="h-8 w-8 text-blue-600" />,
-      title: "Start-up em Unidades Hidráulicas",
+      icon: "⚡",
+      name: "Start-up em Unidades Hidráulicas",
       description: "Garantimos uma inicialização suave e eficiente de unidades hidráulicas, assegurando o máximo desempenho desde o início.",
-      features: ["Testes de performance", "Calibração de sistemas", "Treinamento de operadores", "Documentação técnica"]
+      features: ["Testes de performance", "Calibração de sistemas", "Treinamento de operadores", "Documentação técnica"],
+      category: "Projetos"
     },
     {
-      icon: <Shield className="h-8 w-8 text-blue-600" />,
-      title: "Fabricação em Unidades Hidráulicas",
+      icon: "🛡️",
+      name: "Fabricação em Unidades Hidráulicas",
       description: "Fabricamos unidades hidráulicas de alta qualidade, personalizadas para atender às necessidades exclusivas de cada aplicação.",
-      features: ["Componentes premium", "Controle de qualidade", "Testes rigorosos", "Garantia estendida"]
+      features: ["Componentes premium", "Controle de qualidade", "Testes rigorosos", "Garantia estendida"],
+      category: "Fabricação"
     },
     {
-      icon: <Clock className="h-8 w-8 text-blue-600" />,
-      title: "Manutenção de Cilindros",
+      icon: "🕐",
+      name: "Manutenção de Cilindros",
       description: "Oferecemos serviços de manutenção preventiva e corretiva para garantir o funcionamento confiável de cilindros hidráulicos e pneumáticos.",
-      features: ["Manutenção preventiva", "Reparo especializado", "Peças originais", "Atendimento 24/7"]
+      features: ["Manutenção preventiva", "Reparo especializado", "Peças originais", "Atendimento 24/7"],
+      category: "Manutenção"
     },
     {
-      icon: <Award className="h-8 w-8 text-blue-600" />,
-      title: "Instalação e Dobras em Tubulações",
+      icon: "🏆",
+      name: "Instalação e Dobras em Tubulações",
       description: "Oferecemos serviços especializados de instalação e dobras em tubulações hidráulicas, garantindo precisão e eficiência em cada projeto.",
-      features: ["Soldas certificadas", "Testes de pressão", "Normas técnicas", "Instalação completa"]
+      features: ["Soldas certificadas", "Testes de pressão", "Normas técnicas", "Instalação completa"],
+      category: "Instalação"
     }
   ]
+
+  // Usar dados do banco ou fallback
+  const displayServices = services.length > 0 ? services : fallbackServices
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Carregando serviços...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error && services.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Erro ao carregar serviços: {error}</p>
+          <Button onClick={fetchServices}>
+            Tentar novamente
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -86,24 +171,36 @@ const ServicesPage = () => {
         <section className="py-20">
           <div className="container mx-auto px-4">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {services.map((service, index) => (
-                <Card key={index} className="h-full hover:shadow-lg transition-shadow">
+              {displayServices.map((service, index) => (
+                <Card key={service.id || index} className="h-full hover:shadow-lg transition-shadow">
                   <CardHeader>
-                    <div className="mb-4">{service.icon}</div>
-                    <CardTitle className="text-xl">{service.title}</CardTitle>
+                    <div className="mb-4">
+                      {getServiceIcon(service.icon, service.category)}
+                    </div>
+                    <CardTitle className="text-xl">{service.name}</CardTitle>
                     <CardDescription className="text-gray-600">
                       {service.description}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-2">
-                      {service.features.map((feature, featureIndex) => (
+                      {(service.features || []).map((feature, featureIndex) => (
                         <li key={featureIndex} className="flex items-center text-sm text-gray-700">
                           <div className="w-2 h-2 bg-blue-600 rounded-full mr-3"></div>
                           {feature}
                         </li>
                       ))}
                     </ul>
+                    
+                    {/* Exibir preço se disponível */}
+                    {service.price && (
+                      <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                        <p className="text-sm font-medium text-blue-900">
+                          {service.price}
+                        </p>
+                      </div>
+                    )}
+                    
                     <Button className="w-full mt-6 bg-blue-600 hover:bg-blue-700">
                       Saiba Mais
                     </Button>
