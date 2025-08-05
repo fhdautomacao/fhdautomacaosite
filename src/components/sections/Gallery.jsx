@@ -261,7 +261,7 @@ const Gallery = () => {
 
         {/* Modal */}
         {selectedImage && (
-          <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="fixed inset-0 bg-white z-50 flex items-center justify-center p-4 animate-fade-in">
             <div className="relative max-w-6xl w-full">
               {/* Close Button */}
               <button 
@@ -295,7 +295,7 @@ const Gallery = () => {
               </div>
 
               {/* Image Info */}
-              <div className="text-white mt-6 text-center">
+              <div className="text-black mt-6 text-center">
                 <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border mb-4 ${getCategoryColor(selectedImage.category)}`}>
                   {selectedImage.category}
                 </div>
