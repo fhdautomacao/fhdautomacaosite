@@ -46,68 +46,8 @@ const Services = () => {
         const data = await servicesAPI.getActive()
         setServices(data)
       } catch (err) {
-        console.warn('Erro ao carregar serviços da API, usando dados estáticos:', err)
-        // Fallback para dados estáticos se a API falhar
-        const fallbackServices = [
-          {
-            id: 1,
-            title: "Automação Hidráulica e Pneumática",
-            description: "Desenvolvemos sistemas avançados de automação hidráulica e pneumática para otimizar a eficiência operacional e reduzir custos.",
-            color: "blue",
-            icon_name: "Settings",
-            features: ["Sistemas Integrados", "Controle Avançado", "Eficiência Energética"]
-          },
-          {
-            id: 2,
-            title: "Projetos Hidráulicos",
-            description: "Criamos projetos personalizados de sistemas hidráulicos para atender às exigências específicas de cada cliente.",
-            color: "green",
-            icon_name: "Cog",
-            features: ["Projetos Customizados", "Análise Técnica", "Documentação Completa"]
-          },
-          {
-            id: 3,
-            title: "Start-up em Unidades Hidráulicas",
-            description: "Garantimos uma inicialização suave e eficiente de unidades hidráulicas, assegurando o máximo desempenho desde o início.",
-            color: "yellow",
-            icon_name: "Zap",
-            features: ["Comissionamento", "Testes de Performance", "Treinamento"]
-          },
-          {
-            id: 4,
-            title: "Fabricação em Unidades Hidráulicas",
-            description: "Fabricamos unidades hidráulicas de alta qualidade, personalizadas para atender às necessidades exclusivas de cada aplicação.",
-            color: "purple",
-            icon_name: "Hammer",
-            features: ["Fabricação Própria", "Qualidade Garantida", "Prazos Cumpridos"]
-          },
-          {
-            id: 5,
-            title: "Manutenção de Cilindros",
-            description: "Oferecemos serviços de manutenção preventiva e corretiva para garantir o funcionamento confiável de cilindros hidráulicos e pneumáticos.",
-            color: "red",
-            icon_name: "Wrench",
-            features: ["Manutenção Preventiva", "Reparo Especializado", "Peças Originais"]
-          },
-          {
-            id: 6,
-            title: "Instalação e Dobras em Tubulações",
-            description: "Oferecemos serviços especializados de instalação e dobras em tubulações hidráulicas, garantindo precisão e eficiência em cada projeto.",
-            color: "indigo",
-            icon_name: "Workflow",
-            features: ["Instalação Profissional", "Dobras Precisas", "Normas Técnicas"]
-          },
-          {
-            id: 7,
-            title: "Consertos em Bombas Hidráulicas",
-            description: "Efetuamos reparos em bombas hidráulicas de pistões e palhetas, restaurando sua eficiência e prolongando sua vida útil.",
-            color: "orange",
-            icon_name: "Gauge",
-            features: ["Diagnóstico Completo", "Reparo Especializado", "Garantia Estendida"]
-          }
-        ]
-        setServices(fallbackServices)
-        setError(null) // Limpa o erro já que temos fallback
+        console.warn("Erro ao carregar serviços da API:", err)
+        setError(err)
       } finally {
         setLoading(false)
       }

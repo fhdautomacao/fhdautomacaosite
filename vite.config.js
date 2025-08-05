@@ -8,7 +8,8 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
-    strictPort: true
+    strictPort: true,
+    allowedHosts: ["5173-iel0lw9zf2y2he08fyvgf-46466cc3.manusvm.computer"]
   },
   plugins: [react(),tailwindcss()],
   resolve: {
