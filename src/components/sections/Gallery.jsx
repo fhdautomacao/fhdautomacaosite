@@ -220,9 +220,7 @@ const Gallery = () => {
               onClick={() => openModal(image, index)}
             >
               <div className="relative h-full">
-                <div className="absolute inset-0 flex items-center justify-center text-white text-4xl group-hover:scale-110 transition-transform duration-300">
-                  {image.thumbnail}
-                </div>
+                <img src={image.image_url} alt={image.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
                 
                 {/* Category Badge */}
                 <div className={`absolute top-3 left-3 px-2 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(image.category)} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
@@ -292,8 +290,8 @@ const Gallery = () => {
               )}
 
               {/* Image */}
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl aspect-video flex items-center justify-center shadow-2xl">
-                <div className="text-white text-8xl">{selectedImage.thumbnail}</div>
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl aspect-video flex items-center justify-center shadow-2xl overflow-hidden">
+                <img src={selectedImage.image_url} alt={selectedImage.title} className="w-full h-full object-contain" />
               </div>
 
               {/* Image Info */}
