@@ -23,6 +23,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { categoriesAPI } from '@/api/categories'
 
 const ServicesManager = () => {
   const [services, setServices] = useState([])
@@ -31,10 +32,22 @@ const ServicesManager = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedService, setSelectedService] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("all")
 
-  const categories = ['Automação', 'Projetos', 'Manutenção', 'Fabricação', 'Instalação']
+  const [categories, setCategories] = useState([])
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await categoriesAPI.getByType("service")
+        setCategories(data)
+      } catch (err) {
+        console.error("Erro ao carregar categorias de serviços:", err)
+      }
+    }
+    loadCategories()
+  }, [])
 
   const [newService, setNewService] = useState({
     name: '',
@@ -260,15 +273,9 @@ const ServicesManager = () => {
     }
   }
 
-  const getCategoryColor = (category) => {
-    const colors = {
-      'Automação': 'bg-blue-100 text-blue-800',
-      'Projetos': 'bg-green-100 text-green-800',
-      'Manutenção': 'bg-orange-100 text-orange-800',
-      'Fabricação': 'bg-purple-100 text-purple-800',
-      'Instalação': 'bg-red-100 text-red-800'
-    }
-    return colors[category] || 'bg-gray-100 text-gray-800'
+  const getCategoryColor = (categoryName) => {
+    const category = categories.find(cat => cat.name === categoryName)
+    return category ? category.color : 'bg-gray-100 text-gray-800'
   }
 
   if (loading && services.length === 0) {
@@ -362,8 +369,8 @@ const ServicesManager = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {categories.map(category => (
-                          <SelectItem key={category} value={category}>
-                            {category}
+                          <SelectItem key={category.name} value={category.name}>
+                            {category.icon} {category.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -466,9 +473,9 @@ const ServicesManager = () => {
                 <SelectContent>
                   <SelectItem value="all">Todas as categorias</SelectItem>
                   {categories.map(category => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
+                  <SelectItem key={category.name} value={category.name}>
+                    {category.icon} {category.name}
+                  </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -613,13 +620,13 @@ const ServicesManager = () => {
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
-                    <SelectContent>
-                      {categories.map(category => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
+                      <SelectContent>
+                        {categories.map(category => (
+                          <SelectItem key={category.name} value={category.name}>
+                            {category.icon} {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
                   </Select>
                 </div>
                 <div>

@@ -21,40 +21,42 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { productsAPI } from '@/api/products'
+import { categoriesAPI } from '@/api/categories'
 
 const ProductsManager = () => {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("all")
 
-  const categories = [
-    'Sistemas Hidráulicos',
-    'Atuadores',
-    'Controle',
-    'Bombas',
-    'Motores',
-    'Armazenamento',
-    'Sistemas Compactos',
-    'Filtros',
-    'Acessórios'
-  ]
+  const [categories, setCategories] = useState([])
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await categoriesAPI.getByType("product")
+        setCategories(data)
+      } catch (err) {
+        console.error("Erro ao carregar categorias de produtos:", err)
+      }
+    }
+    loadCategories()
+  }, [])
 
   const [newProduct, setNewProduct] = useState({
-    name: '',
-    category: '',
-    description: '',
+    name: "",
+    category: "",
+    description: "",
     features: [],
-    price: '',
+    price: "",
     image: null
   })
 
-  const [newFeature, setNewFeature] = useState('')
+  const [newFeature, setNewFeature] = useState("")
 
   // Carregar produtos do Supabase
   useEffect(() => {
@@ -67,8 +69,8 @@ const ProductsManager = () => {
       const data = await productsAPI.getAll()
       setProducts(data)
     } catch (error) {
-      console.error('Erro ao carregar produtos:', error)
-      setError('Erro ao carregar produtos')
+      console.error("Erro ao carregar produtos:", error)
+      setError("Erro ao carregar produtos")
     } finally {
       setLoading(false)
     }
@@ -77,7 +79,7 @@ const ProductsManager = () => {
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory
+    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory
     return matchesSearch && matchesCategory
   })
 
@@ -89,19 +91,19 @@ const ProductsManager = () => {
           category: newProduct.category,
           description: newProduct.description,
           features: newProduct.features,
-          price: newProduct.price || 'Sob Consulta',
-          image_url: newProduct.image || '/products/placeholder.jpg',
+          price: newProduct.price || "Sob Consulta",
+          image_url: newProduct.image || "/products/placeholder.jpg",
           is_active: true,
           display_order: products.length
         }
         
         await productsAPI.create(productData)
         await loadProducts() // Recarregar lista
-        setNewProduct({ name: '', category: '', description: '', features: [], price: '', image: null })
+        setNewProduct({ name: "", category: "", description: "", features: [], price: "", image: null })
         setIsAddModalOpen(false)
       } catch (error) {
-        console.error('Erro ao adicionar produto:', error)
-        setError('Erro ao adicionar produto')
+        console.error("Erro ao adicionar produto:", error)
+        setError("Erro ao adicionar produto")
       }
     }
   }
@@ -123,20 +125,20 @@ const ProductsManager = () => {
         setIsEditModalOpen(false)
         setSelectedProduct(null)
       } catch (error) {
-        console.error('Erro ao editar produto:', error)
-        setError('Erro ao editar produto')
+        console.error("Erro ao editar produto:", error)
+        setError("Erro ao editar produto")
       }
     }
   }
 
   const handleDeleteProduct = async (id) => {
-    if (confirm('Tem certeza que deseja excluir este produto?')) {
+    if (confirm("Tem certeza que deseja excluir este produto?")) {
       try {
         await productsAPI.delete(id)
         await loadProducts() // Recarregar lista
       } catch (error) {
-        console.error('Erro ao excluir produto:', error)
-        setError('Erro ao excluir produto')
+        console.error("Erro ao excluir produto:", error)
+        setError("Erro ao excluir produto")
       }
     }
   }
@@ -160,7 +162,7 @@ const ProductsManager = () => {
           features: [...newProduct.features, feature.trim()]
         })
       }
-      setNewFeature('')
+      setNewFeature("")
     }
   }
 
@@ -178,19 +180,9 @@ const ProductsManager = () => {
     }
   }
 
-  const getCategoryIcon = (category) => {
-    const icons = {
-      'Sistemas Hidráulicos': '⚙️',
-      'Atuadores': '🔧',
-      'Controle': '🎛️',
-      'Bombas': '⚙️',
-      'Motores': '🔩',
-      'Armazenamento': '📦',
-      'Sistemas Compactos': '🏭',
-      'Filtros': '🔍',
-      'Acessórios': '🔧'
-    }
-    return icons[category] || '📦'
+  const getCategoryIcon = (categoryName) => {
+    const category = categories.find(cat => cat.name === categoryName)
+    return category ? category.icon : "📦"
   }
 
   return (
@@ -260,8 +252,8 @@ const ProductsManager = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map(category => (
-                      <SelectItem key={category} value={category}>
-                        {getCategoryIcon(category)} {category}
+                      <SelectItem key={category.name} value={category.name}>
+                        {category.icon} {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -488,8 +480,8 @@ const ProductsManager = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map(category => (
-                      <SelectItem key={category} value={category}>
-                        {getCategoryIcon(category)} {category}
+                      <SelectItem key={category.name} value={category.name}>
+                        {category.icon} {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

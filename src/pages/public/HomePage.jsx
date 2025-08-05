@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async'
 import Hero from '@/components/sections/HeroImproved'
 import About from '@/components/sections/AboutImproved'
-import Services from '@/components/sections/ServicesImproved'
+import ServicesSection from '@/components/sections/ServicesSection'
 import Products from '@/components/sections/Products'
 import Gallery from '@/components/sections/Gallery'
 import Clients from '@/components/sections/Clients'
@@ -69,7 +69,7 @@ const HomePage = () => {
       <main>
         <Hero />
         <About />
-        <Services />
+        <ServicesSection />
         <Products />
         <Gallery />
         <Clients />
