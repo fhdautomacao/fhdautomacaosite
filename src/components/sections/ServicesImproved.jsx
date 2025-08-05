@@ -1,7 +1,24 @@
 import { Settings, Wrench, Zap, Cog, Hammer, Workflow, Gauge, ArrowRight, CheckCircle } from 'lucide-react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
-import { useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { servicesAPI } from '@/api/services'
+
+const IconComponent = ({ iconName, size }) => {
+  const icons = {
+    Settings: Settings,
+    Wrench: Wrench,
+    Zap: Zap,
+    Cog: Cog,
+    Hammer: Hammer,
+    Workflow: Workflow,
+    Gauge: Gauge,
+    ArrowRight: ArrowRight,
+    CheckCircle: CheckCircle,
+  }
+  const Icon = icons[iconName]
+  return Icon ? <Icon size={size} /> : null
+}
 
 const Services = () => {
   const sectionRef = useRef(null)
@@ -19,57 +36,26 @@ const Services = () => {
   const [servicesRef, servicesVisible] = useScrollAnimation(0.1)
   const [ctaRef, ctaVisible] = useScrollAnimation(0.3)
 
-  const services = [
-    {
-      icon: <Settings size={40} />,
-      title: "Automação Hidráulica e Pneumática",
-      description: "Desenvolvemos sistemas avançados de automação hidráulica e pneumática para otimizar a eficiência operacional e reduzir custos.",
-      color: "blue",
-      features: ["Sistemas Integrados", "Controle Avançado", "Eficiência Energética"]
-    },
-    {
-      icon: <Cog size={40} />,
-      title: "Projetos Hidráulicos",
-      description: "Criamos projetos personalizados de sistemas hidráulicos para atender às exigências específicas de cada cliente.",
-      color: "green",
-      features: ["Projetos Customizados", "Análise Técnica", "Documentação Completa"]
-    },
-    {
-      icon: <Zap size={40} />,
-      title: "Start-up em Unidades Hidráulicas",
-      description: "Garantimos uma inicialização suave e eficiente de unidades hidráulicas, assegurando o máximo desempenho desde o início.",
-      color: "yellow",
-      features: ["Comissionamento", "Testes de Performance", "Treinamento"]
-    },
-    {
-      icon: <Hammer size={40} />,
-      title: "Fabricação em Unidades Hidráulicas",
-      description: "Fabricamos unidades hidráulicas de alta qualidade, personalizadas para atender às necessidades exclusivas de cada aplicação.",
-      color: "purple",
-      features: ["Fabricação Própria", "Qualidade Garantida", "Prazos Cumpridos"]
-    },
-    {
-      icon: <Wrench size={40} />,
-      title: "Manutenção de Cilindros",
-      description: "Oferecemos serviços de manutenção preventiva e corretiva para garantir o funcionamento confiável de cilindros hidráulicos e pneumáticos.",
-      color: "red",
-      features: ["Manutenção Preventiva", "Reparo Especializado", "Peças Originais"]
-    },
-    {
-      icon: <Workflow size={40} />,
-      title: "Instalação e Dobras em Tubulações",
-      description: "Oferecemos serviços especializados de instalação e dobras em tubulações hidráulicas, garantindo precisão e eficiência em cada projeto.",
-      color: "indigo",
-      features: ["Instalação Profissional", "Dobras Precisas", "Normas Técnicas"]
-    },
-    {
-      icon: <Gauge size={40} />,
-      title: "Consertos em Bombas Hidráulicas",
-      description: "Efetuamos reparos em bombas hidráulicas de pistões e palhetas, restaurando sua eficiência e prolongando sua vida útil.",
-      color: "orange",
-      features: ["Diagnóstico Completo", "Reparo Especializado", "Garantia Estendida"]
+  const [services, setServices] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const data = await servicesAPI.getActive()
+        setServices(data)
+      } catch (err) {
+        setError(err)
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+    fetchServices()
+  }, [])
+
+  if (loading) return <div className="text-center py-20">Carregando serviços...</div>
+  if (error) return <div className="text-center py-20 text-red-500">Erro ao carregar serviços: {error.message}</div>
 
   const getColorClasses = (color) => {
     const colors = {
@@ -276,7 +262,7 @@ const Services = () => {
                     animate={{ rotate: [0, 5, -5, 0] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                   >
-                    {service.icon}
+                    {service.icon_name && <IconComponent iconName={service.icon_name} size={40} />}
                   </motion.div>
                 </motion.div>
                 
@@ -300,7 +286,7 @@ const Services = () => {
                 
                 {/* Features */}
                 <div className="space-y-2 mb-6">
-                  {service.features.map((feature, featureIndex) => (
+                  {service.features && service.features.map((feature, featureIndex) => (
                     <motion.div 
                       key={featureIndex} 
                       className="flex items-center space-x-2"
@@ -400,7 +386,7 @@ const Services = () => {
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 2, repeat: Infinity, delay: index * 0.5 }}
                   >
-                    <CheckCircle className="text-green-400" size={20} />
+                    <CheckCircle className={`${colorClasses.accent} flex-shrink-0`} size={16} />
                   </motion.div>
                   <span>{benefit}</span>
                 </motion.div>
@@ -423,7 +409,7 @@ const Services = () => {
                   animate={{ x: [0, 3, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 >
-                  <ArrowRight size={20} />
+                  <ArrowRight size={16} />
                 </motion.div>
               </motion.button>
               <motion.button 
@@ -434,7 +420,7 @@ const Services = () => {
                 <span>Falar com Especialista</span>
                 <motion.div
                   animate={{ x: [0, 3, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
                 >
                   <ArrowRight size={20} />
                 </motion.div>
@@ -448,4 +434,5 @@ const Services = () => {
 }
 
 export default Services
+
 
