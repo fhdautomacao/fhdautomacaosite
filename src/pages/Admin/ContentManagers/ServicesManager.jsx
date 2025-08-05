@@ -28,35 +28,6 @@ const ServicesManager = () => {
   const [services, setServices] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-
-  useEffect(() => {
-    const fetchServices = async () => {
-      setLoading(true)
-      try {
-        const { data, error } = await supabase
-          .from("services")
-          .select("*")
-          .order("display_order", { ascending: true })
-
-        if (error) throw error
-
-        setServices(data.map(service => ({
-          ...service,
-          imageUrl: service.image_url,
-          isActive: service.is_active,
-          displayOrder: service.display_order,
-          features: service.features // Assuming features are stored as a JSON array or similar
-        })))
-      } catch (error) {
-        console.error("Erro ao carregar serviços:", error)
-        setError(error.message)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchServices()
-  }, [])
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedService, setSelectedService] = useState(null)
@@ -73,53 +44,159 @@ const ServicesManager = () => {
     price: '',
     features: [],
     isActive: true,
-    image: null
+    image_url: null
   })
 
   const [newFeature, setNewFeature] = useState('')
+
+  // Função para buscar serviços do banco de dados
+  const fetchServices = async () => {
+    setLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from("services")
+        .select("*")
+        .order("display_order", { ascending: true })
+
+      if (error) throw error
+
+      setServices(data || [])
+    } catch (error) {
+      console.error("Erro ao carregar serviços:", error)
+      setError(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchServices()
+  }, [])
 
   const filteredServices = services.filter(service => {
     const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          service.description.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = selectedCategory === 'all' || service.category === selectedCategory
     return matchesSearch && matchesCategory
-  }).sort((a, b) => a.order - b.order)
+  }).sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
 
-  const handleAddService = () => {
+  // Função para adicionar novo serviço
+  const handleAddService = async () => {
     if (newService.name && newService.description && newService.category) {
-      const service = {
-        id: Date.now(),
-        ...newService,
-        order: services.length + 1,
-        image: newService.image || '/services/placeholder.jpg'
+      try {
+        setLoading(true)
+        
+        // Calcular próximo display_order
+        const maxOrder = services.length > 0 ? Math.max(...services.map(s => s.display_order || 0)) : 0
+        
+        const serviceData = {
+          name: newService.name,
+          description: newService.description,
+          icon: newService.icon,
+          category: newService.category,
+          price: newService.price,
+          features: newService.features,
+          image_url: newService.image_url,
+          is_active: newService.isActive,
+          display_order: maxOrder + 1
+        }
+
+        const { data, error } = await supabase
+          .from('services')
+          .insert([serviceData])
+          .select()
+
+        if (error) throw error
+
+        // Atualizar lista local
+        await fetchServices()
+        
+        // Resetar formulário
+        setNewService({ 
+          name: '', 
+          description: '', 
+          icon: '🔧', 
+          category: '', 
+          price: '', 
+          features: [], 
+          isActive: true, 
+          image_url: null 
+        })
+        setIsAddModalOpen(false)
+        
+      } catch (error) {
+        console.error("Erro ao adicionar serviço:", error)
+        setError(error.message)
+      } finally {
+        setLoading(false)
       }
-      setServices([...services, service])
-      setNewService({ 
-        name: '', 
-        description: '', 
-        icon: '🔧', 
-        category: '', 
-        price: '', 
-        features: [], 
-        isActive: true, 
-        image: null 
-      })
-      setIsAddModalOpen(false)
     }
   }
 
-  const handleEditService = () => {
+  // Função para editar serviço
+  const handleEditService = async () => {
     if (selectedService) {
-      setServices(services.map(service => 
-        service.id === selectedService.id ? selectedService : service
-      ))
-      setIsEditModalOpen(false)
-      setSelectedService(null)
+      try {
+        setLoading(true)
+        
+        const serviceData = {
+          name: selectedService.name,
+          description: selectedService.description,
+          icon: selectedService.icon,
+          category: selectedService.category,
+          price: selectedService.price,
+          features: selectedService.features,
+          image_url: selectedService.image_url,
+          is_active: selectedService.is_active,
+          display_order: selectedService.display_order,
+          updated_at: new Date().toISOString()
+        }
+
+        const { error } = await supabase
+          .from('services')
+          .update(serviceData)
+          .eq('id', selectedService.id)
+
+        if (error) throw error
+
+        // Atualizar lista local
+        await fetchServices()
+        
+        setIsEditModalOpen(false)
+        setSelectedService(null)
+        
+      } catch (error) {
+        console.error("Erro ao editar serviço:", error)
+        setError(error.message)
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
-  const handleDeleteService = (id) => {
-    setServices(services.filter(service => service.id !== id))
+  // Função para deletar serviço
+  const handleDeleteService = async (id) => {
+    if (window.confirm('Tem certeza que deseja excluir este serviço?')) {
+      try {
+        setLoading(true)
+        
+        const { error } = await supabase
+          .from('services')
+          .delete()
+          .eq('id', id)
+
+        if (error) throw error
+
+        // Atualizar lista local
+        await fetchServices()
+        
+      } catch (error) {
+        console.error("Erro ao deletar serviço:", error)
+        setError(error.message)
+      } finally {
+        setLoading(false)
+      }
+    }
   }
 
   const openEditModal = (service) => {
@@ -127,10 +204,29 @@ const ServicesManager = () => {
     setIsEditModalOpen(true)
   }
 
-  const toggleServiceStatus = (id) => {
-    setServices(services.map(service => 
-      service.id === id ? { ...service, isActive: !service.isActive } : service
-    ))
+  // Função para alternar status do serviço
+  const toggleServiceStatus = async (id) => {
+    try {
+      const service = services.find(s => s.id === id)
+      if (!service) return
+
+      const { error } = await supabase
+        .from('services')
+        .update({ 
+          is_active: !service.is_active,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+
+      if (error) throw error
+
+      // Atualizar lista local
+      await fetchServices()
+      
+    } catch (error) {
+      console.error("Erro ao alterar status do serviço:", error)
+      setError(error.message)
+    }
   }
 
   const addFeature = (isEdit = false) => {
@@ -138,7 +234,7 @@ const ServicesManager = () => {
       if (isEdit && selectedService) {
         setSelectedService({
           ...selectedService,
-          features: [...selectedService.features, newFeature.trim()]
+          features: [...(selectedService.features || []), newFeature.trim()]
         })
       } else {
         setNewService({
@@ -154,7 +250,7 @@ const ServicesManager = () => {
     if (isEdit && selectedService) {
       setSelectedService({
         ...selectedService,
-        features: selectedService.features.filter((_, i) => i !== index)
+        features: (selectedService.features || []).filter((_, i) => i !== index)
       })
     } else {
       setNewService({
@@ -173,6 +269,30 @@ const ServicesManager = () => {
       'Instalação': 'bg-red-100 text-red-800'
     }
     return colors[category] || 'bg-gray-100 text-gray-800'
+  }
+
+  if (loading && services.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Carregando serviços...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-red-600">Erro ao carregar serviços: {error}</p>
+          <Button onClick={fetchServices} className="mt-2">
+            Tentar novamente
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -289,11 +409,13 @@ const ServicesManager = () => {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="image">Imagem do Serviço</Label>
-                  <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Clique para fazer upload ou arraste uma imagem</p>
-                  </div>
+                  <Label htmlFor="image_url">URL da Imagem</Label>
+                  <Input
+                    id="image_url"
+                    value={newService.image_url || ''}
+                    onChange={(e) => setNewService({ ...newService, image_url: e.target.value })}
+                    placeholder="https://exemplo.com/imagem.jpg"
+                  />
                 </div>
                 <div className="flex items-center space-x-2">
                   <Switch
@@ -307,9 +429,9 @@ const ServicesManager = () => {
                   <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
                     Cancelar
                   </Button>
-                  <Button onClick={handleAddService}>
+                  <Button onClick={handleAddService} disabled={loading}>
                     <Save className="h-4 w-4 mr-2" />
-                    Salvar
+                    {loading ? 'Salvando...' : 'Salvar'}
                   </Button>
                 </div>
               </div>
@@ -367,7 +489,7 @@ const ServicesManager = () => {
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
             >
-              <Card className={`overflow-hidden ${!service.isActive ? 'opacity-60' : ''}`}>
+              <Card className={`overflow-hidden ${!service.is_active ? 'opacity-60' : ''}`}>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
@@ -378,7 +500,7 @@ const ServicesManager = () => {
                           <Badge className={getCategoryColor(service.category)}>
                             {service.category}
                           </Badge>
-                          {!service.isActive && (
+                          {!service.is_active && (
                             <Badge variant="secondary">Inativo</Badge>
                           )}
                         </div>
@@ -394,14 +516,14 @@ const ServicesManager = () => {
                   
                   {/* Features */}
                   <div className="flex flex-wrap gap-1">
-                    {service.features.slice(0, 3).map((feature, index) => (
+                    {(service.features || []).slice(0, 3).map((feature, index) => (
                       <Badge key={index} variant="outline" className="text-xs">
                         {feature}
                       </Badge>
                     ))}
-                    {service.features.length > 3 && (
+                    {(service.features || []).length > 3 && (
                       <Badge variant="outline" className="text-xs">
-                        +{service.features.length - 3}
+                        +{(service.features || []).length - 3}
                       </Badge>
                     )}
                   </div>
@@ -410,7 +532,7 @@ const ServicesManager = () => {
                     <span className="text-sm font-medium text-gray-900">{service.price}</span>
                     <div className="flex items-center space-x-1">
                       <Switch
-                        checked={service.isActive}
+                        checked={service.is_active}
                         onCheckedChange={() => toggleServiceStatus(service.id)}
                         size="sm"
                       />
@@ -430,7 +552,7 @@ const ServicesManager = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleDeleteService(service.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="text-red-600 hover:text-red-700"
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
                       Excluir
@@ -443,30 +565,13 @@ const ServicesManager = () => {
         </AnimatePresence>
       </div>
 
-      {filteredServices.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Wrench className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Nenhum serviço encontrado
-            </h3>
-            <p className="text-gray-600">
-              {searchTerm || selectedCategory !== 'all' 
-                ? 'Tente ajustar os filtros de busca'
-                : 'Adicione o primeiro serviço'
-              }
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Edit Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Serviço</DialogTitle>
             <DialogDescription>
-              Atualize as informações do serviço
+              Modifique os dados do serviço
             </DialogDescription>
           </DialogHeader>
           {selectedService && (
@@ -478,6 +583,7 @@ const ServicesManager = () => {
                     id="edit-name"
                     value={selectedService.name}
                     onChange={(e) => setSelectedService({ ...selectedService, name: e.target.value })}
+                    placeholder="Nome do serviço"
                   />
                 </div>
                 <div>
@@ -486,6 +592,7 @@ const ServicesManager = () => {
                     id="edit-icon"
                     value={selectedService.icon}
                     onChange={(e) => setSelectedService({ ...selectedService, icon: e.target.value })}
+                    placeholder="🔧"
                   />
                 </div>
               </div>
@@ -495,18 +602,16 @@ const ServicesManager = () => {
                   id="edit-description"
                   value={selectedService.description}
                   onChange={(e) => setSelectedService({ ...selectedService, description: e.target.value })}
+                  placeholder="Descrição detalhada do serviço"
                   rows={3}
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="edit-category">Categoria</Label>
-                  <Select 
-                    value={selectedService.category} 
-                    onValueChange={(value) => setSelectedService({ ...selectedService, category: value })}
-                  >
+                  <Select value={selectedService.category} onValueChange={(value) => setSelectedService({ ...selectedService, category: value })}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map(category => (
@@ -523,6 +628,7 @@ const ServicesManager = () => {
                     id="edit-price"
                     value={selectedService.price}
                     onChange={(e) => setSelectedService({ ...selectedService, price: e.target.value })}
+                    placeholder="Ex: R$ 1.500,00 ou Sob Consulta"
                   />
                 </div>
               </div>
@@ -541,7 +647,7 @@ const ServicesManager = () => {
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {selectedService.features.map((feature, index) => (
+                    {(selectedService.features || []).map((feature, index) => (
                       <Badge key={index} variant="secondary" className="flex items-center space-x-1">
                         <span>{feature}</span>
                         <button
@@ -555,11 +661,20 @@ const ServicesManager = () => {
                   </div>
                 </div>
               </div>
+              <div>
+                <Label htmlFor="edit-image_url">URL da Imagem</Label>
+                <Input
+                  id="edit-image_url"
+                  value={selectedService.image_url || ''}
+                  onChange={(e) => setSelectedService({ ...selectedService, image_url: e.target.value })}
+                  placeholder="https://exemplo.com/imagem.jpg"
+                />
+              </div>
               <div className="flex items-center space-x-2">
                 <Switch
                   id="edit-isActive"
-                  checked={selectedService.isActive}
-                  onCheckedChange={(checked) => setSelectedService({ ...selectedService, isActive: checked })}
+                  checked={selectedService.is_active}
+                  onCheckedChange={(checked) => setSelectedService({ ...selectedService, is_active: checked })}
                 />
                 <Label htmlFor="edit-isActive">Serviço Ativo</Label>
               </div>
@@ -567,9 +682,9 @@ const ServicesManager = () => {
                 <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={handleEditService}>
+                <Button onClick={handleEditService} disabled={loading}>
                   <Save className="h-4 w-4 mr-2" />
-                  Salvar Alterações
+                  {loading ? 'Salvando...' : 'Salvar'}
                 </Button>
               </div>
             </div>
