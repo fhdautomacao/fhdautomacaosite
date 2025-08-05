@@ -23,7 +23,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { categoriesAPI } from '@/api/categories'
+import { useServiceCategories } from '@/hooks/useCategories'
 
 const ServicesManager = () => {
   const [services, setServices] = useState([])
@@ -35,19 +35,7 @@ const ServicesManager = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
 
-  const [categories, setCategories] = useState([])
-
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const data = await categoriesAPI.getByType("service")
-        setCategories(data)
-      } catch (err) {
-        console.error("Erro ao carregar categorias de serviços:", err)
-      }
-    }
-    loadCategories()
-  }, [])
+  const { categories, loading: categoriesLoading, error: categoriesError } = useServiceCategories()
 
   const [newService, setNewService] = useState({
     name: '',
@@ -273,9 +261,14 @@ const ServicesManager = () => {
     }
   }
 
-  const getCategoryColor = (categoryName) => {
-    const category = categories.find(cat => cat.name === categoryName)
+  const getCategoryColor = (categoryId) => {
+    const category = categories.find(cat => cat.id === categoryId)
     return category ? category.color : 'bg-gray-100 text-gray-800'
+  }
+
+  const getCategoryIcon = (categoryId) => {
+    const category = categories.find(cat => cat.id === categoryId)
+    return category ? category.icon : '⚙️'
   }
 
   if (loading && services.length === 0) {
@@ -363,13 +356,14 @@ const ServicesManager = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="category">Categoria</Label>
-                    <Select value={newService.category} onValueChange={(value) => setNewService({ ...newService, category: value })}>
+                    <Select value={newService.category} onValueChange={(value) => setNewService({ ...newService, category: value })} disabled={categoriesLoading}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma categoria" />
+                        <SelectValue placeholder={categoriesLoading ? "Carregando categorias..." : "Selecione uma categoria"} />
                       </SelectTrigger>
                       <SelectContent>
+                        {categoriesError && <SelectItem value="" disabled>Erro ao carregar categorias</SelectItem>}
                         {categories.map(category => (
-                          <SelectItem key={category.name} value={category.name}>
+                          <SelectItem key={category.id} value={category.id}>
                             {category.icon} {category.name}
                           </SelectItem>
                         ))}
@@ -436,7 +430,7 @@ const ServicesManager = () => {
                   <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
                     Cancelar
                   </Button>
-                  <Button onClick={handleAddService} disabled={loading}>
+                  <Button onClick={handleAddService} disabled={categoriesLoading}>
                     <Save className="h-4 w-4 mr-2" />
                     {loading ? 'Salvando...' : 'Salvar'}
                   </Button>
@@ -466,16 +460,17 @@ const ServicesManager = () => {
             </div>
             <div className="sm:w-48">
               <Label htmlFor="category-filter">Categoria</Label>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory} disabled={categoriesLoading}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder={categoriesLoading ? "Carregando..." : "Todas as categorias"} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas as categorias</SelectItem>
+                  {categoriesError && <SelectItem value="" disabled>Erro ao carregar categorias</SelectItem>}
                   {categories.map(category => (
-                  <SelectItem key={category.name} value={category.name}>
-                    {category.icon} {category.name}
-                  </SelectItem>
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.icon} {category.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>

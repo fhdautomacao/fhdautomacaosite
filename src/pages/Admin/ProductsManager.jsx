@@ -21,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { productsAPI } from '@/api/products'
-import { categoriesAPI } from '@/api/categories'
+import { useProductCategories } from '@/hooks/useCategories'
 
 const ProductsManager = () => {
   const [products, setProducts] = useState([])
@@ -33,19 +33,7 @@ const ProductsManager = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
 
-  const [categories, setCategories] = useState([])
-
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const data = await categoriesAPI.getByType("product")
-        setCategories(data)
-      } catch (err) {
-        console.error("Erro ao carregar categorias de produtos:", err)
-      }
-    }
-    loadCategories()
-  }, [])
+  const { categories, loading: categoriesLoading, error: categoriesError } = useProductCategories()
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -180,8 +168,8 @@ const ProductsManager = () => {
     }
   }
 
-  const getCategoryIcon = (categoryName) => {
-    const category = categories.find(cat => cat.name === categoryName)
+  const getCategoryIcon = (categoryId) => {
+    const category = categories.find(cat => cat.id === categoryId)
     return category ? category.icon : "📦"
   }
 
@@ -246,13 +234,14 @@ const ProductsManager = () => {
               </div>
               <div>
                 <Label htmlFor="category">Categoria</Label>
-                <Select value={newProduct.category} onValueChange={(value) => setNewProduct({ ...newProduct, category: value })}>
+                <Select value={newProduct.category} onValueChange={(value) => setNewProduct({ ...newProduct, category: value })} disabled={categoriesLoading}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma categoria" />
+                    <SelectValue placeholder={categoriesLoading ? "Carregando categorias..." : "Selecione uma categoria"} />
                   </SelectTrigger>
                   <SelectContent>
+                    {categoriesError && <SelectItem value="" disabled>Erro ao carregar categorias</SelectItem>}
                     {categories.map(category => (
-                      <SelectItem key={category.name} value={category.name}>
+                      <SelectItem key={category.id} value={category.id}>
                         {category.icon} {category.name}
                       </SelectItem>
                     ))}
@@ -320,7 +309,7 @@ const ProductsManager = () => {
                 <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={handleAddProduct}>
+                <Button onClick={handleAddProduct} disabled={categoriesLoading}>
                   <Save className="h-4 w-4 mr-2" />
                   Salvar
                 </Button>
@@ -349,15 +338,16 @@ const ProductsManager = () => {
             </div>
             <div className="sm:w-48">
               <Label htmlFor="category-filter">Categoria</Label>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory} disabled={categoriesLoading}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder={categoriesLoading ? "Carregando..." : "Todas as categorias"} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas as categorias</SelectItem>
+                  {categoriesError && <SelectItem value="" disabled>Erro ao carregar categorias</SelectItem>}
                   {categories.map(category => (
-                    <SelectItem key={category} value={category}>
-                      {getCategoryIcon(category)} {category}
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.icon} {category.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -385,7 +375,7 @@ const ProductsManager = () => {
                     <Package className="h-12 w-12 text-gray-400" />
                   </div>
                   <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-xs">
-                    {getCategoryIcon(product.category)} {product.category}
+                    {getCategoryIcon(product.category)} {categories.find(cat => cat.id === product.category)?.name || 'N/A'}
                   </div>
                 </div>
                 <CardContent className="p-4">
@@ -539,7 +529,7 @@ const ProductsManager = () => {
                 <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={handleEditProduct}>
+                <Button onClick={handleEditProduct} disabled={categoriesLoading}>
                   <Save className="h-4 w-4 mr-2" />
                   Salvar Alterações
                 </Button>
