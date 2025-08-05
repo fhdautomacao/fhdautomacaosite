@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Upload, 
@@ -20,34 +20,30 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { storageAPI } from '@/api/storage'
+import { galleryAPI } from '@/api/gallery'
 
 const GalleryManager = () => {
-  const [photos, setPhotos] = useState([
-    {
-      id: 1,
-      title: 'Unidade Hidráulica em Operação',
-      description: 'Sistema hidráulico completo instalado em cliente',
-      category: 'Unidades Hidráulicas',
-      image: '/gallery/unidade-hidraulica-1.jpg',
-      uploadDate: '2024-01-15'
-    },
-    {
-      id: 2,
-      title: 'Manutenção de Cilindro',
-      description: 'Serviço de manutenção preventiva em cilindro hidráulico',
-      category: 'Cilindros',
-      image: '/gallery/cilindro-manutencao.jpg',
-      uploadDate: '2024-01-10'
-    },
-    {
-      id: 3,
-      title: 'Instalação de Tubulação',
-      description: 'Instalação especializada de tubulação hidráulica',
-      category: 'Tubulações',
-      image: '/gallery/tubulacao-instalacao.jpg',
-      uploadDate: '2024-01-08'
+  const [photos, setPhotos] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const fetchPhotos = async () => {
+      console.log("Fetching photos...")
+      try {
+        setLoading(true)
+        const data = await galleryAPI.getAll()
+        console.log("Photos fetched:", data)
+        setPhotos(data)
+      } catch (err) {
+        console.error("Erro ao buscar fotos:", err)
+        setError("Não foi possível carregar as fotos.")
+      } finally {
+        setLoading(false)
+      }
     }
-  ])
+    fetchPhotos()
+  }, [])
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -88,36 +84,57 @@ const GalleryManager = () => {
         const { path } = await storageAPI.uploadFile(file, filePath);
         const publicUrl = storageAPI.getPublicUrl(path);
 
-        const photo = {
-          id: Date.now(),
-          ...newPhoto,
-          uploadDate: new Date().toISOString().split("T")[0],
-          image: publicUrl
+        const photoData = {
+          title: newPhoto.title,
+          description: newPhoto.description,
+          category: newPhoto.category,
+          image_url: publicUrl,
+          upload_date: new Date().toISOString().split("T")[0]
         };
-        setPhotos([...photos, photo]);
+
+        const createdPhoto = await galleryAPI.create(photoData);
+        setPhotos(prevPhotos => [...prevPhotos, createdPhoto]);
         setNewPhoto({ title: "", description: "", category: "", image: null });
         setIsAddModalOpen(false);
       } catch (error) {
-        console.error("Erro ao fazer upload da imagem:", error);
-        alert("Erro ao fazer upload da imagem. Verifique o console para mais detalhes.");
+        console.error("Erro ao fazer upload da imagem ou salvar no banco de dados:", error);
+        alert("Erro ao fazer upload da imagem ou salvar no banco de dados. Verifique o console para mais detalhes.");
       }
     } else {
       alert("Por favor, preencha todos os campos e selecione uma imagem.");
     }
   };
-  const handleEditPhoto = () => {
+  const handleEditPhoto = async () => {
     if (selectedPhoto) {
-      setPhotos(photos.map(photo => 
-        photo.id === selectedPhoto.id ? selectedPhoto : photo
-      ))
-      setIsEditModalOpen(false)
-      setSelectedPhoto(null)
+      try {
+        const updatedPhoto = await galleryAPI.update(selectedPhoto.id, {
+          title: selectedPhoto.title,
+          description: selectedPhoto.description,
+          category: selectedPhoto.category
+        });
+        setPhotos(photos.map(photo => 
+          photo.id === selectedPhoto.id ? updatedPhoto : photo
+        ));
+        setIsEditModalOpen(false);
+        setSelectedPhoto(null);
+      } catch (error) {
+        console.error("Erro ao atualizar foto:", error);
+        alert("Erro ao atualizar foto. Verifique o console para mais detalhes.");
+      }
     }
-  }
+  };
 
-  const handleDeletePhoto = (id) => {
-    setPhotos(photos.filter(photo => photo.id !== id))
-  }
+  const handleDeletePhoto = async (id) => {
+    if (window.confirm("Tem certeza que deseja excluir esta foto?")) {
+      try {
+        await galleryAPI.delete(id);
+        setPhotos(photos.filter(photo => photo.id !== id));
+      } catch (error) {
+        console.error("Erro ao deletar foto:", error);
+        alert("Erro ao deletar foto. Verifique o console para mais detalhes.");
+      }
+    }
+  };
 
   const openEditModal = (photo) => {
     setSelectedPhoto({ ...photo })
@@ -241,58 +258,23 @@ const GalleryManager = () => {
         </CardContent>
       </Card>
 
-      {/* Photos Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <AnimatePresence>
-          {filteredPhotos.map((photo) => (
-            <motion.div
-              key={photo.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Card className="overflow-hidden">
-                <div className="aspect-video bg-gray-200 relative">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Image className="h-12 w-12 text-gray-400" />
-                  </div>
-                  <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-xs">
-                    {photo.category}
-                  </div>
-                </div>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold text-gray-900 mb-2">{photo.title}</h3>
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">{photo.description}</p>
-                  <p className="text-xs text-gray-500 mb-4">Adicionado em: {photo.uploadDate}</p>
-                  <div className="flex justify-between">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openEditModal(photo)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Editar
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeletePhoto(photo.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Excluir
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+      {loading && (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <p className="text-gray-600">Carregando fotos...</p>
+          </CardContent>
+        </Card>
+      )}
 
-      {filteredPhotos.length === 0 && (
+      {error && (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <p className="text-red-600">{error}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {!loading && !error && filteredPhotos.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
             <Image className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -307,6 +289,56 @@ const GalleryManager = () => {
             </p>
           </CardContent>
         </Card>
+      )}
+
+      {!loading && !error && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <AnimatePresence>
+            {filteredPhotos.map((photo) => (
+              <motion.div
+                key={photo.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Card className="overflow-hidden">
+                  <div className="aspect-video bg-gray-200 relative">
+                    <img src={photo.image_url} alt={photo.title} className="w-full h-full object-cover" />
+                    <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-xs">
+                      {photo.category}
+                    </div>
+                  </div>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">{photo.title}</h3>
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{photo.description}</p>
+                    <p className="text-xs text-gray-500 mb-4">Adicionado em: {new Date(photo.upload_date).toLocaleDateString()}</p>
+                    <div className="flex justify-between">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEditModal(photo)}
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Editar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeletePhoto(photo.id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Excluir
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
       )}
 
       {/* Edit Modal */}
