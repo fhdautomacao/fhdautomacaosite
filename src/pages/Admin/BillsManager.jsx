@@ -18,7 +18,8 @@ import {
   Download,
   Upload,
   Calculator,
-  TrendingUp
+  TrendingUp,
+  X
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -64,10 +65,17 @@ const BillsManager = () => {
   })
 
   const [companies, setCompanies] = useState([])
+  const [totalReceived, setTotalReceived] = useState(0)
+  const [dateRange, setDateRange] = useState({
+    startDate: '',
+    endDate: '',
+    period: 'all' // all, today, week, month, custom
+  })
 
   useEffect(() => {
     loadBills()
     loadCompanies()
+    loadTotalReceived()
   }, [])
 
   const loadCompanies = async () => {
@@ -78,6 +86,85 @@ const BillsManager = () => {
       console.error("Erro ao carregar empresas:", err)
     }
   }
+
+  const loadTotalReceived = async () => {
+    try {
+      const total = await billsAPI.getTotalReceived()
+      setTotalReceived(total)
+    } catch (err) {
+      console.error("Erro ao carregar total recebido:", err)
+    }
+  }
+
+  const getDateRangeForPeriod = (period) => {
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    
+    switch (period) {
+      case 'today':
+        return {
+          startDate: today.toISOString(),
+          endDate: new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString()
+        }
+      case 'week':
+        const weekStart = new Date(today)
+        weekStart.setDate(today.getDate() - today.getDay())
+        const weekEnd = new Date(weekStart)
+        weekEnd.setDate(weekStart.getDate() + 7)
+        return {
+          startDate: weekStart.toISOString(),
+          endDate: weekEnd.toISOString()
+        }
+      case 'month':
+        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
+        const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+        return {
+          startDate: monthStart.toISOString(),
+          endDate: monthEnd.toISOString()
+        }
+      case 'custom':
+        return {
+          startDate: dateRange.startDate ? new Date(dateRange.startDate).toISOString() : null,
+          endDate: dateRange.endDate ? new Date(dateRange.endDate + 'T23:59:59').toISOString() : null
+        }
+      default:
+        return null
+    }
+  }
+
+  const applyDateFilter = async () => {
+    if (dateRange.period === 'all') {
+      loadBills()
+      return
+    }
+
+    const range = getDateRangeForPeriod(dateRange.period)
+    if (!range || !range.startDate || !range.endDate) {
+      loadBills()
+      return
+    }
+
+    try {
+      setLoading(true)
+      const data = await billsAPI.getByDateRange(range.startDate, range.endDate, {
+        type: filterType,
+        status: filterStatus,
+        company_name: searchTerm
+      })
+      setBills(data)
+    } catch (err) {
+      console.error("Erro ao carregar boletos por período:", err)
+      setError("Erro ao filtrar boletos por período.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (dateRange.period !== 'all') {
+      applyDateFilter()
+    }
+  }, [dateRange.period, dateRange.startDate, dateRange.endDate, filterType, filterStatus])
 
   const loadBills = async () => {
     try {
@@ -535,7 +622,21 @@ const BillsManager = () => {
           </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Recebido</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {formatCurrency(totalReceived)}
+                </p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -602,7 +703,7 @@ const BillsManager = () => {
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
             <div>
               <Label>Buscar</Label>
               <Input
@@ -639,8 +740,75 @@ const BillsManager = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-end">
-              <Button variant="outline" onClick={loadBills}>
+            <div>
+              <Label>Período</Label>
+              <Select 
+                value={dateRange.period} 
+                onValueChange={(value) => setDateRange({...dateRange, period: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="today">Hoje</SelectItem>
+                  <SelectItem value="week">Esta Semana</SelectItem>
+                  <SelectItem value="month">Este Mês</SelectItem>
+                  <SelectItem value="custom">Personalizado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {dateRange.period === 'custom' && (
+              <>
+                <div>
+                  <Label>Data Inicial</Label>
+                  <Input
+                    type="date"
+                    value={dateRange.startDate}
+                    onChange={(e) => setDateRange({...dateRange, startDate: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label>Data Final</Label>
+                  <Input
+                    type="date"
+                    value={dateRange.endDate}
+                    onChange={(e) => setDateRange({...dateRange, endDate: e.target.value})}
+                  />
+                </div>
+              </>
+            )}
+          </div>
+          
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-gray-600">
+              {dateRange.period !== 'all' && (
+                <span>
+                  Mostrando resultados para: {
+                    dateRange.period === 'today' ? 'Hoje' :
+                    dateRange.period === 'week' ? 'Esta Semana' :
+                    dateRange.period === 'month' ? 'Este Mês' :
+                    dateRange.period === 'custom' ? `${dateRange.startDate} a ${dateRange.endDate}` :
+                    'Todos'
+                  }
+                </span>
+              )}
+            </div>
+            <div className="flex items-end gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setDateRange({startDate: '', endDate: '', period: 'all'})
+                  setFilterType('all')
+                  setFilterStatus('all')
+                  setSearchTerm('')
+                  loadBills()
+                }}
+              >
+                <X className="h-4 w-4 mr-2" />
+                Limpar
+              </Button>
+              <Button variant="outline" onClick={dateRange.period === 'all' ? loadBills : applyDateFilter}>
                 <Filter className="h-4 w-4 mr-2" />
                 Atualizar
               </Button>

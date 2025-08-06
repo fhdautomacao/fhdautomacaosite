@@ -117,6 +117,74 @@ export const billsAPI = {
     return counts
   },
 
+  // Buscar total recebido (boletos do tipo receivable com status paid)
+  async getTotalReceived() {
+    const { data, error } = await supabase
+      .from('bills')
+      .select('total_amount')
+      .eq('type', 'receivable')
+      .eq('status', 'paid')
+    
+    if (error) throw error
+    
+    return data.reduce((total, bill) => total + bill.total_amount, 0)
+  },
+
+  // Buscar boletos por período
+  async getByDateRange(startDate, endDate, filters = {}) {
+    let query = supabase
+      .from('bills')
+      .select(`
+        *,
+        bill_installments (*)
+      `)
+      .gte('created_at', startDate)
+      .lte('created_at', endDate)
+      .order('created_at', { ascending: false })
+
+    // Aplicar filtros adicionais
+    if (filters.type && filters.type !== 'all') {
+      query = query.eq('type', filters.type)
+    }
+    
+    if (filters.status && filters.status !== 'all') {
+      query = query.eq('status', filters.status)
+    }
+
+    if (filters.company_name) {
+      query = query.ilike('company_name', `%${filters.company_name}%`)
+    }
+
+    const { data, error } = await query
+    
+    if (error) throw error
+    return data
+  },
+
+  // Buscar totais por período
+  async getTotalsByDateRange(startDate, endDate, type = null) {
+    let query = supabase
+      .from('bills')
+      .select('total_amount, status, type')
+      .gte('created_at', startDate)
+      .lte('created_at', endDate)
+
+    if (type) {
+      query = query.eq('type', type)
+    }
+
+    const { data, error } = await query
+    
+    if (error) throw error
+    
+    return {
+      total: data.reduce((sum, bill) => sum + bill.total_amount, 0),
+      paid: data.filter(bill => bill.status === 'paid').reduce((sum, bill) => sum + bill.total_amount, 0),
+      pending: data.filter(bill => bill.status === 'pending').reduce((sum, bill) => sum + bill.total_amount, 0),
+      overdue: data.filter(bill => bill.status === 'overdue').reduce((sum, bill) => sum + bill.total_amount, 0)
+    }
+  },
+
   // Gerar parcelas automaticamente
   async generateInstallments(billId, totalAmount, installments, interval, firstDueDate) {
     const installmentAmount = totalAmount / installments
