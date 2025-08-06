@@ -211,7 +211,22 @@ const QuotationsManager = () => {
     })
   }
 
-  return (
+  // Função para calcular tamanho dinâmico do modal baseado no conteúdo
+  const getModalSize = (quotation) => {
+    if (!quotation) return "max-w-2xl"
+    
+    const descriptionLength = quotation.description?.length || 0
+    const additionalInfoLength = quotation.additional_info?.length || 0
+    const totalTextLength = descriptionLength + additionalInfoLength
+    
+    // Definir tamanho baseado na quantidade de texto
+    if (totalTextLength > 1000) return "max-w-6xl" // Muito texto
+    if (totalTextLength > 500) return "max-w-4xl"  // Texto médio
+    if (totalTextLength > 200) return "max-w-3xl"  // Texto pequeno
+    return "max-w-2xl" // Padrão
+  }
+
+    return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -466,7 +481,7 @@ const QuotationsManager = () => {
 
       {/* View Modal */}
       <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className={`${getModalSize(selectedQuotation)} max-h-[90vh] overflow-y-auto`}>
           <DialogHeader>
             <DialogTitle>Detalhes do Orçamento</DialogTitle>
             <DialogDescription>
@@ -526,17 +541,27 @@ const QuotationsManager = () => {
                   </div>
                 </div>
                 
-                <div>
-                  <p className="text-sm font-medium text-gray-500 mb-2">Descrição do Projeto</p>
-                  <p className="text-gray-900 whitespace-pre-wrap">{selectedQuotation.description}</p>
-                </div>
-                
-                {selectedQuotation.additional_info && (
-                  <div className="mt-4">
-                    <p className="text-sm font-medium text-gray-500 mb-2">Informações Adicionais</p>
-                    <p className="text-gray-900 whitespace-pre-wrap">{selectedQuotation.additional_info}</p>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500 mb-2">Descrição do Projeto</p>
+                    <div className="bg-gray-50 p-4 rounded-lg border">
+                      <p className="text-gray-900 whitespace-pre-wrap break-words leading-relaxed">
+                        {selectedQuotation.description}
+                      </p>
+                    </div>
                   </div>
-                )}
+                  
+                  {selectedQuotation.additional_info && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-2">Informações Adicionais</p>
+                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                        <p className="text-gray-900 whitespace-pre-wrap break-words leading-relaxed">
+                          {selectedQuotation.additional_info}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Status e Notas */}
