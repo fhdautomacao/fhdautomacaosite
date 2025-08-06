@@ -36,7 +36,8 @@ class NotificationService extends ChangeNotifier {
 
   Future<void> _requestPermissions() async {
     final androidSettings = AndroidFlutterLocalNotificationsPlugin();
-    await androidSettings.requestPermission();
+    await androidSettings.requestExactAlarmsPermission();
+    await androidSettings.requestNotificationsPermission();
   }
 
   Future<void> setServerUrl(String url) async {
@@ -75,7 +76,6 @@ class NotificationService extends ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
         await _showLocalNotification(
           'Teste de Notificação',
           'Conexão com servidor funcionando!',

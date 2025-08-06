@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -51,43 +49,34 @@ class WhatsAppService extends ChangeNotifier {
       
       switch (notification['type']) {
         case 'overdue_bill':
-          message = '''🚨 BOLETO VENCENDO!
-
-Empresa: ${notification['data']['company_name']}
-Valor: R$ ${notification['data']['amount']}
-Vencimento: ${notification['data']['due_date']}
-
-FHD Automação Industrial''';
+          message = '🚨 BOLETO VENCENDO!\n\n'
+              'Empresa: ${notification['data']['company_name']}\n'
+              'Valor: R\$ ${notification['data']['amount']}\n'
+              'Vencimento: ${notification['data']['due_date']}\n\n'
+              'FHD Automação Industrial';
           break;
           
         case 'new_quotation':
-          message = '''📋 NOVO ORÇAMENTO!
-
-Cliente: ${notification['data']['client_name']}
-Empresa: ${notification['data']['company_name']}
-Serviço: ${notification['data']['service_type']}
-
-FHD Automação Industrial''';
+          message = '📋 NOVO ORÇAMENTO!\n\n'
+              'Cliente: ${notification['data']['client_name']}\n'
+              'Empresa: ${notification['data']['company_name']}\n'
+              'Serviço: ${notification['data']['service_type']}\n\n'
+              'FHD Automação Industrial';
           break;
           
         case 'profit_sharing':
-          message = '''💰 DIVISÃO DE LUCRO!
-
-Empresa: ${notification['data']['company_name']}
-Valor: R$ ${notification['data']['partner_share']}
-Data: ${notification['data']['date']}
-
-FHD Automação Industrial''';
+          message = '💰 DIVISÃO DE LUCRO!\n\n'
+              'Empresa: ${notification['data']['company_name']}\n'
+              'Valor: R\$ ${notification['data']['partner_share']}\n'
+              'Data: ${notification['data']['date']}\n\n'
+              'FHD Automação Industrial';
           break;
           
         default:
-          message = '''📱 NOTIFICAÇÃO
-
-${notification['title']}
-
-${notification['message']}
-
-FHD Automação Industrial''';
+          message = '📱 NOTIFICAÇÃO\n\n'
+              '${notification['title']}\n\n'
+              '${notification['message']}\n\n'
+              'FHD Automação Industrial';
       }
 
       return await sendMessage(message);
@@ -99,13 +88,10 @@ FHD Automação Industrial''';
   Future<void> testWhatsApp() async {
     if (!_isConfigured) return;
 
-    const testMessage = '''🧪 TESTE DE CONEXÃO
-
-Este é um teste do app WhatsApp Notifier.
-
-Se você recebeu esta mensagem, a configuração está funcionando!
-
-FHD Automação Industrial''';
+    const testMessage = '🧪 TESTE DE CONEXÃO\n\n'
+        'Este é um teste do app WhatsApp Notifier.\n\n'
+        'Se você recebeu esta mensagem, a configuração está funcionando!\n\n'
+        'FHD Automação Industrial';
 
     await sendMessage(testMessage);
   }

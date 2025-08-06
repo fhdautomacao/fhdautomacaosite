@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: StatusCard(
                         title: 'WhatsApp',
                         isConnected: whatsappService.isConfigured,
-                        icon: Icons.whatsapp,
+                        icon: Icons.chat,
                         color: Colors.green,
                       ),
                     ),
@@ -92,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: whatsappService.isConfigured 
                           ? () => whatsappService.testWhatsApp()
                           : null,
-                        icon: Icon(Icons.whatsapp),
+                        icon: Icon(Icons.chat),
                         label: Text('Testar WhatsApp'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,

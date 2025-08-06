@@ -63,7 +63,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                 labelText: 'Número do WhatsApp',
                 hintText: '5519998652144',
                 border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.whatsapp),
+                prefixIcon: Icon(Icons.chat),
               ),
             ),
             SizedBox(height: 24),
