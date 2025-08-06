@@ -46,6 +46,7 @@ import QuotationsManager from './QuotationsManager'
 import BillsManager from './BillsManager'
 import CompaniesManager from './CompaniesManager'
 import ProfitSharingManager from './ProfitSharingManager'
+import AdvancedDashboard from './AdvancedDashboard'
 
 // Import new content managers
 import ServicesManager from './ContentManagers/ServicesManager'
@@ -246,146 +247,7 @@ const AdminPageNew = () => {
   const renderContent = () => {
     switch (activeSection) {
       case 'dashboard':
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-gray-600">Visão geral do seu site e atividades recentes</p>
-              </div>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Últimos 30 dias
-                </Button>
-                <Button size="sm">
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Ver Relatório
-                </Button>
-              </div>
-            </div>
-
-            {/* Notification Banner */}
-            <QuotationNotification variant="banner" />
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {dashboardStats.map((stat, index) => (
-                <motion.div
-                  key={stat.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: 1.02 }}
-                >
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                          <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
-                          <p className="text-xs text-gray-500 mt-1 flex items-center">
-                            <TrendingUp className="h-3 w-3 mr-1" />
-                            {stat.change}
-                          </p>
-                        </div>
-                        <div className={`p-3 rounded-lg ${getColorClasses(stat.color)}`}>
-                          <stat.icon className="h-6 w-6" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Ações Rápidas</CardTitle>
-                <CardDescription>Acesse rapidamente as funcionalidades mais utilizadas</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <Button 
-                    variant="outline" 
-                    className="h-20 flex-col space-y-2"
-                    onClick={() => setActiveSection('products')}
-                  >
-                    <Plus className="h-6 w-6" />
-                    <span>Novo Produto</span>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="h-20 flex-col space-y-2"
-                    onClick={() => setActiveSection('gallery')}
-                  >
-                    <Upload className="h-6 w-6" />
-                    <span>Upload Foto</span>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="h-20 flex-col space-y-2"
-                    onClick={() => setActiveSection('clients')}
-                  >
-                    <Building className="h-6 w-6" />
-                    <span>Novo Cliente</span>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="h-20 flex-col space-y-2"
-                    onClick={() => setActiveSection('hero')}
-                  >
-                    <Edit className="h-6 w-6" />
-                    <span>Editar Hero</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Recent Activities */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Bell className="h-5 w-5" />
-                  <span>Atividades Recentes</span>
-                </CardTitle>
-                <CardDescription>
-                  Últimas alterações realizadas no sistema
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentActivities.map((activity, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 + index * 0.05 }}
-                      className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex-shrink-0">
-                        {getActivityIcon(activity.type)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900">
-                          {activity.action}
-                        </p>
-                        <p className="text-sm text-gray-600 truncate">
-                          {activity.item}
-                        </p>
-                      </div>
-                      <div className="flex-shrink-0 text-right">
-                        <p className="text-xs text-gray-500">{activity.time}</p>
-                        <p className="text-xs text-gray-400">por {activity.user}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )
+        return <AdvancedDashboard />
 
       case 'services':
         return <ServicesManager />
