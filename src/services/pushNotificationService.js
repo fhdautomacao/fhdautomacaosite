@@ -48,32 +48,29 @@ class PushNotificationService {
     return Notification.permission
   }
 
-  // Gerar chave VAPID (para produção, usar chave real do servidor)
-  getVapidKey() {
-    // Esta é uma chave de exemplo - em produção, use uma chave real do seu servidor
-    return 'BCgaW_7BT4LSeAZjzE6Q1VAE8FU9zGF8v6ZT7qBhKbKa7HNmqwA5xYd1qjUn3k4hxO9Z2K9L2MZNQ6VvQbAH8wE'
-  }
-
-  // Criar subscription
+  // Criar subscription (usando notificações locais por enquanto)
   async createSubscription() {
     if (!this.registration) {
       await this.registerServiceWorker()
     }
 
     try {
-      this.subscription = await this.registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(this.getVapidKey())
-      })
+      // Por enquanto, vamos usar apenas notificações locais sem push server
+      // Criar uma subscription "mock" para compatibilidade
+      this.subscription = {
+        endpoint: 'local-notifications',
+        type: 'local',
+        created: new Date().toISOString()
+      }
 
-      console.log('✅ Subscription criada:', this.subscription)
+      console.log('✅ Sistema de notificações locais ativado:', this.subscription)
       
       // Salvar subscription no localStorage para persistência
       localStorage.setItem('pushSubscription', JSON.stringify(this.subscription))
       
       return this.subscription
     } catch (error) {
-      console.error('❌ Erro ao criar subscription:', error)
+      console.error('❌ Erro ao configurar notificações:', error)
       throw error
     }
   }
@@ -85,19 +82,10 @@ class PushNotificationService {
     if (savedSubscription) {
       try {
         this.subscription = JSON.parse(savedSubscription)
+        return this.subscription
       } catch {
         localStorage.removeItem('pushSubscription')
       }
-    }
-
-    if (!this.registration) {
-      await this.registerServiceWorker()
-    }
-
-    const existingSubscription = await this.registration.pushManager.getSubscription()
-    if (existingSubscription) {
-      this.subscription = existingSubscription
-      localStorage.setItem('pushSubscription', JSON.stringify(existingSubscription))
     }
 
     return this.subscription
@@ -107,10 +95,10 @@ class PushNotificationService {
   async unsubscribe() {
     const subscription = await this.getSubscription()
     if (subscription) {
-      await subscription.unsubscribe()
+      // Para notificações locais, apenas limpar o localStorage
       localStorage.removeItem('pushSubscription')
       this.subscription = null
-      console.log('🔕 Subscription cancelada')
+      console.log('🔕 Notificações desativadas')
     }
   }
 
@@ -173,21 +161,7 @@ class PushNotificationService {
     }
   }
 
-  // Utility: Converter chave VAPID
-  urlBase64ToUint8Array(base64String) {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4)
-    const base64 = (base64String + padding)
-      .replace(/-/g, '+')
-      .replace(/_/g, '/')
 
-    const rawData = window.atob(base64)
-    const outputArray = new Uint8Array(rawData.length)
-
-    for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i)
-    }
-    return outputArray
-  }
 
   // Verificar se já está configurado
   async isConfigured() {

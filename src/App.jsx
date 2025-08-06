@@ -55,7 +55,7 @@ function AppContent() {
         />
         <Route path="/login-admin" element={<LoginPage />} />
       </Routes>
-      <Footer />
+      {!isAdminRoute && <Footer />}
     </>
   );
 }
