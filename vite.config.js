@@ -21,7 +21,11 @@ export default defineConfig({
         }
       }
     },
-    chunkSizeWarningLimit: 1000
+    chunkSizeWarningLimit: 1000,
+    // Garantir que os assets sejam servidos corretamente
+    assetsInlineLimit: 4096,
+    cssCodeSplit: true,
+    sourcemap: false
   },
   plugins: [react(),tailwindcss()],
   resolve: {
@@ -29,4 +33,12 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Configurações específicas para produção
+  define: {
+    __DEV__: false
+  },
+  // Otimizações para melhor performance
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom']
+  }
 })

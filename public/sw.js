@@ -1,9 +1,9 @@
 // Service Worker para notificações push
-const CACHE_NAME = 'fhd-automacao-v2' // Versão atualizada para forçar limpeza
+const CACHE_NAME = 'fhd-automacao-v3' // Versão atualizada para forçar limpeza
 
 // Instalar Service Worker
 self.addEventListener('install', (event) => {
-  console.log('📱 Service Worker instalado - versão v2')
+  console.log('📱 Service Worker instalado - versão v3')
   
   // Forçar ativação imediata
   self.skipWaiting()
@@ -22,7 +22,7 @@ self.addEventListener('install', (event) => {
 
 // Ativar Service Worker
 self.addEventListener('activate', (event) => {
-  console.log('🔥 Service Worker ativado - versão v2')
+  console.log('🔥 Service Worker ativado - versão v3')
   
   // Forçar controle imediato
   event.waitUntil(
@@ -47,28 +47,36 @@ self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
   
-  // NÃO interceptar assets (JS, CSS, imagens, etc.)
+  // NÃO interceptar assets (JS, CSS, imagens, etc.) - DEIXAR PASSAR DIRETO
   if (url.pathname.includes('/assets/') || 
       url.pathname.includes('.js') || 
       url.pathname.includes('.css') ||
       url.pathname.includes('.png') ||
       url.pathname.includes('.jpg') ||
+      url.pathname.includes('.jpeg') ||
+      url.pathname.includes('.gif') ||
+      url.pathname.includes('.webp') ||
       url.pathname.includes('.ico') ||
       url.pathname.includes('.svg') ||
       url.pathname.includes('.woff') ||
       url.pathname.includes('.woff2') ||
-      url.pathname.includes('.ttf')) {
-    // Deixar passar direto para a rede
+      url.pathname.includes('.ttf') ||
+      url.pathname.includes('.eot') ||
+      url.pathname.includes('.map') ||
+      url.pathname.includes('fonts.googleapis.com') ||
+      url.pathname.includes('fonts.gstatic.com')) {
+    // Deixar passar direto para a rede - NÃO INTERFERIR
     return
   }
   
-  // Apenas para páginas HTML
-  if (request.method === 'GET' && request.headers.get('accept')?.includes('text/html')) {
+  // Apenas para páginas HTML e API calls
+  if (request.method === 'GET') {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Só fazer cache se a resposta for válida
-          if (response && response.status === 200) {
+          // Só fazer cache se a resposta for válida e for HTML
+          if (response && response.status === 200 && 
+              response.headers.get('content-type')?.includes('text/html')) {
             const responseClone = response.clone()
             caches.open(CACHE_NAME)
               .then((cache) => {
@@ -82,8 +90,12 @@ self.addEventListener('fetch', (event) => {
         })
         .catch((error) => {
           console.error('❌ Erro na requisição:', error)
-          // Em caso de erro, tentar buscar do cache
-          return caches.match(request)
+          // Em caso de erro, tentar buscar do cache apenas para HTML
+          if (request.headers.get('accept')?.includes('text/html')) {
+            return caches.match(request)
+          }
+          // Para outros tipos, deixar o erro passar
+          throw error
         })
     )
   }

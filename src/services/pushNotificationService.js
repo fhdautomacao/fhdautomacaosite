@@ -26,6 +26,9 @@ class PushNotificationService {
         return existingRegistration
       }
 
+      // Aguardar um pouco antes de registrar para evitar conflitos
+      await new Promise(resolve => setTimeout(resolve, 100))
+
       // Registrar novo Service Worker
       this.registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/',
@@ -50,8 +53,14 @@ class PushNotificationService {
         }
         console.log('🔄 Service Workers antigos removidos')
         
+        // Aguardar um pouco antes de registrar novamente
+        await new Promise(resolve => setTimeout(resolve, 200))
+        
         // Tentar registrar novamente
-        this.registration = await navigator.serviceWorker.register('/sw.js')
+        this.registration = await navigator.serviceWorker.register('/sw.js', {
+          scope: '/',
+          updateViaCache: 'none'
+        })
         console.log('✅ Service Worker re-registrado:', this.registration)
         return this.registration
       } catch (retryError) {
@@ -141,39 +150,47 @@ class PushNotificationService {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
   }
 
-  // Limpar cache e forçar atualização do Service Worker
+  // Limpar cache e atualizar
   async clearCacheAndUpdate() {
+    if (!this.isSupported) {
+      console.warn('⚠️ Service Workers não são suportados')
+      return false
+    }
+
     try {
-      console.log('🧹 Limpando cache do Service Worker...')
+      console.log('🧹 Limpando cache e atualizando...')
       
-      // Limpar cache do navegador
-      if ('caches' in window) {
-        const cacheNames = await caches.keys()
-        await Promise.all(
-          cacheNames.map(cacheName => caches.delete(cacheName))
-        )
-        console.log('✅ Cache do navegador limpo')
+      // 1. Desregistrar todos os Service Workers
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      for (const registration of registrations) {
+        await registration.unregister()
+        console.log('🗑️ Service Worker desregistrado:', registration)
       }
       
-      // Desregistrar Service Workers antigos
-      const registrations = await navigator.serviceWorker.getRegistrations()
-      await Promise.all(
-        registrations.map(registration => registration.unregister())
-      )
-      console.log('✅ Service Workers antigos removidos')
+      // 2. Limpar todos os caches
+      const cacheNames = await caches.keys()
+      for (const cacheName of cacheNames) {
+        await caches.delete(cacheName)
+        console.log('🗑️ Cache removido:', cacheName)
+      }
       
-      // Limpar localStorage relacionado
-      localStorage.removeItem('pushSubscription')
-      console.log('✅ Dados locais limpos')
+      // 3. Aguardar um pouco
+      await new Promise(resolve => setTimeout(resolve, 500))
       
-      // Registrar novo Service Worker
+      // 4. Registrar novo Service Worker
       await this.registerServiceWorker()
-      console.log('✅ Novo Service Worker registrado')
       
+      // 5. Forçar atualização da página após um delay
+      setTimeout(() => {
+        console.log('🔄 Forçando atualização da página...')
+        window.location.reload()
+      }, 1000)
+      
+      console.log('✅ Cache limpo e Service Worker atualizado')
       return true
     } catch (error) {
       console.error('❌ Erro ao limpar cache:', error)
-      throw error
+      return false
     }
   }
 
@@ -267,29 +284,42 @@ class PushNotificationService {
     }
   }
 
-  // Configuração completa de notificações
+  // Configurar notificações
   async setup() {
+    if (!this.isSupported) {
+      console.warn('⚠️ Service Workers não são suportados')
+      return false
+    }
+
     try {
-      console.log('🚀 Configurando notificações push...')
+      // Aguardar um pouco para evitar conflitos durante o carregamento da página
+      await new Promise(resolve => setTimeout(resolve, 1000))
       
-      // 1. Verificar suporte
-      if (!this.isNotificationSupported()) {
-        throw new Error('Notificações não são suportadas')
-      }
-
-      // 2. Registrar Service Worker
+      console.log('🔧 Configurando notificações...')
+      
+      // Registrar Service Worker
       await this.registerServiceWorker()
-
-      // 3. Solicitar permissão
-      const hasPermission = await this.requestPermission()
-      if (!hasPermission) {
-        throw new Error('Permissão de notificação negada')
+      
+      // Verificar permissão
+      const permission = this.getPermissionStatus()
+      console.log('🔔 Status da permissão:', permission)
+      
+      if (permission === 'default') {
+        // Solicitar permissão
+        const granted = await this.requestPermission()
+        if (!granted) {
+          console.warn('⚠️ Permissão de notificação negada')
+          return false
+        }
+      } else if (permission === 'denied') {
+        console.warn('⚠️ Permissão de notificação negada anteriormente')
+        return false
       }
-
-      // 4. Criar subscription
+      
+      // Criar subscription
       await this.createSubscription()
-
-      console.log('✅ Notificações push configuradas com sucesso!')
+      
+      console.log('✅ Notificações configuradas com sucesso')
       return true
     } catch (error) {
       console.error('❌ Erro ao configurar notificações:', error)

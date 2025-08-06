@@ -19,7 +19,12 @@ const NotificationSettings = () => {
   const [enabling, setEnabling] = useState(false)
 
   useEffect(() => {
-    loadStatus()
+    // Aguardar um pouco para evitar conflitos durante o carregamento da página
+    const timer = setTimeout(() => {
+      loadStatus()
+    }, 2000)
+    
+    return () => clearTimeout(timer)
   }, [])
 
   const loadStatus = async () => {
@@ -121,6 +126,38 @@ const NotificationSettings = () => {
       }
       
       alert(errorMessage)
+    }
+  }
+
+  const handleForceUpdate = async () => {
+    try {
+      console.log('🔄 Forçando atualização da página...')
+      
+      // Limpar cache do navegador
+      if ('caches' in window) {
+        const cacheNames = await caches.keys()
+        for (const cacheName of cacheNames) {
+          await caches.delete(cacheName)
+          console.log('🗑️ Cache removido:', cacheName)
+        }
+      }
+      
+      // Limpar localStorage relacionado
+      localStorage.removeItem('pushSubscription')
+      
+      // Desregistrar Service Workers
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations()
+        for (const registration of registrations) {
+          await registration.unregister()
+          console.log('🗑️ Service Worker desregistrado:', registration)
+        }
+      }
+      
+      // Recarregar página
+      window.location.reload()
+    } catch (error) {
+      console.error('Erro ao forçar atualização:', error)
     }
   }
 
@@ -286,19 +323,10 @@ const NotificationSettings = () => {
                 
                 <Button 
                   variant="outline"
-                  onClick={async () => {
-                    try {
-                      await pushNotificationService.clearCacheAndUpdate()
-                      setStatus('Cache limpo e Service Worker atualizado!')
-                      setTimeout(() => setStatus(''), 3000)
-                    } catch (error) {
-                      setStatus(`Erro ao limpar cache: ${error.message}`)
-                      setTimeout(() => setStatus(''), 5000)
-                    }
-                  }}
+                  onClick={handleForceUpdate}
                   className="flex-1"
                 >
-                  🧹 Limpar Cache
+                  🧹 Limpar Cache & Recarregar
                 </Button>
               </>
             )}
