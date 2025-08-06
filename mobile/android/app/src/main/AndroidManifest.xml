@@ -7,7 +7,7 @@
     <application
         android:label="WhatsApp Notifier"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@android:drawable/ic_dialog_email">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -39,7 +39,8 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
-                <action android:name="android.intent.action.PACKAGE_REPLACED" android:dataScheme="package"/>
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <data android:scheme="package" />
             </intent-filter>
         </receiver>
     </application>
