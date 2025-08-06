@@ -11,6 +11,18 @@ export default defineConfig({
     strictPort: true,
     allowedHosts: ["5173-iel0lw9zf2y2he08fyvgf-46466cc3.manusvm.computer"]
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          ui: ['framer-motion', '@radix-ui/react-dialog', '@radix-ui/react-select']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000
+  },
   plugins: [react(),tailwindcss()],
   resolve: {
     alias: {

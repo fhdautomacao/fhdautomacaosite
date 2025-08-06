@@ -283,6 +283,23 @@ const NotificationSettings = () => {
                   <BellOff className="h-4 w-4 mr-2" />
                   Desativar
                 </Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={async () => {
+                    try {
+                      await pushNotificationService.clearCacheAndUpdate()
+                      setStatus('Cache limpo e Service Worker atualizado!')
+                      setTimeout(() => setStatus(''), 3000)
+                    } catch (error) {
+                      setStatus(`Erro ao limpar cache: ${error.message}`)
+                      setTimeout(() => setStatus(''), 5000)
+                    }
+                  }}
+                  className="flex-1"
+                >
+                  🧹 Limpar Cache
+                </Button>
               </>
             )}
           </div>

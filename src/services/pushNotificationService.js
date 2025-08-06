@@ -18,12 +18,46 @@ class PushNotificationService {
     }
 
     try {
-      this.registration = await navigator.serviceWorker.register('/sw.js')
+      // Verificar se já existe um Service Worker registrado
+      const existingRegistration = await navigator.serviceWorker.getRegistration()
+      if (existingRegistration) {
+        console.log('🔄 Service Worker já registrado:', existingRegistration)
+        this.registration = existingRegistration
+        return existingRegistration
+      }
+
+      // Registrar novo Service Worker
+      this.registration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/',
+        updateViaCache: 'none' // Sempre buscar versão mais recente
+      })
+      
       console.log('✅ Service Worker registrado:', this.registration)
+      
+      // Aguardar o Service Worker estar pronto
+      await navigator.serviceWorker.ready
+      console.log('✅ Service Worker pronto para uso')
+      
       return this.registration
     } catch (error) {
       console.error('❌ Erro ao registrar Service Worker:', error)
-      throw error
+      
+      // Se falhar, tentar desregistrar e registrar novamente
+      try {
+        const registrations = await navigator.serviceWorker.getRegistrations()
+        for (const registration of registrations) {
+          await registration.unregister()
+        }
+        console.log('🔄 Service Workers antigos removidos')
+        
+        // Tentar registrar novamente
+        this.registration = await navigator.serviceWorker.register('/sw.js')
+        console.log('✅ Service Worker re-registrado:', this.registration)
+        return this.registration
+      } catch (retryError) {
+        console.error('❌ Erro ao re-registrar Service Worker:', retryError)
+        throw retryError
+      }
     }
   }
 
@@ -105,6 +139,42 @@ class PushNotificationService {
   // Detectar se é mobile
   isMobile() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  }
+
+  // Limpar cache e forçar atualização do Service Worker
+  async clearCacheAndUpdate() {
+    try {
+      console.log('🧹 Limpando cache do Service Worker...')
+      
+      // Limpar cache do navegador
+      if ('caches' in window) {
+        const cacheNames = await caches.keys()
+        await Promise.all(
+          cacheNames.map(cacheName => caches.delete(cacheName))
+        )
+        console.log('✅ Cache do navegador limpo')
+      }
+      
+      // Desregistrar Service Workers antigos
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      await Promise.all(
+        registrations.map(registration => registration.unregister())
+      )
+      console.log('✅ Service Workers antigos removidos')
+      
+      // Limpar localStorage relacionado
+      localStorage.removeItem('pushSubscription')
+      console.log('✅ Dados locais limpos')
+      
+      // Registrar novo Service Worker
+      await this.registerServiceWorker()
+      console.log('✅ Novo Service Worker registrado')
+      
+      return true
+    } catch (error) {
+      console.error('❌ Erro ao limpar cache:', error)
+      throw error
+    }
   }
 
   // Enviar notificação local (teste)
