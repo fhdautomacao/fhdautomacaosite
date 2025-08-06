@@ -149,9 +149,39 @@ const BillsManager = () => {
         payment_notes: selectedInstallment.payment_notes
       })
       
+      // Atualizar o estado local do selectedBill
+      if (selectedBill) {
+        const updatedInstallments = selectedBill.bill_installments?.map(installment => 
+          installment.id === selectedInstallment.id 
+            ? { ...installment, ...selectedInstallment }
+            : installment
+        )
+        
+        setSelectedBill({
+          ...selectedBill,
+          bill_installments: updatedInstallments
+        })
+      }
+      
+      // Atualizar também na lista de boletos
+      setBills(prevBills => 
+        prevBills.map(bill => {
+          if (bill.id === selectedBill?.id) {
+            return {
+              ...bill,
+              bill_installments: bill.bill_installments?.map(installment => 
+                installment.id === selectedInstallment.id 
+                  ? { ...installment, ...selectedInstallment }
+                  : installment
+              )
+            }
+          }
+          return bill
+        })
+      )
+      
       setShowInstallmentModal(false)
       setSelectedInstallment(null)
-      loadBills()
     } catch (err) {
       console.error("Erro ao atualizar parcela:", err)
       alert("Erro ao atualizar parcela. Tente novamente.")
