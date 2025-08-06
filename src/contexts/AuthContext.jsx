@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
-import { authAPI } from '../api/auth'
+import { createContext, useContext, useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext()
 
@@ -14,64 +14,112 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [userPermissions, setUserPermissions] = useState({
+    canAccessQuotations: false,
+    canAccessBills: false,
+    isAdmin: false
+  })
 
   useEffect(() => {
     // Verificar sessão atual
-    const checkAuth = async () => {
-      try {
-        const session = await authAPI.getCurrentSession()
-        if (session?.user) {
-          setUser(session.user)
-        }
-      } catch (error) {
-        console.error('Erro ao verificar autenticação:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    checkAuth()
-
-    // Escutar mudanças de autenticação
-    const { data: { subscription } } = authAPI.onAuthStateChange((event, session) => {
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         setUser(session.user)
-      } else {
-        setUser(null)
+        checkUserPermissions(session.user.email)
       }
       setLoading(false)
-    })
+    }
+
+    getSession()
+
+    // Escutar mudanças de autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          setUser(session.user)
+          checkUserPermissions(session.user.email)
+        } else {
+          setUser(null)
+          setUserPermissions({
+            canAccessQuotations: false,
+            canAccessBills: false,
+            isAdmin: false
+          })
+        }
+        setLoading(false)
+      }
+    )
 
     return () => subscription.unsubscribe()
   }, [])
 
+  const checkUserPermissions = (email) => {
+    if (!email) return
+
+    const permissions = {
+      canAccessQuotations: false,
+      canAccessBills: false,
+      isAdmin: false
+    }
+
+    // adminfhd@fhd.com tem acesso total
+    if (email === 'adminfhd@fhd.com') {
+      permissions.canAccessQuotations = true
+      permissions.canAccessBills = true
+      permissions.isAdmin = true
+    }
+    // fhduser@fhd.com tem acesso limitado
+    else if (email === 'fhduser@fhd.com') {
+      permissions.canAccessQuotations = false
+      permissions.canAccessBills = false
+      permissions.isAdmin = false
+    }
+
+    setUserPermissions(permissions)
+  }
+
   const login = async (email, password) => {
     try {
       console.log('Tentando fazer login com:', { email, password: '***' })
-      const { user } = await authAPI.signIn(email, password)
-      console.log('Login bem-sucedido:', user)
-      setUser(user)
-      return { success: true }
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (error) {
+        console.error('Erro no login:', error)
+        throw error
+      }
+
+      console.log('Login bem-sucedido:', data.user.email)
+      return data
     } catch (error) {
-      console.error('Erro no login:', error)
-      return { success: false, error: error.message }
+      console.error('Erro ao fazer login:', error)
+      throw error
     }
   }
 
   const logout = async () => {
     try {
-      await authAPI.signOut()
-      setUser(null)
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Erro ao fazer logout:', error)
+        throw error
+      }
     } catch (error) {
       console.error('Erro ao fazer logout:', error)
+      throw error
     }
   }
 
   const value = {
     user,
+    loading,
     login,
     logout,
-    loading
+    userPermissions
   }
 
   return (

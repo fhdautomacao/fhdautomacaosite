@@ -46,6 +46,7 @@ import GalleryManager from './GalleryManager'
 import ClientsManager from './ClientsManager'
 import ProductsManager from './ProductsManager'
 import QuotationsManager from './QuotationsManager'
+import BillsManager from './BillsManager'
 
 // Import new content managers
 import HeroManager from './ContentManagers/HeroManager'
@@ -55,7 +56,7 @@ import QuotationNotification from '@/components/QuotationNotification'
 const AdminPageNew = () => {
   const [activeSection, setActiveSection] = useState('dashboard')
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const { logout } = useAuth()
+  const { logout, userPermissions } = useAuth()
 
   const handleLogout = () => {
     logout()
@@ -118,7 +119,18 @@ const AdminPageNew = () => {
       section: 'quotations',
       children: [
         { id: 'quotations', label: 'Solicitações', icon: FileText }
-      ]
+      ],
+      requiresPermission: 'canAccessQuotations'
+    },
+    {
+      id: 'bills',
+      label: 'Boletos',
+      icon: DollarSign,
+      section: 'bills',
+      children: [
+        { id: 'bills', label: 'Controle de Boletos', icon: DollarSign }
+      ],
+      requiresPermission: 'canAccessBills'
     },
     {
       id: 'settings',
@@ -502,7 +514,26 @@ const AdminPageNew = () => {
         return <ProductsManager />
 
       case 'quotations':
-        return <QuotationsManager />
+        return userPermissions.canAccessQuotations ? <QuotationsManager /> : (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Acesso Negado</h3>
+              <p className="text-gray-600">Você não tem permissão para acessar esta seção.</p>
+            </div>
+          </div>
+        )
+
+      case 'bills':
+        return userPermissions.canAccessBills ? <BillsManager /> : (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Acesso Negado</h3>
+              <p className="text-gray-600">Você não tem permissão para acessar esta seção.</p>
+            </div>
+          </div>
+        )
 
       default:
         return (
@@ -559,34 +590,48 @@ const AdminPageNew = () => {
 
           <nav className="mt-6 px-3">
             <div className="space-y-1">
-              {navigationItems.map((item) => (
-                <div key={item.id}>
-                  <Button
-                    variant={activeSection === item.id ? "secondary" : "ghost"}
-                    className="w-full justify-start"
-                    onClick={() => setActiveSection(item.id)}
-                  >
-                    <item.icon className="h-4 w-4 mr-3" />
-                    {item.label}
-                  </Button>
-                  {item.children && (
-                    <div className="ml-6 mt-1 space-y-1">
-                      {item.children.map((child) => (
-                        <Button
-                          key={child.id}
-                          variant={activeSection === child.id ? "secondary" : "ghost"}
-                          size="sm"
-                          className="w-full justify-start"
-                          onClick={() => setActiveSection(child.id)}
-                        >
-                          <child.icon className="h-4 w-4 mr-3" />
-                          {child.label}
-                        </Button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
+              {navigationItems.map((item) => {
+                // Verificar permissões
+                if (item.requiresPermission && !userPermissions[item.requiresPermission]) {
+                  return null
+                }
+                
+                return (
+                  <div key={item.id}>
+                    <Button
+                      variant={activeSection === item.id ? "secondary" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => setActiveSection(item.id)}
+                    >
+                      <item.icon className="h-4 w-4 mr-3" />
+                      {item.label}
+                    </Button>
+                    {item.children && (
+                      <div className="ml-6 mt-1 space-y-1">
+                        {item.children.map((child) => {
+                          // Verificar permissões para children também
+                          if (item.requiresPermission && !userPermissions[item.requiresPermission]) {
+                            return null
+                          }
+                          
+                          return (
+                            <Button
+                              key={child.id}
+                              variant={activeSection === child.id ? "secondary" : "ghost"}
+                              size="sm"
+                              className="w-full justify-start"
+                              onClick={() => setActiveSection(child.id)}
+                            >
+                              <child.icon className="h-4 w-4 mr-3" />
+                              {child.label}
+                            </Button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </nav>
 
