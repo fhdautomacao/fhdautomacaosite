@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
+import 'simple_home_screen.dart';
 
 class TestScreen extends StatelessWidget {
   @override
@@ -40,7 +40,7 @@ class TestScreen extends StatelessWidget {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => HomeScreen(),
+                    builder: (context) => SimpleHomeScreen(),
                   ),
                 );
               },
