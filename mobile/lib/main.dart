@@ -3,33 +3,24 @@ import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
 import 'services/notification_service.dart';
 import 'services/whatsapp_service.dart';
+import 'test_screen.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Inicializar serviços
-  await NotificationService().initialize();
-  
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => NotificationService()),
-        ChangeNotifierProvider(create: (_) => WhatsAppService()),
-      ],
-      child: MaterialApp(
-        title: 'WhatsApp Notifier',
-        theme: ThemeData(
-          primarySwatch: Colors.green,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-        ),
-        home: HomeScreen(),
-        debugShowCheckedModeBanner: false,
+    return MaterialApp(
+      title: 'WhatsApp Notifier',
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
+      home: TestScreen(), // Tela simples para testar primeiro
+      debugShowCheckedModeBanner: false,
     );
   }
 } 
