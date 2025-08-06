@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://fhdautomacao.com.br/sitemap.xml
+Sitemap: https://fhd-automacao-industrial-bq67.vercel.app/sitemap.xml
 
 # Crawl-delay
 Crawl-delay: 1
@@ -17,4 +17,6 @@ Allow: /
 Allow: /quem-somos
 Allow: /servicos
 Allow: /contato
+Allow: /clientes
+Allow: /orcamento
 

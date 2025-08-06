@@ -11,6 +11,8 @@
     <meta name="keywords" content="automação industrial, hidráulica, pneumática, cilindros hidráulicos, bombas hidráulicas, válvulas, unidades hidráulicas, manutenção industrial, Sumaré, São Paulo" />
     <meta name="author" content="FHD Automação Industrial" />
     <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    <meta name="bingbot" content="index, follow" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
@@ -30,9 +32,8 @@
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" href="/logo.png" />
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://fhd-automacao-industrial-bq67.vercel.app/" />
@@ -79,6 +80,18 @@
     
     <!-- Script para limpar cache em caso de problemas -->
     <script>
+      // Forçar recarregamento do favicon
+      function reloadFavicon() {
+        const favicon = document.querySelector('link[rel="icon"]');
+        if (favicon) {
+          const newHref = favicon.href.split('?')[0] + '?v=' + Date.now();
+          favicon.href = newHref;
+        }
+      }
+      
+      // Executar ao carregar a página
+      window.addEventListener('load', reloadFavicon);
+      
       // Verificar se há problemas de carregamento
       window.addEventListener('load', function() {
         // Aguardar um pouco para verificar se há erros
