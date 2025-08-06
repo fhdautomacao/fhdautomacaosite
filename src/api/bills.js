@@ -278,5 +278,77 @@ export const billsAPI = {
     
     if (error) throw error
     return data
+  },
+
+  // Atualizar status de boletos vencidos automaticamente
+  async updateOverdueStatus() {
+    const today = new Date().toISOString().split('T')[0]
+    
+    try {
+      // Atualizar boletos principais vencidos
+      const { data: updatedBills, error: billsError } = await supabase
+        .from('bills')
+        .update({ status: 'overdue', updated_at: new Date().toISOString() })
+        .eq('status', 'pending')
+        .lt('first_due_date', today)
+        .select()
+
+      if (billsError) throw billsError
+
+      // Atualizar parcelas vencidas
+      const { data: updatedInstallments, error: installmentsError } = await supabase
+        .from('bill_installments')
+        .update({ status: 'overdue', updated_at: new Date().toISOString() })
+        .eq('status', 'pending')
+        .lt('due_date', today)
+        .select()
+
+      if (installmentsError) throw installmentsError
+
+      return {
+        updatedBills: updatedBills || [],
+        updatedInstallments: updatedInstallments || [],
+        total: (updatedBills?.length || 0) + (updatedInstallments?.length || 0)
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar status de vencidos:', error)
+      throw error
+    }
+  },
+
+  // Buscar boletos que estão vencidos mas ainda com status 'pending'
+  async getPendingOverdue() {
+    const today = new Date().toISOString().split('T')[0]
+    
+    const { data, error } = await supabase
+      .from('bills')
+      .select(`
+        *,
+        bill_installments (*)
+      `)
+      .eq('status', 'pending')
+      .lt('first_due_date', today)
+      .order('first_due_date', { ascending: true })
+    
+    if (error) throw error
+    return data
+  },
+
+  // Buscar parcelas que estão vencidas mas ainda com status 'pending'
+  async getPendingOverdueInstallments() {
+    const today = new Date().toISOString().split('T')[0]
+    
+    const { data, error } = await supabase
+      .from('bill_installments')
+      .select(`
+        *,
+        bills (company_name, description, type)
+      `)
+      .eq('status', 'pending')
+      .lt('due_date', today)
+      .order('due_date', { ascending: true })
+    
+    if (error) throw error
+    return data
   }
 } 

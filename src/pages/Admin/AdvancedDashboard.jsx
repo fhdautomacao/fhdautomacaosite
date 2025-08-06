@@ -110,6 +110,13 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
       // Carregar dados em paralelo com fallbacks
       const dateRange = getDateRange()
       
+      // Primeiro, atualizar status de boletos vencidos
+      try {
+        await billsAPI.updateOverdueStatus()
+      } catch (updateError) {
+        console.warn("Aviso: Não foi possível atualizar status de vencidos no dashboard:", updateError)
+      }
+      
       const [
         quotations = [],
         bills = [],
@@ -208,16 +215,8 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
     const pendingQuotations = safeQuotations.filter(q => q && q.status === 'pending').length
     const approvedQuotations = safeQuotations.filter(q => q && q.status === 'approved').length
     
-    // Status de boletos
-    const overdueBills = safeBills.filter(b => {
-      if (!b || !b.first_due_date || !b.status) return false
-      try {
-        const dueDate = new Date(b.first_due_date)
-        return b.status === 'pending' && dueDate < today
-      } catch {
-        return false
-      }
-    }).length
+    // Status de boletos - usando status 'overdue' em vez de calcular
+    const overdueBills = safeBills.filter(b => b && b.status === 'overdue').length
     
     const paidBills = safeBills.filter(b => b && b.status === 'paid').length
     

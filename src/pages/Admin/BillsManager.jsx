@@ -19,6 +19,7 @@ import {
   Upload,
   Calculator,
   TrendingUp,
+  Clock,
   X
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -170,6 +171,14 @@ const BillsManager = () => {
     try {
       setLoading(true)
       setError('')
+      
+      // Primeiro, atualizar status de boletos vencidos
+      try {
+        await billsAPI.updateOverdueStatus()
+      } catch (updateError) {
+        console.warn("Aviso: Não foi possível atualizar status de vencidos:", updateError)
+      }
+      
       const data = await billsAPI.getAll()
       setBills(data)
     } catch (err) {
@@ -457,6 +466,27 @@ const BillsManager = () => {
     }
   }
 
+  const handleUpdateOverdueStatus = async () => {
+    try {
+      setLoading(true)
+      const result = await billsAPI.updateOverdueStatus()
+      
+      if (result.total > 0) {
+        alert(`Status atualizado! ${result.total} item(s) marcado(s) como vencido(s).`)
+      } else {
+        alert("Nenhum boleto vencido encontrado.")
+      }
+      
+      // Recarregar a lista de boletos
+      loadBills()
+    } catch (err) {
+      console.error("Erro ao atualizar status de vencidos:", err)
+      alert("Erro ao atualizar status de boletos vencidos. Tente novamente.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleUpdateInstallment = async () => {
     try {
       await billsAPI.updateInstallment(selectedInstallment.id, {
@@ -615,10 +645,20 @@ const BillsManager = () => {
               <h3 className="text-2xl font-bold text-gray-900">Controle de Boletos</h3>
               <p className="text-gray-600">Boletos a pagar e a receber</p>
             </div>
-            <Button onClick={() => setShowCreateModal(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Boleto
-            </Button>
+            <div className="flex space-x-2">
+              <Button 
+                variant="outline" 
+                onClick={handleUpdateOverdueStatus}
+                disabled={loading}
+              >
+                <Clock className="h-4 w-4 mr-2" />
+                Atualizar Vencidos
+              </Button>
+              <Button onClick={() => setShowCreateModal(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Boleto
+              </Button>
+            </div>
           </div>
 
       {/* Stats */}

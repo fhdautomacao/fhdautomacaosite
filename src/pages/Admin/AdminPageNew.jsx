@@ -37,6 +37,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { useAuth } from '@/contexts/AuthContext'
+import { useOverdueChecker } from '@/hooks/useOverdueChecker'
 
 // Import existing managers
 import GalleryManager from './GalleryManager'
@@ -56,6 +57,9 @@ const AdminPageNew = () => {
   const [activeSection, setActiveSection] = useState('dashboard')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const { logout, userPermissions } = useAuth()
+  
+  // Ativar verificação automática de boletos vencidos
+  useOverdueChecker(true, 30) // Verificar a cada 30 minutos
 
   const handleLogout = () => {
     logout()
