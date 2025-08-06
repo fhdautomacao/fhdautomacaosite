@@ -41,7 +41,8 @@ import {
   Area, 
   BarChart, 
   Bar, 
-  PieChart as RechartsPieChart, 
+  PieChart as RechartsPieChart,
+  Pie,
   Cell, 
   XAxis, 
   YAxis, 
@@ -106,36 +107,67 @@ const AdvancedDashboard = () => {
       setLoading(true)
       setRefreshing(true)
       
-      // Carregar dados em paralelo
+      // Carregar dados em paralelo com fallbacks
+      const dateRange = getDateRange()
+      
       const [
-        quotations,
-        bills,
-        profitSharings,
-        companies,
-        billsStats,
-        profitStats
-      ] = await Promise.all([
-        quotationsAPI.getAll(),
-        billsAPI.getAll(),
-        profitSharingAPI.getAll(),
-        companiesAPI.getAll(),
-        billsAPI.getTotalsByDateRange(getDateRange()),
-        profitSharingAPI.getFinancialStatistics()
-      ])
+        quotations = [],
+        bills = [],
+        profitSharings = [],
+        companies = [],
+        billsStats = { totalAmount: 0, paidAmount: 0, pendingAmount: 0, overdueAmount: 0 },
+        profitStats = { totalToPay: 0, totalPaid: 0, totalPending: 0, totalOverdue: 0, averageProfit: 0 }
+      ] = await Promise.allSettled([
+        quotationsAPI.getAll().catch(() => []),
+        billsAPI.getAll().catch(() => []),
+        profitSharingAPI.getAll().catch(() => []),
+        companiesAPI.getAll().catch(() => []),
+        billsAPI.getTotalsByDateRange(dateRange.start, dateRange.end).catch(() => ({ totalAmount: 0, paidAmount: 0, pendingAmount: 0, overdueAmount: 0 })),
+        profitSharingAPI.getFinancialStatistics().catch(() => ({ totalToPay: 0, totalPaid: 0, totalPending: 0, totalOverdue: 0, averageProfit: 0 }))
+      ]).then(results => 
+        results.map(result => result.status === 'fulfilled' ? result.value : result.reason || [])
+      )
 
       // Processar dados para o dashboard
       const processed = processDashboardData({
-        quotations,
-        bills,
-        profitSharings,
-        companies,
-        billsStats,
-        profitStats
+        quotations: Array.isArray(quotations) ? quotations : [],
+        bills: Array.isArray(bills) ? bills : [],
+        profitSharings: Array.isArray(profitSharings) ? profitSharings : [],
+        companies: Array.isArray(companies) ? companies : [],
+        billsStats: billsStats || { totalAmount: 0, paidAmount: 0, pendingAmount: 0, overdueAmount: 0 },
+        profitStats: profitStats || { totalToPay: 0, totalPaid: 0, totalPending: 0, totalOverdue: 0, averageProfit: 0 }
       })
       
       setDashboardData(processed)
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard:', error)
+      
+      // Definir dados padrão em caso de erro
+      setDashboardData({
+        totalRevenue: 0,
+        totalExpenses: 0,
+        netProfit: 0,
+        profitMargin: 0,
+        totalQuotations: 0,
+        totalBills: 0,
+        totalCompanies: 0,
+        totalProfitSharings: 0,
+        pendingQuotations: 0,
+        overdueBills: 0,
+        paidBills: 0,
+        pendingProfitSharing: 0,
+        revenueHistory: [],
+        quotationsTrend: [],
+        billsStatus: [],
+        profitDistribution: [],
+        criticalAlerts: [{
+          type: 'danger',
+          title: 'Erro ao Carregar Dados',
+          message: 'Não foi possível carregar alguns dados do dashboard',
+          icon: AlertTriangle
+        }],
+        upcomingDeadlines: []
+      })
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -145,65 +177,91 @@ const AdvancedDashboard = () => {
   const getDateRange = () => {
     const end = new Date()
     const start = subDays(end, parseInt(timeRange))
-    return { start: start.toISOString().split('T')[0], end: end.toISOString().split('T')[0] }
+    return { 
+      start: start.toISOString().split('T')[0], 
+      end: end.toISOString().split('T')[0] 
+    }
   }
 
-  const processDashboardData = ({ quotations, bills, profitSharings, companies, billsStats, profitStats }) => {
+  const processDashboardData = ({ quotations = [], bills = [], profitSharings = [], companies = [], billsStats = {}, profitStats = {} }) => {
     const today = new Date()
     const currentMonth = startOfMonth(today)
     const endMonth = endOfMonth(today)
     
-    // Calcular receitas e lucros
-    const receivableBills = bills.filter(b => b.type === 'receivable' && b.status === 'paid')
-    const totalRevenue = receivableBills.reduce((sum, bill) => sum + parseFloat(bill.total_amount), 0)
+    // Garantir que temos arrays válidos
+    const safeQuotations = Array.isArray(quotations) ? quotations : []
+    const safeBills = Array.isArray(bills) ? bills : []
+    const safeProfitSharings = Array.isArray(profitSharings) ? profitSharings : []
+    const safeCompanies = Array.isArray(companies) ? companies : []
     
-    const payableBills = bills.filter(b => b.type === 'payable' && b.status === 'paid')
-    const totalExpenses = payableBills.reduce((sum, bill) => sum + parseFloat(bill.total_amount), 0)
+    // Calcular receitas e lucros
+    const receivableBills = safeBills.filter(b => b && b.type === 'receivable' && b.status === 'paid')
+    const totalRevenue = receivableBills.reduce((sum, bill) => sum + parseFloat(bill.total_amount || 0), 0)
+    
+    const payableBills = safeBills.filter(b => b && b.type === 'payable' && b.status === 'paid')
+    const totalExpenses = payableBills.reduce((sum, bill) => sum + parseFloat(bill.total_amount || 0), 0)
     
     const netProfit = totalRevenue - totalExpenses
     const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0
 
     // Status de orçamentos
-    const pendingQuotations = quotations.filter(q => q.status === 'pending').length
-    const approvedQuotations = quotations.filter(q => q.status === 'approved').length
+    const pendingQuotations = safeQuotations.filter(q => q && q.status === 'pending').length
+    const approvedQuotations = safeQuotations.filter(q => q && q.status === 'approved').length
     
     // Status de boletos
-    const overdueBills = bills.filter(b => {
-      const dueDate = new Date(b.first_due_date)
-      return b.status === 'pending' && dueDate < today
+    const overdueBills = safeBills.filter(b => {
+      if (!b || !b.first_due_date || !b.status) return false
+      try {
+        const dueDate = new Date(b.first_due_date)
+        return b.status === 'pending' && dueDate < today
+      } catch {
+        return false
+      }
     }).length
     
-    const paidBills = bills.filter(b => b.status === 'paid').length
+    const paidBills = safeBills.filter(b => b && b.status === 'paid').length
     
     // Dados históricos para gráficos
     const last7Days = Array.from({ length: 7 }, (_, i) => {
       const date = subDays(today, 6 - i)
-      const dayBills = bills.filter(b => {
-        const billDate = new Date(b.created_at)
-        return billDate.toDateString() === date.toDateString()
+      const dayBills = safeBills.filter(b => {
+        if (!b || !b.created_at) return false
+        try {
+          const billDate = new Date(b.created_at)
+          return billDate.toDateString() === date.toDateString()
+        } catch {
+          return false
+        }
       })
       
       return {
         date: format(date, 'dd/MM', { locale: ptBR }),
-        receitas: dayBills.filter(b => b.type === 'receivable' && b.status === 'paid').reduce((sum, b) => sum + parseFloat(b.total_amount), 0),
-        despesas: dayBills.filter(b => b.type === 'payable' && b.status === 'paid').reduce((sum, b) => sum + parseFloat(b.total_amount), 0),
-        orçamentos: quotations.filter(q => new Date(q.created_at).toDateString() === date.toDateString()).length
+        receitas: dayBills.filter(b => b && b.type === 'receivable' && b.status === 'paid').reduce((sum, b) => sum + parseFloat(b.total_amount || 0), 0),
+        despesas: dayBills.filter(b => b && b.type === 'payable' && b.status === 'paid').reduce((sum, b) => sum + parseFloat(b.total_amount || 0), 0),
+        orçamentos: safeQuotations.filter(q => {
+          if (!q || !q.created_at) return false
+          try {
+            return new Date(q.created_at).toDateString() === date.toDateString()
+          } catch {
+            return false
+          }
+        }).length
       }
     })
 
     // Distribuição de status de orçamentos
     const quotationsTrend = [
-      { name: 'Pendentes', value: quotations.filter(q => q.status === 'pending').length, color: '#f59e0b' },
-      { name: 'Em Análise', value: quotations.filter(q => q.status === 'in_analysis').length, color: '#3b82f6' },
-      { name: 'Aprovados', value: quotations.filter(q => q.status === 'approved').length, color: '#10b981' },
-      { name: 'Rejeitados', value: quotations.filter(q => q.status === 'rejected').length, color: '#ef4444' },
-      { name: 'Concluídos', value: quotations.filter(q => q.status === 'completed').length, color: '#8b5cf6' }
+      { name: 'Pendentes', value: safeQuotations.filter(q => q && q.status === 'pending').length, color: '#f59e0b' },
+      { name: 'Em Análise', value: safeQuotations.filter(q => q && q.status === 'in_analysis').length, color: '#3b82f6' },
+      { name: 'Aprovados', value: safeQuotations.filter(q => q && q.status === 'approved').length, color: '#10b981' },
+      { name: 'Rejeitados', value: safeQuotations.filter(q => q && q.status === 'rejected').length, color: '#ef4444' },
+      { name: 'Concluídos', value: safeQuotations.filter(q => q && q.status === 'completed').length, color: '#8b5cf6' }
     ]
 
     // Status de boletos
     const billsStatus = [
-      { name: 'Pendentes', value: bills.filter(b => b.status === 'pending').length, color: '#f59e0b' },
-      { name: 'Pagos', value: bills.filter(b => b.status === 'paid').length, color: '#10b981' },
+      { name: 'Pendentes', value: safeBills.filter(b => b && b.status === 'pending').length, color: '#f59e0b' },
+      { name: 'Pagos', value: safeBills.filter(b => b && b.status === 'paid').length, color: '#10b981' },
       { name: 'Vencidos', value: overdueBills, color: '#ef4444' }
     ]
 
@@ -238,14 +296,22 @@ const AdvancedDashboard = () => {
     }
 
     // Próximos vencimentos
-    const upcomingDeadlines = bills
-      .filter(b => b.status === 'pending')
-      .map(bill => ({
-        ...bill,
-        dueDate: new Date(bill.first_due_date),
-        daysUntilDue: Math.ceil((new Date(bill.first_due_date) - today) / (1000 * 60 * 60 * 24))
-      }))
-      .filter(bill => bill.daysUntilDue >= 0 && bill.daysUntilDue <= 7)
+    const upcomingDeadlines = safeBills
+      .filter(b => b && b.status === 'pending' && b.first_due_date)
+      .map(bill => {
+        try {
+          const dueDate = new Date(bill.first_due_date)
+          const daysUntilDue = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24))
+          return {
+            ...bill,
+            dueDate,
+            daysUntilDue
+          }
+        } catch {
+          return null
+        }
+      })
+      .filter(bill => bill && bill.daysUntilDue >= 0 && bill.daysUntilDue <= 7)
       .sort((a, b) => a.daysUntilDue - b.daysUntilDue)
       .slice(0, 5)
 
@@ -254,14 +320,14 @@ const AdvancedDashboard = () => {
       totalExpenses,
       netProfit,
       profitMargin,
-      totalQuotations: quotations.length,
-      totalBills: bills.length,
-      totalCompanies: companies.length,
-      totalProfitSharings: profitSharings.length,
+      totalQuotations: safeQuotations.length,
+      totalBills: safeBills.length,
+      totalCompanies: safeCompanies.length,
+      totalProfitSharings: safeProfitSharings.length,
       pendingQuotations,
       overdueBills,
       paidBills,
-      pendingProfitSharing: profitSharings.filter(p => p.status === 'pending').length,
+      pendingProfitSharing: safeProfitSharings.filter(p => p && p.status === 'pending').length,
       revenueHistory: last7Days,
       quotationsTrend,
       billsStatus,
