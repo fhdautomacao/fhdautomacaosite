@@ -72,8 +72,13 @@ const GalleryManager = () => {
       try {
         const file = newPhoto.image;
         const filePath = `gallery/${Date.now()}-${file.name}`;
+        
+        console.log("Iniciando upload do arquivo:", file.name);
         const { path } = await storageAPI.uploadFile(file, filePath);
+        console.log("Upload concluído, path:", path);
+        
         const publicUrl = storageAPI.getPublicUrl(path);
+        console.log("URL pública gerada:", publicUrl);
 
         const photoData = {
           title: newPhoto.title,
@@ -83,13 +88,32 @@ const GalleryManager = () => {
           upload_date: new Date().toISOString().split("T")[0]
         };
 
+        console.log("Salvando dados da foto:", photoData);
         const createdPhoto = await galleryAPI.create(photoData);
+        console.log("Foto criada com sucesso:", createdPhoto);
+        
         setPhotos(prevPhotos => [...prevPhotos, createdPhoto]);
         setNewPhoto({ title: "", description: "", category: "", image: null });
         setIsAddModalOpen(false);
+        
+        // Mostrar mensagem de sucesso
+        alert("Foto adicionada com sucesso!");
       } catch (error) {
         console.error("Erro ao fazer upload da imagem ou salvar no banco de dados:", error);
-        alert("Erro ao fazer upload da imagem ou salvar no banco de dados. Verifique o console para mais detalhes.");
+        
+        let errorMessage = "Erro ao fazer upload da imagem ou salvar no banco de dados.";
+        
+        if (error.message?.includes('Bucket not found')) {
+          errorMessage = "Erro de configuração do storage. O bucket de imagens não foi encontrado. Entre em contato com o administrador.";
+        } else if (error.message?.includes('permissions')) {
+          errorMessage = "Erro de permissões. Verifique se você tem permissão para fazer upload de arquivos.";
+        } else if (error.message?.includes('file size')) {
+          errorMessage = "Arquivo muito grande. O tamanho máximo permitido é 50MB.";
+        } else if (error.message?.includes('file type')) {
+          errorMessage = "Tipo de arquivo não suportado. Use apenas imagens (JPG, PNG, GIF, etc.).";
+        }
+        
+        alert(errorMessage + "\n\nDetalhes técnicos: " + error.message);
       }
     } else {
       alert("Por favor, preencha todos os campos e selecione uma imagem.");

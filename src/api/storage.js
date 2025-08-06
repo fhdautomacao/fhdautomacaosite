@@ -3,12 +3,24 @@ import { supabase } from '../lib/supabase'
 export const storageAPI = {
   // Upload de arquivo
   async uploadFile(file, path) {
-    const { data, error } = await supabase.storage
-      .from('arquivos')
-      .upload(path, file)
-    
-    if (error) throw error
-    return data
+    try {
+      const { data, error } = await supabase.storage
+        .from('arquivos')
+        .upload(path, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
+      
+      if (error) {
+        console.error('Erro no upload:', error)
+        throw error
+      }
+      
+      return data
+    } catch (error) {
+      console.error('Erro completo no upload:', error)
+      throw error
+    }
   },
 
   // Obter URL pública do arquivo

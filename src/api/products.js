@@ -63,10 +63,10 @@ export const productsAPI = {
   async uploadImage(file) {
     const fileExt = file.name.split('.').pop()
     const fileName = `${Date.now()}.${fileExt}`
-    const filePath = `product_images/${fileName}`
+    const filePath = `products/${fileName}`
 
     const { data, error } = await supabase.storage
-      .from('fhd-automacao-bucket')
+      .from('arquivos')
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false,
@@ -75,7 +75,7 @@ export const productsAPI = {
     if (error) throw error
 
     const { data: publicURL } = supabase.storage
-      .from('fhd-automacao-bucket')
+      .from('arquivos')
       .getPublicUrl(filePath)
 
     return publicURL.publicUrl
