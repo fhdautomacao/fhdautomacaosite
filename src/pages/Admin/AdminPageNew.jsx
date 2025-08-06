@@ -247,7 +247,7 @@ const AdminPageNew = () => {
   const renderContent = () => {
     switch (activeSection) {
       case 'dashboard':
-        return <AdvancedDashboard />
+        return <AdvancedDashboard onNavigateToSection={setActiveSection} />
 
       case 'services':
         return <ServicesManager />

@@ -61,7 +61,7 @@ import { profitSharingAPI } from '@/api/profitSharing'
 import { companiesAPI } from '@/api/companies'
 import { useAuth } from '@/contexts/AuthContext'
 
-const AdvancedDashboard = () => {
+const AdvancedDashboard = ({ onNavigateToSection }) => {
   const { userPermissions } = useAuth()
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('30')
@@ -273,7 +273,8 @@ const AdvancedDashboard = () => {
         type: 'danger',
         title: 'Boletos Vencidos',
         message: `${overdueBills} boleto(s) em atraso`,
-        icon: AlertTriangle
+        icon: AlertTriangle,
+        action: 'bills'
       })
     }
     
@@ -282,7 +283,8 @@ const AdvancedDashboard = () => {
         type: 'warning',
         title: 'Muitos Orçamentos Pendentes',
         message: `${pendingQuotations} orçamentos aguardando análise`,
-        icon: Clock
+        icon: Clock,
+        action: 'quotations'
       })
     }
 
@@ -291,7 +293,8 @@ const AdvancedDashboard = () => {
         type: 'info',
         title: 'Margem de Lucro Baixa',
         message: `Margem atual: ${profitMargin.toFixed(1)}%`,
-        icon: TrendingDown
+        icon: TrendingDown,
+        action: 'profit-sharing'
       })
     }
 
@@ -413,20 +416,34 @@ const AdvancedDashboard = () => {
       info: 'text-blue-600'
     }
 
+    const handleAlertClick = () => {
+      if (alert.action && onNavigateToSection) {
+        onNavigateToSection(alert.action)
+      }
+    }
+
     return (
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, delay: index * 0.1 }}
       >
-        <Card className={`border-l-4 ${colorMap[alert.type]}`}>
+        <Card 
+          className={`border-l-4 ${colorMap[alert.type]} ${alert.action ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+          onClick={handleAlertClick}
+        >
           <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <alert.icon className={`h-5 w-5 ${iconColorMap[alert.type]}`} />
-              <div>
-                <h4 className="font-semibold text-gray-900">{alert.title}</h4>
-                <p className="text-sm text-gray-600">{alert.message}</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <alert.icon className={`h-5 w-5 ${iconColorMap[alert.type]}`} />
+                <div>
+                  <h4 className="font-semibold text-gray-900">{alert.title}</h4>
+                  <p className="text-sm text-gray-600">{alert.message}</p>
+                </div>
               </div>
+              {alert.action && (
+                <Eye className="h-4 w-4 text-gray-400" />
+              )}
             </div>
           </CardContent>
         </Card>
@@ -634,16 +651,23 @@ const AdvancedDashboard = () => {
                       data={dashboardData.quotationsTrend}
                       cx="50%"
                       cy="50%"
-                      outerRadius={80}
+                      outerRadius={70}
+                      innerRadius={30}
                       fill="#8884d8"
                       dataKey="value"
-                      label={({ name, value }) => `${name}: ${value}`}
+                      label={false}
                     >
                       {dashboardData.quotationsTrend.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip formatter={(value, name) => [value, name]} />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      height={36}
+                      iconType="circle"
+                      wrapperStyle={{ paddingTop: '20px' }}
+                    />
                   </RechartsPieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -673,21 +697,25 @@ const AdvancedDashboard = () => {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+                      onClick={() => onNavigateToSection && onNavigateToSection('bills')}
                     >
                       <div>
                         <h4 className="font-semibold text-gray-900">{bill.company_name}</h4>
                         <p className="text-sm text-gray-600">{bill.description}</p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-gray-900">{formatCurrency(bill.total_amount)}</p>
-                        <Badge 
-                          variant={bill.daysUntilDue <= 2 ? "destructive" : "secondary"}
-                        >
-                          {bill.daysUntilDue === 0 ? 'Hoje' : 
-                           bill.daysUntilDue === 1 ? 'Amanhã' : 
-                           `${bill.daysUntilDue} dias`}
-                        </Badge>
+                      <div className="text-right flex items-center space-x-2">
+                        <div>
+                          <p className="font-semibold text-gray-900">{formatCurrency(bill.total_amount)}</p>
+                          <Badge 
+                            variant={bill.daysUntilDue <= 2 ? "destructive" : "secondary"}
+                          >
+                            {bill.daysUntilDue === 0 ? 'Hoje' : 
+                             bill.daysUntilDue === 1 ? 'Amanhã' : 
+                             `${bill.daysUntilDue} dias`}
+                          </Badge>
+                        </div>
+                        <Eye className="h-4 w-4 text-gray-400" />
                       </div>
                     </motion.div>
                   ))}
