@@ -72,9 +72,9 @@ jobs:
         path: mobile/build/app/outputs/flutter-apk/app-release.apk
         retention-days: 30
 
-    # 10. Criar release (opcional - apenas na main/master)
+    # 10. Criar release (opcional - apenas na main/master) - DESABILITADO
     - name: Create Release
-      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      if: false
       uses: softprops/action-gh-release@v1
       with:
         tag_name: mobile-v${{ github.run_number }}
