@@ -67,11 +67,36 @@ const CompaniesManager = () => {
   const loadCompanies = async () => {
     try {
       setLoading(true)
+      setError('')
       const data = await companiesAPI.getAll()
       setCompanies(data)
     } catch (err) {
       console.error("Erro ao carregar empresas:", err)
-      setError("Não foi possível carregar as empresas.")
+      
+      // Tratamento específico de erros
+      let errorMessage = "Não foi possível carregar as empresas."
+      
+      if (err.code) {
+        switch (err.code) {
+          case '42501':
+            errorMessage = "Sem permissão para visualizar empresas. Verifique suas credenciais."
+            break
+          case '42P01':
+            errorMessage = "Erro de configuração do banco de dados. Contate o administrador."
+            break
+          case '08006':
+            errorMessage = "Erro de conexão com o banco de dados. Verifique sua internet."
+            break
+          default:
+            if (err.message) {
+              errorMessage = `Erro: ${err.message}`
+            }
+        }
+      } else if (err.message) {
+        errorMessage = err.message
+      }
+      
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -79,6 +104,12 @@ const CompaniesManager = () => {
 
   const handleCreateCompany = async () => {
     try {
+      // Validações básicas
+      if (!formData.name.trim()) {
+        alert("Nome da empresa é obrigatório.")
+        return
+      }
+
       await companiesAPI.create(formData)
       
       setShowCreateModal(false)
@@ -98,12 +129,76 @@ const CompaniesManager = () => {
       loadCompanies()
     } catch (err) {
       console.error("Erro ao criar empresa:", err)
-      alert("Erro ao criar empresa. Tente novamente.")
+      
+      // Tratamento específico de erros
+      let errorMessage = "Erro ao criar empresa. Tente novamente."
+      
+      if (err.code) {
+        switch (err.code) {
+          case '22001':
+            if (err.message.includes('zip_code')) {
+              errorMessage = "CEP muito longo. Máximo 15 caracteres."
+            } else if (err.message.includes('cnpj')) {
+              errorMessage = "CNPJ muito longo. Máximo 18 caracteres."
+            } else if (err.message.includes('phone')) {
+              errorMessage = "Telefone muito longo. Máximo 20 caracteres."
+            } else if (err.message.includes('state')) {
+              errorMessage = "Estado muito longo. Máximo 2 caracteres."
+            } else if (err.message.includes('name')) {
+              errorMessage = "Nome da empresa muito longo. Máximo 255 caracteres."
+            } else if (err.message.includes('email')) {
+              errorMessage = "Email muito longo. Máximo 255 caracteres."
+            } else if (err.message.includes('contact_person')) {
+              errorMessage = "Nome do contato muito longo. Máximo 255 caracteres."
+            } else {
+              errorMessage = "Campo muito longo. Verifique os dados inseridos."
+            }
+            break
+          case '23505':
+            if (err.message.includes('cnpj')) {
+              errorMessage = "CNPJ já cadastrado no sistema."
+            } else if (err.message.includes('email')) {
+              errorMessage = "Email já cadastrado no sistema."
+            } else {
+              errorMessage = "Dados duplicados. Verifique as informações."
+            }
+            break
+          case '23502':
+            errorMessage = "Campo obrigatório não preenchido."
+            break
+          case '23514':
+            errorMessage = "Valor inválido para o campo status. Use 'active' ou 'inactive'."
+            break
+          case '42P01':
+            errorMessage = "Erro de configuração do banco de dados. Contate o administrador."
+            break
+          case '42501':
+            errorMessage = "Sem permissão para criar empresa. Verifique suas credenciais."
+            break
+          case '23503':
+            errorMessage = "Erro de referência no banco de dados. Contate o administrador."
+            break
+          default:
+            if (err.message) {
+              errorMessage = `Erro: ${err.message}`
+            }
+        }
+      } else if (err.message) {
+        errorMessage = err.message
+      }
+      
+      alert(errorMessage)
     }
   }
 
   const handleUpdateCompany = async () => {
     try {
+      // Validações básicas
+      if (!formData.name.trim()) {
+        alert("Nome da empresa é obrigatório.")
+        return
+      }
+
       await companiesAPI.update(selectedCompany.id, formData)
       
       setShowEditModal(false)
@@ -111,7 +206,68 @@ const CompaniesManager = () => {
       loadCompanies()
     } catch (err) {
       console.error("Erro ao atualizar empresa:", err)
-      alert("Erro ao atualizar empresa. Tente novamente.")
+      
+      // Tratamento específico de erros
+      let errorMessage = "Erro ao atualizar empresa. Tente novamente."
+      
+      if (err.code) {
+        switch (err.code) {
+          case '22001':
+            if (err.message.includes('zip_code')) {
+              errorMessage = "CEP muito longo. Máximo 15 caracteres."
+            } else if (err.message.includes('cnpj')) {
+              errorMessage = "CNPJ muito longo. Máximo 18 caracteres."
+            } else if (err.message.includes('phone')) {
+              errorMessage = "Telefone muito longo. Máximo 20 caracteres."
+            } else if (err.message.includes('state')) {
+              errorMessage = "Estado muito longo. Máximo 2 caracteres."
+            } else if (err.message.includes('name')) {
+              errorMessage = "Nome da empresa muito longo. Máximo 255 caracteres."
+            } else if (err.message.includes('email')) {
+              errorMessage = "Email muito longo. Máximo 255 caracteres."
+            } else if (err.message.includes('contact_person')) {
+              errorMessage = "Nome do contato muito longo. Máximo 255 caracteres."
+            } else {
+              errorMessage = "Campo muito longo. Verifique os dados inseridos."
+            }
+            break
+          case '23505':
+            if (err.message.includes('cnpj')) {
+              errorMessage = "CNPJ já cadastrado no sistema."
+            } else if (err.message.includes('email')) {
+              errorMessage = "Email já cadastrado no sistema."
+            } else {
+              errorMessage = "Dados duplicados. Verifique as informações."
+            }
+            break
+          case '23502':
+            errorMessage = "Campo obrigatório não preenchido."
+            break
+          case '23514':
+            errorMessage = "Valor inválido para o campo status. Use 'active' ou 'inactive'."
+            break
+          case '42P01':
+            errorMessage = "Erro de configuração do banco de dados. Contate o administrador."
+            break
+          case '42501':
+            errorMessage = "Sem permissão para atualizar empresa. Verifique suas credenciais."
+            break
+          case '23503':
+            errorMessage = "Erro de referência no banco de dados. Contate o administrador."
+            break
+          case 'PGRST116':
+            errorMessage = "Empresa não encontrada ou já foi removida."
+            break
+          default:
+            if (err.message) {
+              errorMessage = `Erro: ${err.message}`
+            }
+        }
+      } else if (err.message) {
+        errorMessage = err.message
+      }
+      
+      alert(errorMessage)
     }
   }
 
@@ -122,7 +278,34 @@ const CompaniesManager = () => {
         loadCompanies()
       } catch (err) {
         console.error("Erro ao deletar empresa:", err)
-        alert("Erro ao deletar empresa. Tente novamente.")
+        
+        // Tratamento específico de erros
+        let errorMessage = "Erro ao deletar empresa. Tente novamente."
+        
+        if (err.code) {
+          switch (err.code) {
+            case '23503':
+              errorMessage = "Não é possível deletar esta empresa pois ela possui boletos associados. Remova os boletos primeiro."
+              break
+            case '42501':
+              errorMessage = "Sem permissão para deletar empresa. Verifique suas credenciais."
+              break
+            case '42P01':
+              errorMessage = "Erro de configuração do banco de dados. Contate o administrador."
+              break
+            case 'PGRST116':
+              errorMessage = "Empresa não encontrada ou já foi removida."
+              break
+            default:
+              if (err.message) {
+                errorMessage = `Erro: ${err.message}`
+              }
+          }
+        } else if (err.message) {
+          errorMessage = err.message
+        }
+        
+        alert(errorMessage)
       }
     }
   }
@@ -265,12 +448,20 @@ const CompaniesManager = () => {
         </CardContent>
       </Card>
 
-      {/* Companies List */}
-      {loading ? (
-        <div className="text-center py-8">
-          <p className="text-gray-600">Carregando empresas...</p>
-        </div>
-      ) : filteredCompanies.length === 0 ? (
+             {/* Error Display */}
+       {error && (
+         <Alert className="mb-4">
+           <AlertCircle className="h-4 w-4" />
+           <AlertDescription>{error}</AlertDescription>
+         </Alert>
+       )}
+
+       {/* Companies List */}
+       {loading ? (
+         <div className="text-center py-8">
+           <p className="text-gray-600">Carregando empresas...</p>
+         </div>
+       ) : filteredCompanies.length === 0 ? (
         <div className="text-center py-8">
           <Building className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhuma empresa encontrada</h3>
@@ -409,14 +600,15 @@ const CompaniesManager = () => {
               />
             </div>
             
-            <div>
-              <Label>CNPJ</Label>
-              <Input
-                value={formData.cnpj}
-                onChange={(e) => setFormData({...formData, cnpj: e.target.value})}
-                placeholder="00.000.000/0000-00"
-              />
-            </div>
+                         <div>
+               <Label>CNPJ</Label>
+               <Input
+                 value={formData.cnpj}
+                 onChange={(e) => setFormData({...formData, cnpj: e.target.value})}
+                 placeholder="00.000.000/0000-00"
+                 maxLength={18}
+               />
+             </div>
             
             <div>
               <Label>Email</Label>
@@ -428,14 +620,15 @@ const CompaniesManager = () => {
               />
             </div>
             
-            <div>
-              <Label>Telefone</Label>
-              <Input
-                value={formData.phone}
-                onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                placeholder="(11) 99999-9999"
-              />
-            </div>
+                         <div>
+               <Label>Telefone</Label>
+               <Input
+                 value={formData.phone}
+                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                 placeholder="(11) 99999-9999"
+                 maxLength={20}
+               />
+             </div>
             
             <div>
               <Label>Pessoa de Contato</Label>
@@ -480,6 +673,7 @@ const CompaniesManager = () => {
                 value={formData.zip_code}
                 onChange={(e) => setFormData({...formData, zip_code: e.target.value})}
                 placeholder="00000-000"
+                maxLength={15}
               />
             </div>
             
@@ -537,13 +731,14 @@ const CompaniesManager = () => {
               />
             </div>
             
-            <div>
-              <Label>CNPJ</Label>
-              <Input
-                value={formData.cnpj}
-                onChange={(e) => setFormData({...formData, cnpj: e.target.value})}
-              />
-            </div>
+                         <div>
+               <Label>CNPJ</Label>
+               <Input
+                 value={formData.cnpj}
+                 onChange={(e) => setFormData({...formData, cnpj: e.target.value})}
+                 maxLength={18}
+               />
+             </div>
             
             <div>
               <Label>Email</Label>
@@ -554,13 +749,14 @@ const CompaniesManager = () => {
               />
             </div>
             
-            <div>
-              <Label>Telefone</Label>
-              <Input
-                value={formData.phone}
-                onChange={(e) => setFormData({...formData, phone: e.target.value})}
-              />
-            </div>
+                         <div>
+               <Label>Telefone</Label>
+               <Input
+                 value={formData.phone}
+                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                 maxLength={20}
+               />
+             </div>
             
             <div>
               <Label>Pessoa de Contato</Label>

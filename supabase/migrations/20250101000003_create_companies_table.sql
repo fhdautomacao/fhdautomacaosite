@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS companies (
     address TEXT,
     city VARCHAR(100),
     state VARCHAR(2),
-    zip_code VARCHAR(10),
+    zip_code VARCHAR(15),
     contact_person VARCHAR(255),
     notes TEXT,
     status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'inactive')),

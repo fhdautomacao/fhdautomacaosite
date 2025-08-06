@@ -5,14 +5,9 @@ import {
   Shield, 
   BarChart3,
   FileText,
-  Target,
-  Users as UsersIcon,
   Wrench,
-  Phone,
   Package,
-  Tag,
   Image,
-  Folder,
   Building,
   MessageSquare,
   Globe,
@@ -24,7 +19,6 @@ import {
   Plus,
   Eye,
   Edit,
-  Save,
   Upload,
   Search,
   Filter,
@@ -51,7 +45,6 @@ import BillsManager from './BillsManager'
 import CompaniesManager from './CompaniesManager'
 
 // Import new content managers
-import HeroManager from './ContentManagers/HeroManager'
 import ServicesManager from './ContentManagers/ServicesManager'
 import QuotationNotification from '@/components/QuotationNotification'
 
@@ -78,10 +71,7 @@ const AdminPageNew = () => {
       icon: FileText,
       section: 'content',
       children: [
-        { id: 'hero', label: 'Seção Hero', icon: Target },
-        { id: 'about', label: 'Sobre Nós', icon: UsersIcon },
-        { id: 'services', label: 'Serviços', icon: Wrench },
-        { id: 'contact', label: 'Contato', icon: Phone }
+        { id: 'services', label: 'Serviços', icon: Wrench }
       ]
     },
     {
@@ -90,8 +80,7 @@ const AdminPageNew = () => {
       icon: Package,
       section: 'catalog',
       children: [
-        { id: 'products', label: 'Produtos', icon: Package },
-        { id: 'categories', label: 'Categorias', icon: Tag }
+        { id: 'products', label: 'Produtos', icon: Package }
       ]
     },
     {
@@ -100,8 +89,7 @@ const AdminPageNew = () => {
       icon: Image,
       section: 'media',
       children: [
-        { id: 'gallery', label: 'Galeria', icon: Image },
-        { id: 'files', label: 'Arquivos', icon: Folder }
+        { id: 'gallery', label: 'Galeria', icon: Image }
       ]
     },
     {
@@ -386,135 +374,8 @@ const AdminPageNew = () => {
           </div>
         )
 
-      case 'hero':
-        return <HeroManager />
-
-      case 'about':
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Sobre Nós</h1>
-                <p className="text-gray-600">Edite as informações da empresa</p>
-              </div>
-              <Button size="sm">
-                <Save className="h-4 w-4 mr-2" />
-                Salvar Alterações
-              </Button>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Informações da Empresa</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Título da Seção</label>
-                  <Input placeholder="Sobre a FHD Automação" className="mt-1" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Texto Principal</label>
-                  <textarea 
-                    className="w-full mt-1 p-3 border border-gray-300 rounded-md resize-none"
-                    rows={6}
-                    placeholder="Conte a história da empresa..."
-                  />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Missão</label>
-                    <textarea 
-                      className="w-full mt-1 p-3 border border-gray-300 rounded-md resize-none"
-                      rows={3}
-                      placeholder="Nossa missão..."
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Visão</label>
-                    <textarea 
-                      className="w-full mt-1 p-3 border border-gray-300 rounded-md resize-none"
-                      rows={3}
-                      placeholder="Nossa visão..."
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Valores</label>
-                    <textarea 
-                      className="w-full mt-1 p-3 border border-gray-300 rounded-md resize-none"
-                      rows={3}
-                      placeholder="Nossos valores..."
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )
-
       case 'services':
         return <ServicesManager />
-
-      case 'contact':
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Informações de Contato</h1>
-                <p className="text-gray-600">Edite as informações de contato da empresa</p>
-              </div>
-              <Button size="sm">
-                <Save className="h-4 w-4 mr-2" />
-                Salvar Alterações
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Informações Básicas</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Telefone Principal</label>
-                    <Input placeholder="(19) 99865-2144" className="mt-1" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">E-mail Comercial</label>
-                    <Input placeholder="comercial@fhdautomacao.com.br" className="mt-1" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Endereço</label>
-                    <textarea 
-                      className="w-full mt-1 p-3 border border-gray-300 rounded-md resize-none"
-                      rows={3}
-                      placeholder="R. João Ediberti Biondo, 336..."
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Horário de Funcionamento</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Segunda a Sexta</label>
-                    <Input placeholder="8h às 18h" className="mt-1" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Sábado</label>
-                    <Input placeholder="8h às 12h" className="mt-1" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Domingo</label>
-                    <Input placeholder="Fechado" className="mt-1" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        )
 
       case 'gallery':
         return <GalleryManager />

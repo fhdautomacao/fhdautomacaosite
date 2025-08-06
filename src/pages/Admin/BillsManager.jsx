@@ -77,11 +77,36 @@ const BillsManager = () => {
   const loadBills = async () => {
     try {
       setLoading(true)
+      setError('')
       const data = await billsAPI.getAll()
       setBills(data)
     } catch (err) {
       console.error("Erro ao carregar boletos:", err)
-      setError("Não foi possível carregar os boletos.")
+      
+      // Tratamento específico de erros
+      let errorMessage = "Não foi possível carregar os boletos."
+      
+      if (err.code) {
+        switch (err.code) {
+          case '42501':
+            errorMessage = "Sem permissão para visualizar boletos. Verifique suas credenciais."
+            break
+          case '42P01':
+            errorMessage = "Erro de configuração do banco de dados. Contate o administrador."
+            break
+          case '08006':
+            errorMessage = "Erro de conexão com o banco de dados. Verifique sua internet."
+            break
+          default:
+            if (err.message) {
+              errorMessage = `Erro: ${err.message}`
+            }
+        }
+      } else if (err.message) {
+        errorMessage = err.message
+      }
+      
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -89,6 +114,37 @@ const BillsManager = () => {
 
   const handleCreateBill = async () => {
     try {
+      // Validações básicas
+      if (!formData.company_name.trim()) {
+        alert("Nome da empresa é obrigatório.")
+        return
+      }
+      
+      if (!formData.description.trim()) {
+        alert("Descrição é obrigatória.")
+        return
+      }
+      
+      if (!formData.total_amount || parseFloat(formData.total_amount) <= 0) {
+        alert("Valor total deve ser maior que zero.")
+        return
+      }
+      
+      if (!formData.first_due_date) {
+        alert("Data de vencimento é obrigatória.")
+        return
+      }
+      
+      if (parseInt(formData.installments) < 1) {
+        alert("Número de parcelas deve ser maior que zero.")
+        return
+      }
+      
+      if (parseInt(formData.installment_interval) < 1) {
+        alert("Intervalo entre parcelas deve ser maior que zero.")
+        return
+      }
+
       const billData = {
         ...formData,
         total_amount: parseFloat(formData.total_amount),
@@ -122,12 +178,90 @@ const BillsManager = () => {
       loadBills()
     } catch (err) {
       console.error("Erro ao criar boleto:", err)
-      alert("Erro ao criar boleto. Tente novamente.")
+      
+      // Tratamento específico de erros
+      let errorMessage = "Erro ao criar boleto. Tente novamente."
+      
+      if (err.code) {
+        switch (err.code) {
+          case '22001':
+            if (err.message.includes('company_name')) {
+              errorMessage = "Nome da empresa muito longo. Máximo 255 caracteres."
+            } else if (err.message.includes('description')) {
+              errorMessage = "Descrição muito longa. Máximo permitido excedido."
+            } else if (err.message.includes('admin_notes')) {
+              errorMessage = "Observações muito longas."
+            } else {
+              errorMessage = "Campo muito longo. Verifique os dados inseridos."
+            }
+            break
+          case '23502':
+            errorMessage = "Campo obrigatório não preenchido."
+            break
+          case '23503':
+            errorMessage = "Empresa selecionada não existe ou foi removida."
+            break
+          case '23514':
+            if (err.message.includes('type')) {
+              errorMessage = "Tipo de boleto inválido. Use 'receivable' ou 'payable'."
+            } else if (err.message.includes('status')) {
+              errorMessage = "Status inválido. Use 'pending', 'paid', 'overdue' ou 'cancelled'."
+            } else {
+              errorMessage = "Valor inválido em um dos campos."
+            }
+            break
+          case '22P02':
+            errorMessage = "Formato de data inválido. Use o formato DD/MM/AAAA."
+            break
+          case '22003':
+            errorMessage = "Valor numérico fora do limite permitido."
+            break
+          case '42501':
+            errorMessage = "Sem permissão para criar boletos. Verifique suas credenciais."
+            break
+          case '42P01':
+            errorMessage = "Erro de configuração do banco de dados. Contate o administrador."
+            break
+          case '08006':
+            errorMessage = "Erro de conexão com o banco de dados. Verifique sua internet."
+            break
+          default:
+            if (err.message) {
+              errorMessage = `Erro: ${err.message}`
+            }
+        }
+      } else if (err.message) {
+        if (err.message.includes('NaN')) {
+          errorMessage = "Valor inválido. Verifique se os campos numéricos estão corretos."
+        } else if (err.message.includes('date')) {
+          errorMessage = "Data inválida. Verifique o formato da data."
+        } else {
+          errorMessage = err.message
+        }
+      }
+      
+      alert(errorMessage)
     }
   }
 
   const handleUpdateBill = async () => {
     try {
+      // Validações básicas
+      if (!formData.company_name.trim()) {
+        alert("Nome da empresa é obrigatório.")
+        return
+      }
+      
+      if (!formData.description.trim()) {
+        alert("Descrição é obrigatória.")
+        return
+      }
+      
+      if (!formData.total_amount || parseFloat(formData.total_amount) <= 0) {
+        alert("Valor total deve ser maior que zero.")
+        return
+      }
+
       await billsAPI.update(selectedBill.id, {
         company_name: formData.company_name,
         description: formData.description,
@@ -140,7 +274,55 @@ const BillsManager = () => {
       loadBills()
     } catch (err) {
       console.error("Erro ao atualizar boleto:", err)
-      alert("Erro ao atualizar boleto. Tente novamente.")
+      
+      // Tratamento específico de erros
+      let errorMessage = "Erro ao atualizar boleto. Tente novamente."
+      
+      if (err.code) {
+        switch (err.code) {
+          case '22001':
+            if (err.message.includes('company_name')) {
+              errorMessage = "Nome da empresa muito longo. Máximo 255 caracteres."
+            } else if (err.message.includes('description')) {
+              errorMessage = "Descrição muito longa. Máximo permitido excedido."
+            } else if (err.message.includes('admin_notes')) {
+              errorMessage = "Observações muito longas."
+            } else {
+              errorMessage = "Campo muito longo. Verifique os dados inseridos."
+            }
+            break
+          case '23502':
+            errorMessage = "Campo obrigatório não preenchido."
+            break
+          case '23503':
+            errorMessage = "Empresa selecionada não existe ou foi removida."
+            break
+          case '22003':
+            errorMessage = "Valor numérico fora do limite permitido."
+            break
+          case '42501':
+            errorMessage = "Sem permissão para atualizar boletos. Verifique suas credenciais."
+            break
+          case '42P01':
+            errorMessage = "Erro de configuração do banco de dados. Contate o administrador."
+            break
+          case 'PGRST116':
+            errorMessage = "Boleto não encontrado ou já foi removido."
+            break
+          default:
+            if (err.message) {
+              errorMessage = `Erro: ${err.message}`
+            }
+        }
+      } else if (err.message) {
+        if (err.message.includes('NaN')) {
+          errorMessage = "Valor inválido. Verifique se os campos numéricos estão corretos."
+        } else {
+          errorMessage = err.message
+        }
+      }
+      
+      alert(errorMessage)
     }
   }
 
@@ -151,7 +333,34 @@ const BillsManager = () => {
         loadBills()
       } catch (err) {
         console.error("Erro ao deletar boleto:", err)
-        alert("Erro ao deletar boleto. Tente novamente.")
+        
+        // Tratamento específico de erros
+        let errorMessage = "Erro ao deletar boleto. Tente novamente."
+        
+        if (err.code) {
+          switch (err.code) {
+            case '23503':
+              errorMessage = "Não é possível deletar este boleto pois ele possui parcelas associadas."
+              break
+            case '42501':
+              errorMessage = "Sem permissão para deletar boletos. Verifique suas credenciais."
+              break
+            case '42P01':
+              errorMessage = "Erro de configuração do banco de dados. Contate o administrador."
+              break
+            case 'PGRST116':
+              errorMessage = "Boleto não encontrado ou já foi removido."
+              break
+            default:
+              if (err.message) {
+                errorMessage = `Erro: ${err.message}`
+              }
+          }
+        } else if (err.message) {
+          errorMessage = err.message
+        }
+        
+        alert(errorMessage)
       }
     }
   }
@@ -199,7 +408,47 @@ const BillsManager = () => {
       setSelectedInstallment(null)
     } catch (err) {
       console.error("Erro ao atualizar parcela:", err)
-      alert("Erro ao atualizar parcela. Tente novamente.")
+      
+      // Tratamento específico de erros
+      let errorMessage = "Erro ao atualizar parcela. Tente novamente."
+      
+      if (err.code) {
+        switch (err.code) {
+          case '22001':
+            if (err.message.includes('payment_notes')) {
+              errorMessage = "Observações de pagamento muito longas."
+            } else {
+              errorMessage = "Campo muito longo. Verifique os dados inseridos."
+            }
+            break
+          case '23502':
+            errorMessage = "Campo obrigatório não preenchido."
+            break
+          case '23514':
+            errorMessage = "Status inválido. Use 'pending', 'paid', 'overdue' ou 'cancelled'."
+            break
+          case '22P02':
+            errorMessage = "Formato de data inválido."
+            break
+          case '42501':
+            errorMessage = "Sem permissão para atualizar parcelas. Verifique suas credenciais."
+            break
+          case '42P01':
+            errorMessage = "Erro de configuração do banco de dados. Contate o administrador."
+            break
+          case 'PGRST116':
+            errorMessage = "Parcela não encontrada ou já foi removida."
+            break
+          default:
+            if (err.message) {
+              errorMessage = `Erro: ${err.message}`
+            }
+        }
+      } else if (err.message) {
+        errorMessage = err.message
+      }
+      
+      alert(errorMessage)
     }
   }
 
@@ -315,6 +564,14 @@ const BillsManager = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Error Display */}
+      {error && (
+        <Alert className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
       {/* Filters */}
       <Card>
