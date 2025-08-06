@@ -52,6 +52,8 @@ import AdvancedDashboard from './AdvancedDashboard'
 // Import new content managers
 import ServicesManager from './ContentManagers/ServicesManager'
 import QuotationNotification from '@/components/QuotationNotification'
+import NotificationSettings from '@/components/NotificationSettings'
+import MobileOptimizations from '@/components/MobileOptimizations'
 
 const AdminPageNew = () => {
   const [activeSection, setActiveSection] = useState('dashboard')
@@ -156,6 +158,7 @@ const AdminPageNew = () => {
       icon: Settings,
       section: 'settings',
       children: [
+        { id: 'notifications', label: 'Notificações', icon: Bell },
         { id: 'seo', label: 'SEO', icon: Globe },
         { id: 'profile', label: 'Perfil', icon: User }
       ]
@@ -309,6 +312,9 @@ const AdminPageNew = () => {
           </div>
         )
 
+      case 'notifications':
+        return <NotificationSettings />
+
       default:
         return (
           <div className="flex items-center justify-center h-64">
@@ -331,38 +337,41 @@ const AdminPageNew = () => {
       <Helmet>
         <title>Administração - FHD Automação Industrial</title>
         <meta name="robots" content="noindex, nofollow" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
       </Helmet>
+      
+      <MobileOptimizations />
 
-      <div className="min-h-screen bg-gray-50 flex">
+      <div className="min-h-screen bg-gray-50 flex touch-target">
         {/* Sidebar */}
         <motion.aside
           initial={{ x: -300 }}
           animate={{ x: sidebarOpen ? 0 : -300 }}
           transition={{ duration: 0.3 }}
-          className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+          className={`fixed inset-y-0 left-0 z-50 w-64 sm:w-72 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          <div className="flex items-center justify-between h-16 px-6 border-b">
-            <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-between h-16 px-4 sm:px-6 border-b">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="p-2 bg-blue-600 rounded-lg">
-                <Shield className="h-6 w-6 text-white" />
+                <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-900">Admin FHD</h1>
+                <h1 className="text-base sm:text-lg font-bold text-gray-900">Admin FHD</h1>
               </div>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden"
+              className="lg:hidden p-2"
             >
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5" />
             </Button>
           </div>
 
-          <nav className="mt-6 px-3">
+          <nav className="mt-4 px-3 flex-1 overflow-y-auto">
             <div className="space-y-1">
               {navigationItems.map((item) => {
                 // Verificar permissões
@@ -374,11 +383,14 @@ const AdminPageNew = () => {
                   <div key={item.id}>
                     <Button
                       variant={activeSection === item.id ? "secondary" : "ghost"}
-                      className="w-full justify-start"
-                      onClick={() => setActiveSection(item.id)}
+                      className="w-full justify-start h-11 text-sm font-medium"
+                      onClick={() => {
+                        setActiveSection(item.id)
+                        if (window.innerWidth < 1024) setSidebarOpen(false) // Fechar sidebar no mobile
+                      }}
                     >
-                      <item.icon className="h-4 w-4 mr-3" />
-                      {item.label}
+                      <item.icon className="h-4 w-4 mr-3 flex-shrink-0" />
+                      <span className="truncate">{item.label}</span>
                     </Button>
                     {item.children && (
                       <div className="ml-6 mt-1 space-y-1">
@@ -393,11 +405,14 @@ const AdminPageNew = () => {
                               key={child.id}
                               variant={activeSection === child.id ? "secondary" : "ghost"}
                               size="sm"
-                              className="w-full justify-start"
-                              onClick={() => setActiveSection(child.id)}
+                              className="w-full justify-start h-9 text-sm"
+                              onClick={() => {
+                                setActiveSection(child.id)
+                                setSidebarOpen(false) // Fechar sidebar no mobile após seleção
+                              }}
                             >
-                              <child.icon className="h-4 w-4 mr-3" />
-                              {child.label}
+                              <child.icon className="h-4 w-4 mr-3 flex-shrink-0" />
+                              <span className="truncate">{child.label}</span>
                             </Button>
                           )
                         })}
@@ -409,24 +424,24 @@ const AdminPageNew = () => {
             </div>
           </nav>
 
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
-            <div className="flex items-center space-x-3 mb-3">
-              <Avatar>
-                <AvatarFallback>A</AvatarFallback>
+          <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 border-t bg-white">
+            <div className="flex items-center space-x-2 sm:space-x-3 mb-3">
+              <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
+                <AvatarFallback className="text-xs sm:text-sm">A</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900">Admin</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-900">Admin</p>
                 <p className="text-xs text-gray-500 truncate">admin@fhdautomacao.com.br</p>
               </div>
             </div>
             <Button
               variant="outline"
               size="sm"
-              className="w-full"
+              className="w-full h-9"
               onClick={handleLogout}
             >
               <LogOut className="h-4 w-4 mr-2" />
-              Sair
+              <span className="text-sm">Sair</span>
             </Button>
           </div>
         </motion.aside>
@@ -434,42 +449,48 @@ const AdminPageNew = () => {
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header */}
-          <header className="bg-white shadow-sm border-b h-16 flex items-center justify-between px-6">
-            <div className="flex items-center space-x-4">
+          <header className="bg-white shadow-sm border-b h-14 sm:h-16 flex items-center justify-between px-3 sm:px-6">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden"
+                className="lg:hidden p-2"
               >
-                <Menu className="h-4 w-4" />
+                <Menu className="h-5 w-5" />
               </Button>
-              <div className="flex items-center space-x-2">
-                <Home className="h-4 w-4 text-gray-400" />
-                <span className="text-sm text-gray-600">/</span>
-                <span className="text-sm font-medium text-gray-900 capitalize">
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <Home className="h-4 w-4 text-gray-400 hidden sm:block" />
+                <span className="text-sm text-gray-600 hidden sm:block">/</span>
+                <span className="text-sm sm:text-base font-medium text-gray-900 capitalize truncate">
                   {activeSection}
                 </span>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" size="sm">
+            <div className="flex items-center space-x-1 sm:space-x-4">
+              <Button variant="outline" size="sm" className="hidden sm:inline-flex">
                 <Eye className="h-4 w-4 mr-2" />
                 Ver Site
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="p-2">
                 <Bell className="h-4 w-4" />
+                <span className="sr-only">Notificações</span>
+              </Button>
+              <Button variant="outline" size="sm" className="sm:hidden p-2">
+                <Eye className="h-4 w-4" />
+                <span className="sr-only">Ver Site</span>
               </Button>
             </div>
           </header>
 
           {/* Content */}
-          <main className="flex-1 overflow-y-auto p-6">
+          <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 scroll-container safe-area-inset-bottom">
             <motion.div
               key={activeSection}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
+              className="max-w-full"
             >
               {renderContent()}
             </motion.div>

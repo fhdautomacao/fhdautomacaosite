@@ -219,6 +219,15 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
     const overdueBills = safeBills.filter(b => b && b.status === 'overdue').length
     
     const paidBills = safeBills.filter(b => b && b.status === 'paid').length
+
+    // Calcular pagamentos de sócio vencidos
+    const overduePartnerPayments = safeProfitSharings.reduce((count, ps) => {
+      if (!ps || !ps.profit_sharing_installments) return count
+      const overdueInstallments = ps.profit_sharing_installments.filter(
+        inst => inst && inst.status === 'overdue'
+      )
+      return count + overdueInstallments.length
+    }, 0)
     
     // Dados históricos para gráficos
     const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -276,6 +285,16 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
         action: 'bills'
       })
     }
+
+    if (overduePartnerPayments > 0) {
+      criticalAlerts.push({
+        type: 'danger',
+        title: 'Pagamentos de Sócio Vencidos',
+        message: `${overduePartnerPayments} pagamento(s) de sócio em atraso`,
+        icon: Calculator,
+        action: 'profit-sharing'
+      })
+    }
     
     if (pendingQuotations > 5) {
       criticalAlerts.push({
@@ -329,6 +348,7 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
       pendingQuotations,
       overdueBills,
       paidBills,
+      overduePartnerPayments,
       pendingProfitSharing: safeProfitSharings.filter(p => p && p.status === 'pending').length,
       revenueHistory: last7Days,
       quotationsTrend,
@@ -374,27 +394,27 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
     return <Activity className="h-4 w-4" />
   }
 
-  const MetricCard = ({ title, value, icon: Icon, change, trend, color = "blue" }) => (
+  const MetricCard = ({ title, value, icon: Icon, change, trend, color = "blue", onClick, className = "" }) => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="hover:shadow-lg transition-shadow duration-300">
-        <CardContent className="p-6">
+      <Card className={`hover:shadow-lg transition-shadow duration-300 ${onClick ? 'cursor-pointer' : ''} ${className}`} onClick={onClick}>
+        <CardContent className="p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-600">{title}</p>
-              <p className={`text-2xl font-bold text-${color}-600`}>{value}</p>
+            <div className="space-y-1 sm:space-y-2 min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">{title}</p>
+              <p className={`text-lg sm:text-2xl font-bold text-${color}-600 truncate`}>{value}</p>
               {change && (
-                <div className={`flex items-center space-x-1 text-sm ${getMetricColor(change.current, change.previous)}`}>
+                <div className={`flex items-center space-x-1 text-xs sm:text-sm ${getMetricColor(change.current, change.previous)}`}>
                   {getMetricIcon(change.current, change.previous)}
                   <span>{Math.abs(((change.current - change.previous) / change.previous) * 100).toFixed(1)}%</span>
                 </div>
               )}
             </div>
-            <div className={`p-3 bg-${color}-100 rounded-full`}>
-              <Icon className={`h-6 w-6 text-${color}-600`} />
+            <div className={`p-2 sm:p-3 bg-${color}-100 rounded-full flex-shrink-0 ml-2`}>
+              <Icon className={`h-5 w-5 sm:h-6 sm:w-6 text-${color}-600`} />
             </div>
           </div>
         </CardContent>
@@ -518,7 +538,7 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {dashboardData.criticalAlerts.map((alert, index) => (
                     <AlertCard key={index} alert={alert} index={index} />
                   ))}
@@ -529,7 +549,7 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
         )}
 
         {/* Métricas Principais */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <MetricCard
             title="Receita Total"
             value={formatCompactCurrency(dashboardData.totalRevenue)}
@@ -557,7 +577,7 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
         </div>
 
         {/* Métricas Operacionais */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <MetricCard
             title="Total de Orçamentos"
             value={dashboardData.totalQuotations}
@@ -584,8 +604,44 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
           />
         </div>
 
+        {/* Métricas Críticas */}
+        {(dashboardData.overdueBills > 0 || dashboardData.overduePartnerPayments > 0 || dashboardData.pendingQuotations > 5) && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+            {dashboardData.overdueBills > 0 && (
+              <MetricCard
+                title="Boletos Vencidos"
+                value={dashboardData.overdueBills}
+                icon={AlertTriangle}
+                color="red"
+                onClick={() => onNavigateToSection('bills')}
+                className="cursor-pointer hover:shadow-lg transition-shadow"
+              />
+            )}
+            {dashboardData.overduePartnerPayments > 0 && (
+              <MetricCard
+                title="Pagamentos de Sócio Vencidos"
+                value={dashboardData.overduePartnerPayments}
+                icon={Calculator}
+                color="red"
+                onClick={() => onNavigateToSection('profit-sharing')}
+                className="cursor-pointer hover:shadow-lg transition-shadow"
+              />
+            )}
+            {dashboardData.pendingQuotations > 5 && (
+              <MetricCard
+                title="Orçamentos Pendentes"
+                value={dashboardData.pendingQuotations}
+                icon={FileText}
+                color="yellow"
+                onClick={() => onNavigateToSection('quotations')}
+                className="cursor-pointer hover:shadow-lg transition-shadow"
+              />
+            )}
+          </div>
+        )}
+
         {/* Gráficos */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
           {/* Tendência de Receitas e Despesas */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -696,25 +752,26 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+                      className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
                       onClick={() => onNavigateToSection && onNavigateToSection('bills')}
                     >
-                      <div>
-                        <h4 className="font-semibold text-gray-900">{bill.company_name}</h4>
-                        <p className="text-sm text-gray-600">{bill.description}</p>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{bill.company_name}</h4>
+                        <p className="text-xs sm:text-sm text-gray-600 truncate">{bill.description}</p>
                       </div>
-                      <div className="text-right flex items-center space-x-2">
+                      <div className="text-right flex items-center space-x-1 sm:space-x-2 flex-shrink-0 ml-2">
                         <div>
-                          <p className="font-semibold text-gray-900">{formatCurrency(bill.total_amount)}</p>
+                          <p className="font-semibold text-gray-900 text-xs sm:text-sm">{formatCurrency(bill.total_amount)}</p>
                           <Badge 
                             variant={bill.daysUntilDue <= 2 ? "destructive" : "secondary"}
+                            className="text-xs"
                           >
                             {bill.daysUntilDue === 0 ? 'Hoje' : 
                              bill.daysUntilDue === 1 ? 'Amanhã' : 
                              `${bill.daysUntilDue} dias`}
                           </Badge>
                         </div>
-                        <Eye className="h-4 w-4 text-gray-400" />
+                        <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
                       </div>
                     </motion.div>
                   ))}

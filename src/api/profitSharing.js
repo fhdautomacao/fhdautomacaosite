@@ -239,5 +239,95 @@ export const profitSharingAPI = {
       console.error('Erro ao calcular estatísticas:', error)
       throw error
     }
+  },
+
+  // Atualizar status de pagamentos vencidos
+  async updateOverdueStatus() {
+    const today = new Date().toISOString().split('T')[0]
+    try {
+      // Atualizar installments vencidas
+      const { data: updatedInstallments, error: installmentsError } = await supabase
+        .from('profit_sharing_installments')
+        .update({ status: 'overdue', updated_at: new Date().toISOString() })
+        .eq('status', 'pending')
+        .lt('due_date', today)
+        .select(`
+          *,
+          profit_sharing (
+            company_name,
+            profit,
+            partner_share
+          )
+        `)
+
+      if (installmentsError) throw installmentsError
+
+      console.log('📊 Parcelas de divisão de lucro atualizadas para vencidas:', updatedInstallments?.length || 0)
+
+      return {
+        updatedInstallments: updatedInstallments || [],
+        total: updatedInstallments?.length || 0
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar status de pagamentos de sócio vencidos:', error)
+      throw error
+    }
+  },
+
+  // Buscar pagamentos pendentes e vencidos
+  async getPendingOverdue() {
+    const today = new Date().toISOString().split('T')[0]
+    
+    try {
+      const { data: overdueInstallments, error } = await supabase
+        .from('profit_sharing_installments')
+        .select(`
+          *,
+          profit_sharing (
+            company_name,
+            profit,
+            partner_share
+          )
+        `)
+        .eq('status', 'overdue')
+        .order('due_date', { ascending: true })
+
+      if (error) throw error
+
+      return overdueInstallments || []
+    } catch (error) {
+      console.error('Erro ao buscar pagamentos de sócio vencidos:', error)
+      throw error
+    }
+  },
+
+  // Buscar pagamentos que vencem em breve (próximos 7 dias)
+  async getUpcomingPayments(days = 7) {
+    const today = new Date()
+    const futureDate = new Date(today.getTime() + (days * 24 * 60 * 60 * 1000))
+    
+    try {
+      const { data: upcomingInstallments, error } = await supabase
+        .from('profit_sharing_installments')
+        .select(`
+          *,
+          profit_sharing (
+            company_name,
+            profit,
+            partner_share
+          )
+        `)
+        .eq('status', 'pending')
+        .gte('due_date', today.toISOString().split('T')[0])
+        .lte('due_date', futureDate.toISOString().split('T')[0])
+        .order('due_date', { ascending: true })
+
+      if (error) throw error
+
+      return upcomingInstallments || []
+    } catch (error) {
+      console.error('Erro ao buscar pagamentos de sócio próximos:', error)
+      throw error
+    }
   }
 }

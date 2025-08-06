@@ -20,7 +20,8 @@ import {
   CreditCard,
   Banknote,
   Timer,
-  PiggyBank
+  PiggyBank,
+  RefreshCw
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -87,6 +88,14 @@ const ProfitSharingManager = () => {
     try {
       setLoading(true)
       setError('')
+      
+      // Atualizar status de pagamentos vencidos automaticamente
+      try {
+        await profitSharingAPI.updateOverdueStatus()
+      } catch (updateError) {
+        console.warn("Aviso: Não foi possível atualizar status de pagamentos vencidos:", updateError)
+      }
+      
       const data = await profitSharingAPI.getAll()
       setProfitSharings(data)
     } catch (err) {
@@ -313,6 +322,25 @@ const ProfitSharingManager = () => {
     }
   }
 
+  const handleUpdateOverdueStatus = async () => {
+    try {
+      setLoading(true)
+      const result = await profitSharingAPI.updateOverdueStatus()
+      if (result.total > 0) {
+        alert(`Status atualizado! ${result.total} pagamento(s) de sócio marcado(s) como vencido(s).`)
+      } else {
+        alert("Nenhum pagamento de sócio vencido encontrado.")
+      }
+      loadProfitSharings()
+      loadStatistics()
+    } catch (err) {
+      console.error("Erro ao atualizar status de pagamentos vencidos:", err)
+      alert("Erro ao atualizar status de pagamentos vencidos. Tente novamente.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -521,7 +549,15 @@ const ProfitSharingManager = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-end">
+            <div className="flex items-end space-x-2">
+              <Button 
+                variant="outline" 
+                onClick={handleUpdateOverdueStatus}
+                disabled={loading}
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Atualizar Vencidos
+              </Button>
               <Button variant="outline" onClick={loadProfitSharings}>
                 <Filter className="h-4 w-4 mr-2" />
                 Atualizar
