@@ -155,7 +155,11 @@ const ServicesPage = () => {
                 Soluções completas em automação hidráulica e pneumática para impulsionar sua indústria
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-yellow-400 hover:bg-yellow-500 text-blue-900">
+                <Button 
+                  size="lg" 
+                  className="bg-yellow-400 hover:bg-yellow-500 text-blue-900"
+                  onClick={() => window.location.href = '/orcamento'}
+                >
                   Solicitar Orçamento
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
@@ -221,7 +225,11 @@ const ServicesPage = () => {
               Entre em contato conosco e descubra como nossas soluções podem transformar sua operação industrial.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-yellow-400 hover:bg-yellow-500 text-blue-900">
+              <Button 
+                size="lg" 
+                className="bg-yellow-400 hover:bg-yellow-500 text-blue-900"
+                onClick={() => window.location.href = '/orcamento'}
+              >
                 Solicitar Orçamento Gratuito
               </Button>
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-900">

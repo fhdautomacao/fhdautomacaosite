@@ -149,7 +149,10 @@ const Footer = () => {
             <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
               Entre em contato conosco e descubra como nossas soluções podem otimizar seus processos industriais.
             </p>
-            <button className="group bg-white text-blue-800 font-bold px-8 py-4 rounded-xl hover:bg-blue-50 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 mx-auto">
+            <button 
+              className="group bg-white text-blue-800 font-bold px-8 py-4 rounded-xl hover:bg-blue-50 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 mx-auto"
+              onClick={() => window.location.href = '/orcamento'}
+            >
               <span>Solicitar Orçamento</span>
               <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform duration-300" />
             </button>

@@ -278,6 +278,7 @@ const Hero = () => {
                 <Button 
                   size="lg" 
                   className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 md:px-8 py-3 md:py-4 rounded-xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 text-sm md:text-base w-full sm:w-auto"
+                  onClick={() => window.location.href = '/orcamento'}
                 >
                   Solicitar Orçamento Gratuito
                   <motion.div

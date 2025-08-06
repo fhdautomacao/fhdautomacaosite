@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react'
+import { Phone, Mail, MapPin, Clock, Send, FileText, CheckCircle } from 'lucide-react'
 
 const ContactPage = () => {
   const contactInfo = [
@@ -91,66 +91,47 @@ const ContactPage = () => {
                 <CardHeader>
                   <CardTitle className="text-2xl">Solicite um Orçamento</CardTitle>
                   <CardDescription>
-                    Preencha o formulário abaixo e entraremos em contato em breve
+                    Conte-nos sobre seu projeto e receba um orçamento personalizado
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="name">Nome *</Label>
-                        <Input id="name" placeholder="Seu nome completo" required />
+                  <div className="text-center space-y-6">
+                    <div className="bg-blue-100 rounded-full p-6 w-20 h-20 mx-auto flex items-center justify-center">
+                      <FileText className="text-blue-600" size={32} />
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-xl font-semibold text-gray-800 mb-3">
+                        Orçamento Personalizado
+                      </h4>
+                      <p className="text-gray-600 mb-6">
+                        Conte-nos sobre seu projeto e receba um orçamento personalizado em até 24 horas.
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
+                        <CheckCircle className="text-green-500" size={16} />
+                        <span>Resposta em até 24 horas</span>
                       </div>
-                      <div>
-                        <Label htmlFor="company">Empresa</Label>
-                        <Input id="company" placeholder="Nome da empresa" />
+                      <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
+                        <CheckCircle className="text-green-500" size={16} />
+                        <span>Orçamento gratuito</span>
+                      </div>
+                      <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
+                        <CheckCircle className="text-green-500" size={16} />
+                        <span>Análise técnica especializada</span>
                       </div>
                     </div>
                     
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="email">E-mail *</Label>
-                        <Input id="email" type="email" placeholder="seu@email.com" required />
-                      </div>
-                      <div>
-                        <Label htmlFor="phone">Telefone *</Label>
-                        <Input id="phone" placeholder="(00) 00000-0000" required />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="service">Serviço de Interesse</Label>
-                      <select 
-                        id="service" 
-                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="">Selecione um serviço</option>
-                        <option value="automacao">Automação Hidráulica e Pneumática</option>
-                        <option value="projetos">Projetos Hidráulicos</option>
-                        <option value="startup">Start-up em Unidades Hidráulicas</option>
-                        <option value="fabricacao">Fabricação em Unidades Hidráulicas</option>
-                        <option value="manutencao">Manutenção de Cilindros</option>
-                        <option value="instalacao">Instalação e Dobras em Tubulações</option>
-                        <option value="consertos">Consertos em Bombas Hidráulicas</option>
-                        <option value="outros">Outros</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="message">Mensagem *</Label>
-                      <Textarea 
-                        id="message" 
-                        placeholder="Descreva sua necessidade ou projeto..."
-                        rows={5}
-                        required 
-                      />
-                    </div>
-
-                    <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-                      <Send className="mr-2 h-5 w-5" />
-                      Enviar Mensagem
+                    <Button 
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold"
+                      onClick={() => window.location.href = '/orcamento'}
+                    >
+                      <FileText className="mr-2" size={20} />
+                      Solicitar Orçamento
                     </Button>
-                  </form>
+                  </div>
                 </CardContent>
               </Card>
 

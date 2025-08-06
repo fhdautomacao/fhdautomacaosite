@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react'
+import { Phone, Mail, MapPin, Clock, Send, FileText, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { contactAPI } from '../../api/contact'
 
@@ -63,86 +63,43 @@ const Contact = () => {
           <div className="bg-gray-50 rounded-2xl p-8">
             <h3 className="text-2xl font-bold text-gray-800 mb-6">Solicite um Orçamento</h3>
             
-            <form className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Nome *
-                  </label>
-                  <input 
-                    type="text" 
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Seu nome completo"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Empresa
-                  </label>
-                  <input 
-                    type="text" 
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Nome da empresa"
-                  />
-                </div>
+            <div className="text-center space-y-6">
+              <div className="bg-blue-100 rounded-full p-6 w-20 h-20 mx-auto flex items-center justify-center">
+                <FileText className="text-blue-600" size={32} />
               </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    E-mail *
-                  </label>
-                  <input 
-                    type="email" 
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="seu@email.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Telefone *
-                  </label>
-                  <input 
-                    type="tel" 
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="(00) 00000-0000"
-                  />
-                </div>
-              </div>
-
+              
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Serviço de Interesse
-                </label>
-                <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  <option value="">Selecione um serviço</option>
-                  <option value="automacao">Automação Hidráulica e Pneumática</option>
-                  <option value="projetos">Projetos Hidráulicos</option>
-                  <option value="startup">Start-up em Unidades Hidráulicas</option>
-                  <option value="fabricacao">Fabricação em Unidades Hidráulicas</option>
-                  <option value="manutencao">Manutenção de Cilindros</option>
-                  <option value="instalacao">Instalação e Dobras em Tubulações</option>
-                  <option value="consertos">Consertos em Bombas Hidráulicas</option>
-                  <option value="outros">Outros</option>
-                </select>
+                <h4 className="text-xl font-semibold text-gray-800 mb-3">
+                  Orçamento Personalizado
+                </h4>
+                <p className="text-gray-600 mb-6">
+                  Conte-nos sobre seu projeto e receba um orçamento personalizado em até 24 horas.
+                </p>
               </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Mensagem *
-                </label>
-                <textarea 
-                  rows="5"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Descreva sua necessidade ou projeto..."
-                ></textarea>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
+                  <CheckCircle className="text-green-500" size={16} />
+                  <span>Resposta em até 24 horas</span>
+                </div>
+                <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
+                  <CheckCircle className="text-green-500" size={16} />
+                  <span>Orçamento gratuito</span>
+                </div>
+                <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
+                  <CheckCircle className="text-green-500" size={16} />
+                  <span>Análise técnica especializada</span>
+                </div>
               </div>
-
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3">
-                <Send className="mr-2" size={20} />
-                Enviar Mensagem
+              
+              <Button 
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold"
+                onClick={() => window.location.href = '/orcamento'}
+              >
+                <FileText className="mr-2" size={20} />
+                Solicitar Orçamento
               </Button>
-            </form>
+            </div>
           </div>
 
           {/* Contact Information */}

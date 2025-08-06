@@ -33,6 +33,7 @@ const Header = () => {
     { path: '/quem-somos', label: 'Quem Somos', icon: Users, color: 'blue' },
     { path: '/servicos', label: 'Nossos Serviços', icon: Settings, color: 'orange' },
     { path: '/clientes', label: 'Nossos Clientes', icon: UserCheck, color: 'yellow' },
+    { path: '/orcamento', label: 'Solicitar Orçamento', icon: MessageCircle, color: 'red' },
     { path: '/contato', label: 'Contato', icon: MessageCircle, color: 'purple' }
   ]
 

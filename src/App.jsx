@@ -7,6 +7,7 @@ import AboutPage from '@/pages/public/AboutPage'
 import ServicesPage from '@/pages/public/ServicesPage'
 import ContactPage from '@/pages/public/ContactPage'
 import ClientsPage from '@/pages/public/ClientsPage'
+import QuotationPage from '@/pages/QuotationPage'
 import TermosDeUso from '@/pages/public/TermosDeUso'
 import PoliticaPrivacidade from '@/pages/public/PoliticaPrivacidade'
 import AdminPageNew from '@/pages/Admin/AdminPageNew.jsx'
@@ -41,6 +42,7 @@ function AppContent() {
         <Route path="/servicos" element={<ServicesPage />} />
         <Route path="/clientes" element={<ClientsPage />} />
         <Route path="/contato" element={<ContactPage />} />
+        <Route path="/orcamento" element={<QuotationPage />} />
         <Route path="/termos-de-uso" element={<TermosDeUso />} />
         <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />
         <Route

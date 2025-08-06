@@ -45,10 +45,12 @@ import { useAuth } from '@/contexts/AuthContext'
 import GalleryManager from './GalleryManager'
 import ClientsManager from './ClientsManager'
 import ProductsManager from './ProductsManager'
+import QuotationsManager from './QuotationsManager'
 
 // Import new content managers
 import HeroManager from './ContentManagers/HeroManager'
 import ServicesManager from './ContentManagers/ServicesManager'
+import QuotationNotification from '@/components/QuotationNotification'
 
 const AdminPageNew = () => {
   const [activeSection, setActiveSection] = useState('dashboard')
@@ -107,6 +109,15 @@ const AdminPageNew = () => {
       children: [
         { id: 'clients', label: 'Clientes', icon: Building },
         { id: 'testimonials', label: 'Depoimentos', icon: MessageSquare }
+      ]
+    },
+    {
+      id: 'quotations',
+      label: 'Orçamentos',
+      icon: FileText,
+      section: 'quotations',
+      children: [
+        { id: 'quotations', label: 'Solicitações', icon: FileText }
       ]
     },
     {
@@ -487,6 +498,9 @@ const AdminPageNew = () => {
       case 'products':
         return <ProductsManager />
 
+      case 'quotations':
+        return <QuotationsManager />
+
       default:
         return (
           <div className="flex items-center justify-center h-64">
@@ -648,6 +662,9 @@ const AdminPageNew = () => {
           />
         )}
       </div>
+      
+      {/* Notifications */}
+      <QuotationNotification />
     </>
   )
 }

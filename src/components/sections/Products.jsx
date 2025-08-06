@@ -195,7 +195,10 @@ const Products = () => {
                 {/* Price and CTA */}
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                   <span className="text-sm font-semibold text-blue-600">{product.price}</span>
-                  <button className="group/btn flex items-center space-x-1 text-blue-600 hover:text-blue-700 font-semibold text-sm transition-colors duration-300">
+                  <button 
+                    className="group/btn flex items-center space-x-1 text-blue-600 hover:text-blue-700 font-semibold text-sm transition-colors duration-300"
+                    onClick={() => window.location.href = '/orcamento'}
+                  >
                     <span>Consultar</span>
                     <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform duration-300" />
                   </button>
@@ -242,7 +245,10 @@ const Products = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="group bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2">
+              <button 
+                className="group bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
+                onClick={() => window.location.href = '/orcamento'}
+              >
                 <span>Consultar Especialista</span>
                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform duration-300" />
               </button>
