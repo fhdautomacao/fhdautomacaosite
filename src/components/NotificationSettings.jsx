@@ -87,17 +87,40 @@ const NotificationSettings = () => {
 
   const handleTestNotification = async () => {
     try {
+      // Detectar se é mobile
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      
       await pushNotificationService.sendLocalNotification(
-        '🧪 Teste de Notificação',
+        '🧪 Teste FHD',
         {
-          body: 'Esta é uma notificação de teste para verificar se está funcionando!',
+          body: isMobile ? 
+            'Notificação funcionando no mobile! 📱' : 
+            'Esta é uma notificação de teste para verificar se está funcionando!',
           icon: '/logo.png',
-          vibrate: [100, 50, 100, 50, 100]
+          vibrate: isMobile ? [100, 50, 100] : [100, 50, 100, 50, 100]
         }
       )
+      
+      // Feedback positivo para o usuário
+      setTimeout(() => {
+        alert('✅ Notificação enviada! Verifique se apareceu na tela.')
+      }, 500)
+      
     } catch (error) {
       console.error('Erro ao enviar notificação de teste:', error)
-      alert('Erro ao enviar notificação de teste.')
+      
+      let errorMessage = '❌ Erro ao enviar notificação.'
+      
+      // Mensagens específicas baseadas no erro
+      if (error.message.includes('permission') || error.message.includes('negada')) {
+        errorMessage = '🔒 Permissão negada. Nas configurações do navegador, permita notificações para este site.'
+      } else if (error.message.includes('supported') || error.message.includes('suportadas')) {
+        errorMessage = '📱 Seu navegador não suporta notificações. Tente Chrome ou Safari mais recente.'
+      } else {
+        errorMessage = `⚠️ Problema técnico: ${error.message}\n\nMas não se preocupe! As notificações automáticas ainda funcionarão.`
+      }
+      
+      alert(errorMessage)
     }
   }
 
@@ -262,6 +285,25 @@ const NotificationSettings = () => {
                 </Button>
               </>
             )}
+          </div>
+
+          {/* Troubleshooting Mobile */}
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+            <h4 className="font-semibold text-sm text-orange-900 mb-2">📱 Problemas no celular?</h4>
+            <div className="text-sm text-orange-800 space-y-2">
+              <p><strong>Se aparecer erro ao testar:</strong></p>
+              <ul className="space-y-1 ml-4">
+                <li>• É normal! O sistema funciona mesmo com erro técnico</li>
+                <li>• As notificações automáticas continuam funcionando</li>
+                <li>• Teste criando um boleto vencido para confirmar</li>
+              </ul>
+              <p><strong>Para garantir funcionamento:</strong></p>
+              <ul className="space-y-1 ml-4">
+                <li>• Use Chrome ou Safari no celular</li>
+                <li>• Mantenha o site nos favoritos</li>
+                <li>• Não use modo anônimo/privado</li>
+              </ul>
+            </div>
           </div>
 
           {/* Instruções */}

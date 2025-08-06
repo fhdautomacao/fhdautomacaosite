@@ -102,33 +102,99 @@ class PushNotificationService {
     }
   }
 
+  // Detectar se é mobile
+  isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  }
+
   // Enviar notificação local (teste)
   async sendLocalNotification(title, options = {}) {
-    if (this.getPermissionStatus() !== 'granted') {
-      throw new Error('Permissão de notificação não concedida')
-    }
+    try {
+      // Verificar permissão
+      if (this.getPermissionStatus() !== 'granted') {
+        throw new Error('Permissão de notificação não concedida')
+      }
 
-    const defaultOptions = {
-      body: 'Notificação de teste',
-      icon: '/logo.png',
-      badge: '/logo.png',
-      vibrate: [200, 100, 200],
-      data: {
-        url: '/admin-fhd'
+      // Verificar se Notification está disponível
+      if (!('Notification' in window)) {
+        throw new Error('Notificações não são suportadas neste navegador')
+      }
+
+      const isMobileDevice = this.isMobile()
+      
+      const defaultOptions = {
+        body: options.body || 'Notificação de teste do sistema FHD',
+        icon: '/logo.png',
+        badge: '/logo.png',
+        data: {
+          url: '/admin-fhd'
+        },
+        // Vibração mais suave para mobile
+        vibrate: isMobileDevice ? [100, 50, 100] : [200, 100, 200],
+        // Para mobile, usar configurações mais conservadoras
+        requireInteraction: !isMobileDevice,
+        silent: false
+      }
+
+      // Combinar opções
+      const finalOptions = { ...defaultOptions, ...options }
+      
+      console.log('🔔 Enviando notificação:', { title, finalOptions, isMobileDevice })
+
+      const notification = new Notification(title, finalOptions)
+      
+      // Event handlers
+      notification.onclick = () => {
+        console.log('🖱️ Notificação clicada')
+        if ('focus' in window) {
+          window.focus()
+        }
+        notification.close()
+        
+        // Navegar se especificado
+        if (finalOptions.data?.url) {
+          if (isMobileDevice) {
+            // Para mobile, usar window.open para garantir funcionamento
+            window.open(finalOptions.data.url, '_self')
+          } else {
+            window.location.href = finalOptions.data.url
+          }
+        }
+      }
+
+      notification.onerror = (error) => {
+        console.error('❌ Erro na notificação:', error)
+      }
+
+      notification.onshow = () => {
+        console.log('✅ Notificação exibida com sucesso')
+      }
+
+      notification.onclose = () => {
+        console.log('❌ Notificação fechada')
+      }
+
+      // Auto-close após 5 segundos no mobile para evitar acúmulo
+      if (isMobileDevice) {
+        setTimeout(() => {
+          notification.close()
+        }, 5000)
+      }
+
+      return notification
+      
+    } catch (error) {
+      console.error('❌ Erro ao enviar notificação local:', error)
+      
+      // Lançar erro mais específico baseado no problema
+      if (error.message.includes('permission')) {
+        throw new Error('Permissão de notificação negada. Permita notificações nas configurações do navegador.')
+      } else if (error.message.includes('supported')) {
+        throw new Error('Notificações não são suportadas neste navegador.')
+      } else {
+        throw new Error(`Erro ao exibir notificação: ${error.message}`)
       }
     }
-
-    const notification = new Notification(title, { ...defaultOptions, ...options })
-    
-    notification.onclick = () => {
-      window.focus()
-      notification.close()
-      if (options.data?.url) {
-        window.location.href = options.data.url
-      }
-    }
-
-    return notification
   }
 
   // Configuração completa de notificações
