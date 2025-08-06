@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { quotationsAPI } from '@/api/quotations'
 
-const QuotationNotification = () => {
+const QuotationNotification = ({ variant = 'floating' }) => {
   const [pendingCount, setPendingCount] = useState(0)
   const [isVisible, setIsVisible] = useState(true)
 
@@ -30,6 +30,53 @@ const QuotationNotification = () => {
     return null
   }
 
+  // Banner version for admin page
+  if (variant === 'banner') {
+    return (
+      <div className="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-lg p-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="bg-red-100 p-2 rounded-full">
+              <Bell className="w-5 h-5 text-red-600" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <h4 className="text-sm font-semibold text-gray-900">
+                  Novos Orçamentos Pendentes
+                </h4>
+                <Badge variant="destructive" className="text-xs">
+                  {pendingCount}
+                </Badge>
+              </div>
+              <p className="text-xs text-gray-600">
+                Você tem {pendingCount} solicitação{pendingCount > 1 ? 'ões' : ''} de orçamento pendente{pendingCount > 1 ? 's' : ''}.
+              </p>
+            </div>
+          </div>
+          <div className="flex space-x-2">
+            <Button 
+              size="sm" 
+              className="text-xs"
+              onClick={() => window.location.href = '/admin-fhd'}
+            >
+              <FileText className="w-3 h-3 mr-1" />
+              Ver Orçamentos
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-xs"
+              onClick={() => setIsVisible(false)}
+            >
+              Fechar
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Floating notification (default)
   return (
     <div className="fixed bottom-4 right-4 z-50">
       <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm">
@@ -52,15 +99,15 @@ const QuotationNotification = () => {
               <p className="text-xs text-gray-600 mb-3">
                 Você tem {pendingCount} solicitação{pendingCount > 1 ? 'ões' : ''} de orçamento pendente{pendingCount > 1 ? 's' : ''}.
               </p>
-                              <div className="flex space-x-2">
-                  <Button 
-                    size="sm" 
-                    className="text-xs"
-                    onClick={() => window.location.href = '/admin-fhd'}
-                  >
-                    <FileText className="w-3 h-3 mr-1" />
-                    Ver Orçamentos
-                  </Button>
+              <div className="flex space-x-2">
+                <Button 
+                  size="sm" 
+                  className="text-xs"
+                  onClick={() => window.location.href = '/admin-fhd'}
+                >
+                  <FileText className="w-3 h-3 mr-1" />
+                  Ver Orçamentos
+                </Button>
                 <Button 
                   variant="outline" 
                   size="sm" 

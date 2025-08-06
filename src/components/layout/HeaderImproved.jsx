@@ -31,9 +31,8 @@ const Header = () => {
   const navItems = [
     { path: '/', label: 'Início', icon: Home, color: 'green' },
     { path: '/quem-somos', label: 'Quem Somos', icon: Users, color: 'blue' },
-    { path: '/servicos', label: 'Nossos Serviços', icon: Settings, color: 'orange' },
-    { path: '/clientes', label: 'Nossos Clientes', icon: UserCheck, color: 'yellow' },
-    { path: '/orcamento', label: 'Solicitar Orçamento', icon: MessageCircle, color: 'red' },
+    { path: '/servicos', label: 'Serviços', icon: Settings, color: 'orange' },
+    { path: '/clientes', label: 'Clientes', icon: UserCheck, color: 'yellow' },
     { path: '/contato', label: 'Contato', icon: MessageCircle, color: 'purple' }
   ]
 
@@ -334,6 +333,23 @@ const Header = () => {
                 <motion.div 
                   variants={mobileItemVariants}
                   className="pt-3 border-t border-gray-200/20"
+                >
+                  <Link to="/orcamento" onClick={() => setIsMenuOpen(false)}>
+                    <motion.div
+                      className="bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold px-4 py-3 rounded-lg flex items-center justify-center space-x-2 shadow-lg"
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <MessageCircle size={18} />
+                      <span>Solicitar Orçamento</span>
+                    </motion.div>
+                  </Link>
+                </motion.div>
+                
+                <motion.div 
+                  variants={mobileItemVariants}
+                  className="pt-2"
                 >
                   <Link to="/contato" onClick={() => setIsMenuOpen(false)}>
                     <motion.div
