@@ -230,7 +230,7 @@ const Header = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.8, duration: 0.5 }}
           >
-            <Link to="/contato">
+            <Link to="/orcamento">
               <motion.div
                 whileHover={{ scale: 1.05, boxShadow: "0 10px 25px rgba(59, 130, 246, 0.3)" }}
                 whileTap={{ scale: 0.95 }}
