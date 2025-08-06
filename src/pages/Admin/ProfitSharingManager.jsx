@@ -16,7 +16,11 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  Clock
+  Clock,
+  CreditCard,
+  Banknote,
+  Timer,
+  PiggyBank
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -49,6 +53,15 @@ const ProfitSharingManager = () => {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [showInstallmentModal, setShowInstallmentModal] = useState(false)
+  
+  // Estados para estatísticas financeiras
+  const [statistics, setStatistics] = useState({
+    totalToPay: 0,
+    totalPaid: 0,
+    totalPending: 0,
+    totalOverdue: 0,
+    averageProfit: 0
+  })
 
   const [formData, setFormData] = useState({
     company_id: '',
@@ -67,6 +80,7 @@ const ProfitSharingManager = () => {
   useEffect(() => {
     loadProfitSharings()
     loadCompanies()
+    loadStatistics()
   }, [])
 
   const loadProfitSharings = async () => {
@@ -89,6 +103,15 @@ const ProfitSharingManager = () => {
       setCompanies(data)
     } catch (err) {
       console.error("Erro ao carregar empresas:", err)
+    }
+  }
+
+  const loadStatistics = async () => {
+    try {
+      const stats = await profitSharingAPI.getFinancialStatistics()
+      setStatistics(stats)
+    } catch (err) {
+      console.error("Erro ao carregar estatísticas:", err)
     }
   }
 
@@ -205,6 +228,7 @@ const ProfitSharingManager = () => {
       setSelectedBill(null)
       setBills([])
       loadProfitSharings()
+      loadStatistics()
     } catch (err) {
       console.error("Erro ao criar divisão de lucro:", err)
       alert("Erro ao criar divisão de lucro. Tente novamente.")
@@ -251,6 +275,7 @@ const ProfitSharingManager = () => {
       
       setShowInstallmentModal(false)
       setSelectedInstallment(null)
+      loadStatistics()
     } catch (err) {
       console.error("Erro ao atualizar parcela:", err)
       alert("Erro ao atualizar parcela. Tente novamente.")
@@ -262,6 +287,7 @@ const ProfitSharingManager = () => {
       try {
         await profitSharingAPI.delete(id)
         loadProfitSharings()
+        loadStatistics()
       } catch (err) {
         console.error("Erro ao deletar divisão de lucro:", err)
         alert("Erro ao deletar divisão de lucro. Tente novamente.")
@@ -292,6 +318,19 @@ const ProfitSharingManager = () => {
       style: 'currency',
       currency: 'BRL'
     }).format(value)
+  }
+
+  const formatCurrencyCompact = (value) => {
+    const val = value || 0
+    if (val >= 1000000) {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        notation: 'compact',
+        maximumFractionDigits: 1
+      }).format(val)
+    }
+    return formatCurrency(val)
   }
 
   const filteredProfitSharings = profitSharings.filter(profitSharing => {
@@ -380,6 +419,69 @@ const ProfitSharingManager = () => {
                 </p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Financial Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total a Pagar</p>
+                <p className="text-xl font-bold text-red-600">{formatCurrencyCompact(statistics.totalToPay)}</p>
+              </div>
+              <CreditCard className="h-8 w-8 text-red-500" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Pago</p>
+                <p className="text-xl font-bold text-green-600">{formatCurrencyCompact(statistics.totalPaid)}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Pendente</p>
+                <p className="text-xl font-bold text-yellow-600">{formatCurrencyCompact(statistics.totalPending)}</p>
+              </div>
+              <Timer className="h-8 w-8 text-yellow-500" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Em Atraso</p>
+                <p className="text-xl font-bold text-red-600">{formatCurrencyCompact(statistics.totalOverdue)}</p>
+              </div>
+              <AlertCircle className="h-8 w-8 text-red-500" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Lucro Médio</p>
+                <p className="text-xl font-bold text-purple-600">{formatCurrencyCompact(statistics.averageProfit)}</p>
+              </div>
+              <PiggyBank className="h-8 w-8 text-purple-500" />
             </div>
           </CardContent>
         </Card>

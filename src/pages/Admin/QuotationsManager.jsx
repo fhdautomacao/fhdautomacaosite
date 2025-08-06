@@ -213,17 +213,17 @@ const QuotationsManager = () => {
 
   // Função para calcular tamanho dinâmico do modal baseado no conteúdo
   const getModalSize = (quotation) => {
-    if (!quotation) return "max-w-2xl"
+    if (!quotation) return "max-w-4xl"
     
     const descriptionLength = quotation.description?.length || 0
     const additionalInfoLength = quotation.additional_info?.length || 0
     const totalTextLength = descriptionLength + additionalInfoLength
     
-    // Definir tamanho baseado na quantidade de texto
-    if (totalTextLength > 1000) return "max-w-6xl" // Muito texto
-    if (totalTextLength > 500) return "max-w-4xl"  // Texto médio
-    if (totalTextLength > 200) return "max-w-3xl"  // Texto pequeno
-    return "max-w-2xl" // Padrão
+    // Definir tamanho baseado na quantidade de texto - sendo mais generoso
+    if (totalTextLength > 800) return "max-w-7xl w-[90vw]" // Muito texto - quase tela cheia
+    if (totalTextLength > 400) return "max-w-6xl w-[80vw]"  // Texto médio
+    if (totalTextLength > 150) return "max-w-5xl w-[70vw]"  // Texto pequeno
+    return "max-w-4xl w-[60vw]" // Padrão - já maior que antes
   }
 
     return (
@@ -481,7 +481,7 @@ const QuotationsManager = () => {
 
       {/* View Modal */}
       <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
-        <DialogContent className={`${getModalSize(selectedQuotation)} max-h-[90vh] overflow-y-auto`}>
+        <DialogContent className={`${getModalSize(selectedQuotation)} max-h-[95vh] min-h-[60vh] overflow-y-auto`}>
           <DialogHeader>
             <DialogTitle>Detalhes do Orçamento</DialogTitle>
             <DialogDescription>
@@ -541,21 +541,21 @@ const QuotationsManager = () => {
                   </div>
                 </div>
                 
-                <div className="space-y-4">
-                  <div>
+                <div className="space-y-4 w-full">
+                  <div className="w-full">
                     <p className="text-sm font-medium text-gray-500 mb-2">Descrição do Projeto</p>
-                    <div className="bg-gray-50 p-4 rounded-lg border">
-                      <p className="text-gray-900 whitespace-pre-wrap break-words leading-relaxed">
+                    <div className="bg-gray-50 p-4 rounded-lg border w-full overflow-hidden">
+                      <p className="text-gray-900 whitespace-pre-wrap break-words break-all leading-relaxed text-sm">
                         {selectedQuotation.description}
                       </p>
                     </div>
                   </div>
                   
                   {selectedQuotation.additional_info && (
-                    <div>
+                    <div className="w-full">
                       <p className="text-sm font-medium text-gray-500 mb-2">Informações Adicionais</p>
-                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                        <p className="text-gray-900 whitespace-pre-wrap break-words leading-relaxed">
+                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 w-full overflow-hidden">
+                        <p className="text-gray-900 whitespace-pre-wrap break-words break-all leading-relaxed text-sm">
                           {selectedQuotation.additional_info}
                         </p>
                       </div>

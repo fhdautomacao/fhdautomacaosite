@@ -174,5 +174,70 @@ export const profitSharingAPI = {
 
     if (error) throw error
     return data
+  },
+
+  // Buscar todas as parcelas com estatísticas
+  async getAllInstallments() {
+    const { data, error } = await supabase
+      .from('profit_sharing_installments')
+      .select(`
+        *,
+        profit_sharing (company_name, bill_description)
+      `)
+      .order('due_date')
+
+    if (error) throw error
+    return data
+  },
+
+  // Calcular estatísticas financeiras
+  async getFinancialStatistics() {
+    try {
+      // Buscar todas as parcelas
+      const installments = await this.getAllInstallments()
+      
+      const today = new Date().toISOString().split('T')[0]
+      
+      const stats = {
+        totalToPay: 0,
+        totalPaid: 0,
+        totalPending: 0,
+        totalOverdue: 0,
+        averageProfit: 0
+      }
+
+      // Calcular totais das parcelas
+      installments.forEach(installment => {
+        const amount = parseFloat(installment.amount)
+        
+        if (installment.status === 'paid') {
+          stats.totalPaid += amount
+        } else if (installment.status === 'pending') {
+          stats.totalPending += amount
+          
+          // Verificar se está vencida
+          if (installment.due_date < today) {
+            stats.totalOverdue += amount
+          }
+        }
+        
+        stats.totalToPay += amount
+      })
+
+      // Calcular lucro médio das divisões
+      const { data: profitSharings } = await supabase
+        .from('profit_sharing')
+        .select('profit')
+
+      if (profitSharings && profitSharings.length > 0) {
+        const totalProfit = profitSharings.reduce((sum, ps) => sum + parseFloat(ps.profit || 0), 0)
+        stats.averageProfit = totalProfit / profitSharings.length
+      }
+
+      return stats
+    } catch (error) {
+      console.error('Erro ao calcular estatísticas:', error)
+      throw error
+    }
   }
 }
