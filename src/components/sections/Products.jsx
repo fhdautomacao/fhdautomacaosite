@@ -152,7 +152,20 @@ const Products = () => {
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <div className="bg-gradient-to-br from-blue-500 to-blue-600 h-40 md:h-48 flex items-center justify-center relative overflow-hidden">
-                <div className="text-white text-4xl md:text-6xl group-hover:scale-110 transition-transform duration-300">⚙️</div>
+                {product.image_url ? (
+                  <img 
+                    src={product.image_url} 
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div className={`text-white text-4xl md:text-6xl group-hover:scale-110 transition-transform duration-300 ${product.image_url ? 'hidden' : 'flex'}`}>
+                  ⚙️
+                </div>
                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               
