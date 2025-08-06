@@ -54,6 +54,7 @@ import ServicesManager from './ContentManagers/ServicesManager'
 import QuotationNotification from '@/components/QuotationNotification'
 
 const AdminPageNew = () => {
+  console.log('AdminPageNew - Componente carregado')
   const [activeSection, setActiveSection] = useState('dashboard')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const { logout, userPermissions } = useAuth()

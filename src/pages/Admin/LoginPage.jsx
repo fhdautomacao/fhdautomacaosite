@@ -24,16 +24,11 @@ const LoginPage = () => {
     console.log('Valores dos campos:', { email, password: password ? '***' : 'vazio' });
 
     try {
-      const result = await login(email, password);
-      
-      if (result.success) {
-        navigate('/admin-fhd'); // Redireciona para a página de administração após o login
-      } else {
-        setError(result.error);
-      }
+      await login(email, password);
+      navigate('/admin-fhd'); // Redireciona para a página de administração após o login
     } catch (error) {
       console.error('Erro no login:', error);
-      setError('Erro interno. Tente novamente.');
+      setError(error.message || 'Erro interno. Tente novamente.');
     }
     
     setLoading(false);

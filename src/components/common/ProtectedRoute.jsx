@@ -5,6 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
+  console.log('ProtectedRoute - User:', user?.email)
+  console.log('ProtectedRoute - Loading:', loading)
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
