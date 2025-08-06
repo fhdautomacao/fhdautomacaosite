@@ -195,5 +195,20 @@ export const billsAPI = {
     
     if (error) throw error
     return data
+  },
+
+  // Buscar boletos por empresa
+  async getByCompany(companyId) {
+    const { data, error } = await supabase
+      .from('bills')
+      .select(`
+        *,
+        bill_installments (*)
+      `)
+      .eq('company_id', companyId)
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    return data
   }
 } 

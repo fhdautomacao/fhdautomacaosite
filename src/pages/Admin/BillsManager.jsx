@@ -28,6 +28,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { billsAPI } from '@/api/bills'
+import { companiesAPI } from '@/api/companies'
 import { useAuth } from '@/contexts/AuthContext'
 
 const BillsManager = () => {
@@ -47,6 +48,7 @@ const BillsManager = () => {
 
   const [formData, setFormData] = useState({
     type: 'receivable',
+    company_id: '',
     company_name: '',
     description: '',
     total_amount: '',
@@ -56,9 +58,21 @@ const BillsManager = () => {
     admin_notes: ''
   })
 
+  const [companies, setCompanies] = useState([])
+
   useEffect(() => {
     loadBills()
+    loadCompanies()
   }, [])
+
+  const loadCompanies = async () => {
+    try {
+      const data = await companiesAPI.getActive()
+      setCompanies(data)
+    } catch (err) {
+      console.error("Erro ao carregar empresas:", err)
+    }
+  }
 
   const loadBills = async () => {
     try {
@@ -96,6 +110,7 @@ const BillsManager = () => {
       setShowCreateModal(false)
       setFormData({
         type: 'receivable',
+        company_id: '',
         company_name: '',
         description: '',
         total_amount: '',
@@ -481,11 +496,28 @@ const BillsManager = () => {
             
             <div>
               <Label>Empresa</Label>
-              <Input
-                value={formData.company_name}
-                onChange={(e) => setFormData({...formData, company_name: e.target.value})}
-                placeholder="Nome da empresa"
-              />
+              <Select 
+                value={formData.company_id} 
+                onValueChange={(value) => {
+                  const selectedCompany = companies.find(c => c.id === value)
+                  setFormData({
+                    ...formData, 
+                    company_id: value,
+                    company_name: selectedCompany ? selectedCompany.name : ''
+                  })
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma empresa" />
+                </SelectTrigger>
+                <SelectContent>
+                  {companies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="col-span-2">

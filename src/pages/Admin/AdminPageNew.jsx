@@ -48,6 +48,7 @@ import ClientsManager from './ClientsManager'
 import ProductsManager from './ProductsManager'
 import QuotationsManager from './QuotationsManager'
 import BillsManager from './BillsManager'
+import CompaniesManager from './CompaniesManager'
 
 // Import new content managers
 import HeroManager from './ContentManagers/HeroManager'
@@ -130,6 +131,16 @@ const AdminPageNew = () => {
       section: 'bills',
       children: [
         { id: 'bills', label: 'Controle de Boletos', icon: DollarSign }
+      ],
+      requiresPermission: 'canAccessBills'
+    },
+    {
+      id: 'companies',
+      label: 'Empresas',
+      icon: Building,
+      section: 'companies',
+      children: [
+        { id: 'companies', label: 'Gerenciar Empresas', icon: Building }
       ],
       requiresPermission: 'canAccessBills'
     },
@@ -527,6 +538,17 @@ const AdminPageNew = () => {
 
       case 'bills':
         return userPermissions.canAccessBills ? <BillsManager /> : (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Acesso Negado</h3>
+              <p className="text-gray-600">Você não tem permissão para acessar esta seção.</p>
+            </div>
+          </div>
+        )
+
+      case 'companies':
+        return userPermissions.canAccessBills ? <CompaniesManager /> : (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
