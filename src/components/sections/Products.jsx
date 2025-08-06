@@ -151,7 +151,7 @@ const Products = () => {
               className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden hover:-translate-y-2 hover:scale-105 animate-fade-in-up"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 h-40 md:h-48 flex items-center justify-center relative overflow-hidden">
+              <div className="bg-white h-40 md:h-48 flex items-center justify-center relative overflow-hidden border border-gray-200">
                 {product.image_url ? (
                   <img 
                     src={product.image_url} 
@@ -163,10 +163,10 @@ const Products = () => {
                     }}
                   />
                 ) : null}
-                <div className={`text-white text-4xl md:text-6xl group-hover:scale-110 transition-transform duration-300 ${product.image_url ? 'hidden' : 'flex'}`}>
+                <div className={`text-gray-400 text-4xl md:text-6xl group-hover:scale-110 transition-transform duration-300 ${product.image_url ? 'hidden' : 'flex'}`}>
                   ⚙️
                 </div>
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               
               <div className="p-4 md:p-6">
