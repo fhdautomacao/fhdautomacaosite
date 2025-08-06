@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { 
@@ -57,11 +57,28 @@ import MobileOptimizations from '@/components/MobileOptimizations'
 
 const AdminPageNew = () => {
   const [activeSection, setActiveSection] = useState('dashboard')
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  // Sidebar sempre aberto no desktop, fechado no mobile por padrão
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024)
   const { logout, userPermissions } = useAuth()
   
   // Ativar verificação automática de boletos vencidos
   useOverdueChecker(true, 30) // Verificar a cada 30 minutos
+
+  // Função utilitária para detectar mobile
+  const isMobile = () => window.innerWidth < 1024
+
+  // Detectar mudanças de tamanho de tela
+  useEffect(() => {
+    const handleResize = () => {
+      // No desktop (lg+), sempre manter sidebar aberto
+      if (!isMobile()) {
+        setSidebarOpen(true)
+      }
+    }
+    
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const handleLogout = () => {
     logout()
@@ -345,12 +362,12 @@ const AdminPageNew = () => {
       <div className="min-h-screen bg-gray-50 flex touch-target">
         {/* Sidebar */}
         <motion.aside
-          initial={{ x: -300 }}
-          animate={{ x: sidebarOpen ? 0 : -300 }}
+          initial={false}
+          animate={{ 
+            x: !isMobile() ? 0 : (sidebarOpen ? 0 : -300)
+          }}
           transition={{ duration: 0.3 }}
-          className={`fixed inset-y-0 left-0 z-50 w-64 sm:w-72 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+          className="fixed inset-y-0 left-0 z-50 w-64 sm:w-72 bg-white shadow-lg lg:static lg:inset-0"
         >
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 border-b">
             <div className="flex items-center space-x-2 sm:space-x-3">
@@ -386,7 +403,10 @@ const AdminPageNew = () => {
                       className="w-full justify-start h-11 text-sm font-medium"
                       onClick={() => {
                         setActiveSection(item.id)
-                        if (window.innerWidth < 1024) setSidebarOpen(false) // Fechar sidebar no mobile
+                        // Fechar sidebar apenas no mobile
+                        if (isMobile()) {
+                          setSidebarOpen(false)
+                        }
                       }}
                     >
                       <item.icon className="h-4 w-4 mr-3 flex-shrink-0" />
@@ -408,7 +428,10 @@ const AdminPageNew = () => {
                               className="w-full justify-start h-9 text-sm"
                               onClick={() => {
                                 setActiveSection(child.id)
-                                setSidebarOpen(false) // Fechar sidebar no mobile após seleção
+                                // Fechar sidebar apenas no mobile
+                                if (isMobile()) {
+                                  setSidebarOpen(false)
+                                }
                               }}
                             >
                               <child.icon className="h-4 w-4 mr-3 flex-shrink-0" />
