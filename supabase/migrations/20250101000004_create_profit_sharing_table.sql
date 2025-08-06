@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS profit_sharing (
     expenses DECIMAL(15,2) DEFAULT 0,
     extras DECIMAL(15,2) DEFAULT 0,
     profit DECIMAL(15,2) GENERATED ALWAYS AS (bill_amount - expenses) STORED,
-    partner_share DECIMAL(15,2) GENERATED ALWAYS AS ((bill_amount - expenses) / 2) STORED,
+    partner_share DECIMAL(15,2) GENERATED ALWAYS AS (((bill_amount - expenses) / 2) + extras) STORED,
     status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed')),
     installments INTEGER DEFAULT 1 CHECK (installments > 0),
     installment_interval INTEGER DEFAULT 30 CHECK (installment_interval > 0),

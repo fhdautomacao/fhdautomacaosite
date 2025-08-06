@@ -138,7 +138,14 @@ const ProfitSharingManager = () => {
   }
 
   const calculatePartnerShare = () => {
-    return calculateProfit() / 2
+    const profit = calculateProfit()
+    const extras = parseFloat(formData.extras) || 0
+    return (profit / 2) + extras
+  }
+
+  const calculateMyShare = () => {
+    const profit = calculateProfit()
+    return profit / 2
   }
 
   const handleCreateProfitSharing = async () => {
@@ -171,7 +178,7 @@ const ProfitSharingManager = () => {
       const newProfitSharing = await profitSharingAPI.create(profitSharingData)
       
       // Gerar parcelas automaticamente
-      const partnerShare = (profitSharingData.bill_amount - profitSharingData.expenses) / 2
+      const partnerShare = ((profitSharingData.bill_amount - profitSharingData.expenses) / 2) + profitSharingData.extras
       await profitSharingAPI.generateInstallments(
         newProfitSharing.id,
         partnerShare,
@@ -595,7 +602,7 @@ const ProfitSharingManager = () => {
                         </p>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-600">Parte do Sócio (50%):</span>
+                        <span className="font-medium text-gray-600">Parte do Sócio (50% + extras):</span>
                         <p className="text-lg font-bold text-blue-600">
                           {formatCurrency(calculatePartnerShare())}
                         </p>
@@ -603,7 +610,7 @@ const ProfitSharingManager = () => {
                       <div>
                         <span className="font-medium text-gray-600">Sua Parte (50%):</span>
                         <p className="text-lg font-bold text-purple-600">
-                          {formatCurrency(calculatePartnerShare())}
+                          {formatCurrency(calculateMyShare())}
                         </p>
                       </div>
                     </div>

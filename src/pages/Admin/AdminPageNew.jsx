@@ -27,7 +27,9 @@ import {
   TrendingUp,
   Calendar,
   Bell,
-  DollarSign
+  DollarSign,
+  Calculator,
+  AlertCircle
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -43,6 +45,7 @@ import ProductsManager from './ProductsManager'
 import QuotationsManager from './QuotationsManager'
 import BillsManager from './BillsManager'
 import CompaniesManager from './CompaniesManager'
+import ProfitSharingManager from './ProfitSharingManager'
 
 // Import new content managers
 import ServicesManager from './ContentManagers/ServicesManager'
@@ -129,6 +132,16 @@ const AdminPageNew = () => {
       section: 'companies',
       children: [
         { id: 'companies', label: 'Gerenciar Empresas', icon: Building }
+      ],
+      requiresPermission: 'canAccessBills'
+    },
+    {
+      id: 'profit-sharing',
+      label: 'Divisão de Lucros',
+      icon: Calculator,
+      section: 'profit-sharing',
+      children: [
+        { id: 'profit-sharing', label: 'Controle de Divisão', icon: Calculator }
       ],
       requiresPermission: 'canAccessBills'
     },
@@ -410,6 +423,17 @@ const AdminPageNew = () => {
 
       case 'companies':
         return userPermissions.canAccessBills ? <CompaniesManager /> : (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Acesso Negado</h3>
+              <p className="text-gray-600">Você não tem permissão para acessar esta seção.</p>
+            </div>
+          </div>
+        )
+
+      case 'profit-sharing':
+        return userPermissions.canAccessBills ? <ProfitSharingManager /> : (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
