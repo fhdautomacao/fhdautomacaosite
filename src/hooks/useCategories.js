@@ -29,7 +29,6 @@ export const useCategories = (type = null) => {
       setCategories(data);
     } catch (err) {
       setError(err.message || 'Erro ao carregar categorias');
-      console.error('Erro ao carregar categorias:', err);
     } finally {
       setLoading(false);
     }

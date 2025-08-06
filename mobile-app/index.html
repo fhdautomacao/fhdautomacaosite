@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Notifier</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#25d366">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #25d366;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .status-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+        }
+
+        .status-card.connected {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .status-card.disconnected {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .status-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .status-text {
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .buttons {
+            padding: 20px;
+            display: grid;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-success {
+            background: #25d366;
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .notifications {
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #007bff;
+        }
+
+        .notification-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .settings-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #25d366;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px;
+            max-width: 400px;
+            margin: 50px auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .form-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 WhatsApp Notifier</h1>
+            <p>Receba notificações e envie para WhatsApp</p>
+        </div>
+
+        <div class="status-cards">
+            <div class="status-card" id="server-status">
+                <div class="status-icon">☁️</div>
+                <div class="status-text">Servidor</div>
+            </div>
+            <div class="status-card" id="whatsapp-status">
+                <div class="status-icon">📱</div>
+                <div class="status-text">WhatsApp</div>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn btn-primary" id="test-notification">
+                🧪 Testar Notificação
+            </button>
+            <button class="btn btn-success" id="test-whatsapp">
+                📱 Testar WhatsApp
+            </button>
+        </div>
+
+        <div class="notifications" id="notifications">
+            <div class="empty-state">
+                <div>🔔</div>
+                <h3>Nenhuma notificação</h3>
+                <p>As notificações aparecerão aqui</p>
+            </div>
+        </div>
+    </div>
+
+    <button class="settings-btn" onclick="showSettings()">⚙️</button>
+
+    <!-- Modal de Configurações -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <h2>⚙️ Configurações</h2>
+            <div class="form-group">
+                <label>URL do Servidor:</label>
+                <input type="text" id="server-url" placeholder="https://fhd-automacao-industrial-bq67.vercel.app">
+            </div>
+            <div class="form-group">
+                <label>Número do WhatsApp:</label>
+                <input type="text" id="whatsapp-number" placeholder="5519998652144">
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-success" onclick="saveSettings()">💾 Salvar</button>
+                <button class="btn btn-primary" onclick="hideSettings()">❌ Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configurações
+        let config = {
+            serverUrl: localStorage.getItem('serverUrl') || 'https://fhd-automacao-industrial-bq67.vercel.app',
+            whatsappNumber: localStorage.getItem('whatsappNumber') || '5519998652144'
+        };
+
+        // Status
+        let status = {
+            serverConnected: false,
+            whatsappConfigured: false
+        };
+
+        // Notificações
+        let notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+
+        // Inicializar
+        function init() {
+            updateStatus();
+            loadNotifications();
+            testServerConnection();
+        }
+
+        // Atualizar status
+        function updateStatus() {
+            const serverCard = document.getElementById('server-status');
+            const whatsappCard = document.getElementById('whatsapp-status');
+
+            serverCard.className = `status-card ${status.serverConnected ? 'connected' : 'disconnected'}`;
+            whatsappCard.className = `status-card ${status.whatsappConfigured ? 'connected' : 'disconnected'}`;
+
+            // Atualizar botões
+            document.getElementById('test-notification').disabled = !status.serverConnected;
+            document.getElementById('test-whatsapp').disabled = !status.whatsappConfigured;
+        }
+
+        // Testar conexão com servidor
+        async function testServerConnection() {
+            try {
+                const response = await fetch(`${config.serverUrl}/api/notify-mobile`, {
+                    method: 'GET'
+                });
+                status.serverConnected = response.ok;
+            } catch (error) {
+                status.serverConnected = false;
+            }
+            updateStatus();
+        }
+
+        // Testar notificação
+        async function testNotification() {
+            try {
+                const response = await fetch(`${config.serverUrl}/api/notify-mobile`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: 'overdue_bill',
+                        data: {
+                            company_name: 'Empresa Teste',
+                            amount: '1.500,00',
+                            due_date: '2024-01-15'
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    addNotification('Teste de Notificação', 'Conexão com servidor funcionando!', 'test');
+                    showNotification('✅ Notificação enviada!');
+                } else {
+                    showNotification('❌ Erro ao enviar notificação');
+                }
+            } catch (error) {
+                showNotification('❌ Erro de conexão');
+            }
+        }
+
+        // Testar WhatsApp
+        function testWhatsApp() {
+            const message = `🧪 TESTE DE CONEXÃO
+
+Este é um teste do app WhatsApp Notifier.
+
+Se você recebeu esta mensagem, a configuração está funcionando!
+
+FHD Automação Industrial`;
+
+            const url = `https://wa.me/${config.whatsappNumber}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        // Adicionar notificação
+        function addNotification(title, message, type = 'info') {
+            const notification = {
+                id: Date.now(),
+                title,
+                message,
+                type,
+                timestamp: new Date().toISOString()
+            };
+
+            notifications.unshift(notification);
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+            loadNotifications();
+        }
+
+        // Carregar notificações
+        function loadNotifications() {
+            const container = document.getElementById('notifications');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div>🔔</div>
+                        <h3>Nenhuma notificação</h3>
+                        <p>As notificações aparecerão aqui</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3>Notificações Recentes</h3>
+                    <button onclick="clearNotifications()" style="background: none; border: none; color: #007bff; cursor: pointer;">
+                        🗑️ Limpar
+                    </button>
+                </div>
+                ${notifications.map(notification => `
+                    <div class="notification-item">
+                        <div class="notification-title">${notification.title}</div>
+                        <div>${notification.message}</div>
+                        <div class="notification-time">${formatTime(notification.timestamp)}</div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        // Limpar notificações
+        function clearNotifications() {
+            notifications = [];
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+            loadNotifications();
+        }
+
+        // Formatar tempo
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+
+            if (diff < 60000) return 'Agora mesmo';
+            if (diff < 3600000) return `${Math.floor(diff / 60000)} min atrás`;
+            if (diff < 86400000) return `${Math.floor(diff / 3600000)} h atrás`;
+            return `${Math.floor(diff / 86400000)} dias atrás`;
+        }
+
+        // Mostrar notificação
+        function showNotification(message) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('WhatsApp Notifier', { body: message });
+            }
+        }
+
+        // Configurações
+        function showSettings() {
+            document.getElementById('server-url').value = config.serverUrl;
+            document.getElementById('whatsapp-number').value = config.whatsappNumber;
+            document.getElementById('settings-modal').style.display = 'block';
+        }
+
+        function hideSettings() {
+            document.getElementById('settings-modal').style.display = 'none';
+        }
+
+        function saveSettings() {
+            config.serverUrl = document.getElementById('server-url').value;
+            config.whatsappNumber = document.getElementById('whatsapp-number').value;
+            
+            localStorage.setItem('serverUrl', config.serverUrl);
+            localStorage.setItem('whatsappNumber', config.whatsappNumber);
+            
+            status.whatsappConfigured = config.whatsappNumber.length > 0;
+            updateStatus();
+            
+            testServerConnection();
+            hideSettings();
+            
+            showNotification('✅ Configurações salvas!');
+        }
+
+        // Event listeners
+        document.getElementById('test-notification').addEventListener('click', testNotification);
+        document.getElementById('test-whatsapp').addEventListener('click', testWhatsApp);
+
+        // Solicitar permissão de notificação
+        if ('Notification' in window) {
+            Notification.requestPermission();
+        }
+
+        // Inicializar
+        init();
+    </script>
+</body>
+</html> 

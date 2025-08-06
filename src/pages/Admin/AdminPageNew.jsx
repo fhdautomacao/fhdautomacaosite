@@ -58,7 +58,7 @@ import MobileOptimizations from '@/components/MobileOptimizations'
 const AdminPageNew = () => {
   const [activeSection, setActiveSection] = useState('dashboard')
   // Sidebar sempre aberto no desktop, fechado no mobile por padrão
-  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const { logout, userPermissions } = useAuth()
   
   // Ativar verificação automática de boletos vencidos
@@ -67,8 +67,11 @@ const AdminPageNew = () => {
   // Função utilitária para detectar mobile
   const isMobile = () => window.innerWidth < 1024
 
-  // Detectar mudanças de tamanho de tela
+  // Detectar mudanças de tamanho de tela e definir estado inicial
   useEffect(() => {
+    // Definir estado inicial baseado no tamanho da tela
+    setSidebarOpen(window.innerWidth >= 1024)
+
     const handleResize = () => {
       // No desktop (lg+), sempre manter sidebar aberto
       if (!isMobile()) {

@@ -23,9 +23,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Verificar sessão atual
     const getSession = async () => {
-      console.log('Verificando sessão atual...')
       const { data: { session } } = await supabase.auth.getSession()
-      console.log('Sessão encontrada:', session?.user?.email)
       if (session?.user) {
         setUser(session.user)
         checkUserPermissions(session.user.email)
@@ -38,7 +36,6 @@ export const AuthProvider = ({ children }) => {
     // Escutar mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state change:', event, session?.user?.email)
         if (session?.user) {
           setUser(session.user)
           checkUserPermissions(session.user.email)

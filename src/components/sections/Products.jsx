@@ -16,7 +16,6 @@ const Products = () => {
         const data = await productsAPI.getAll()
         setProducts(data)
       } catch (error) {
-        console.error("Erro ao carregar produtos:", error)
         setProducts([]) // Definir como array vazio em caso de erro
       } finally {
         setLoadingProducts(false)

@@ -17,7 +17,6 @@ const Gallery = () => {
         const data = await galleryAPI.getAll()
         setImages(data)
       } catch (error) {
-        console.error('Erro ao carregar galeria:', error)
         setImages([]) // Definir como array vazio em caso de erro
       } finally {
         setLoadingImages(false)

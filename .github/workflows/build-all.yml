@@ -1,0 +1,139 @@
+name: Build Site + Mobile App
+
+# Execução manual para builds completos
+on:
+  workflow_dispatch:
+    inputs:
+      build_site:
+        description: 'Build React site'
+        type: boolean
+        default: true
+      build_mobile:
+        description: 'Build Flutter mobile app'
+        type: boolean
+        default: true
+      version_name:
+        description: 'Version name'
+        required: false
+        default: '1.0.0'
+
+jobs:
+  build-site:
+    if: ${{ github.event.inputs.build_site == 'true' }}
+    name: Build React Site
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build site
+      run: npm run build
+    
+    - name: Upload site build
+      uses: actions/upload-artifact@v4
+      with:
+        name: site-build-${{ github.event.inputs.version_name }}
+        path: dist/
+        retention-days: 30
+
+  build-mobile:
+    if: ${{ github.event.inputs.build_mobile == 'true' }}
+    name: Build Flutter Mobile
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+    
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.5'
+        channel: 'stable'
+        cache: true
+    
+    - name: Install Flutter dependencies
+      working-directory: mobile
+      run: flutter pub get
+    
+    - name: Build APK
+      working-directory: mobile
+      run: flutter build apk --release
+    
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: mobile-apk-${{ github.event.inputs.version_name }}
+        path: mobile/build/app/outputs/flutter-apk/app-release.apk
+        retention-days: 30
+
+  create-combined-release:
+    if: ${{ github.event.inputs.build_site == 'true' && github.event.inputs.build_mobile == 'true' }}
+    needs: [build-site, build-mobile]
+    name: Create Combined Release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Download site build
+      uses: actions/download-artifact@v4
+      with:
+        name: site-build-${{ github.event.inputs.version_name }}
+        path: ./site-build
+    
+    - name: Download mobile APK
+      uses: actions/download-artifact@v4
+      with:
+        name: mobile-apk-${{ github.event.inputs.version_name }}
+        path: ./mobile-build
+    
+    - name: Create combined release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ github.event.inputs.version_name }}-${{ github.run_number }}
+        name: FHD Automação v${{ github.event.inputs.version_name }}
+        body: |
+          🚀 **Release Completo - FHD Automação Industrial**
+          
+          Esta release inclui tanto o site React quanto o app mobile Flutter.
+          
+          ### 📦 Conteúdo:
+          - 🌐 **Site React**: Build de produção pronto para deploy
+          - 📱 **App Mobile**: APK para instalação em Android
+          
+          ### 🌐 Site React:
+          - Deploy automático no Vercel
+          - URL: https://fhd-automacao-industrial-bq67.vercel.app
+          
+          ### 📱 App Mobile:
+          - Baixe o `app-release.apk`
+          - Instale no seu celular Android
+          - Configure com a URL do site acima
+          
+          ### 🔧 Versão: ${{ github.event.inputs.version_name }}
+          Build: #${{ github.run_number }}
+          Commit: ${{ github.sha }}
+        files: |
+          ./mobile-build/app-release.apk
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

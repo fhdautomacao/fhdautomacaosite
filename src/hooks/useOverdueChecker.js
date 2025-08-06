@@ -96,5 +96,4 @@ export const useOverdueChecker = (enabled = true, intervalMinutes = 60) => {
 
   return { forceCheck }
 }
-
 export default useOverdueChecker
