@@ -36,7 +36,6 @@ class NotificationService extends ChangeNotifier {
 
   Future<void> _requestPermissions() async {
     final androidSettings = AndroidFlutterLocalNotificationsPlugin();
-    await androidSettings.requestExactAlarmsPermission();
     await androidSettings.requestNotificationsPermission();
   }
 
