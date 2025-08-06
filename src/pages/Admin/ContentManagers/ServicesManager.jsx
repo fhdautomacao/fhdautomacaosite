@@ -500,7 +500,7 @@ const ServicesManager = () => {
                         <CardTitle className="text-lg">{service.name}</CardTitle>
                         <div className="flex items-center space-x-2 mt-1">
                           <Badge className={getCategoryColor(service.category)}>
-                            {service.category}
+                            {getCategoryIcon(service.category)} {categories.find(cat => cat.id === service.category)?.name || service.category}
                           </Badge>
                           {!service.is_active && (
                             <Badge variant="secondary">Inativo</Badge>

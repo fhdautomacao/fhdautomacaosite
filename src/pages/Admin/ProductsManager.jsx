@@ -74,13 +74,18 @@ const ProductsManager = () => {
   const handleAddProduct = async () => {
     if (newProduct.name && newProduct.category && newProduct.description) {
       try {
+        let imageUrl = "/products/placeholder.jpg"
+        if (newProduct.image) {
+          imageUrl = await productsAPI.uploadImage(newProduct.image)
+        }
+
         const productData = {
           name: newProduct.name,
           category: newProduct.category,
           description: newProduct.description,
           features: newProduct.features,
           price: newProduct.price || "Sob Consulta",
-          image_url: newProduct.image || "/products/placeholder.jpg",
+          image_url: imageUrl,
           is_active: true,
           display_order: products.length
         }
@@ -99,13 +104,18 @@ const ProductsManager = () => {
   const handleEditProduct = async () => {
     if (selectedProduct) {
       try {
+        let imageUrl = selectedProduct.image_url
+        if (selectedProduct.image && typeof selectedProduct.image !== 'string') { // Verifica se é um novo arquivo
+          imageUrl = await productsAPI.uploadImage(selectedProduct.image)
+        }
+
         const updates = {
           name: selectedProduct.name,
           category: selectedProduct.category,
           description: selectedProduct.description,
           features: selectedProduct.features,
           price: selectedProduct.price,
-          image_url: selectedProduct.image_url
+          image_url: imageUrl
         }
         
         await productsAPI.update(selectedProduct.id, updates)
@@ -132,22 +142,25 @@ const ProductsManager = () => {
   }
 
   const openEditModal = (product) => {
-    setSelectedProduct({ ...product })
+    setSelectedProduct({ 
+      ...product,
+      features: product.features || [] // Garantir que features seja sempre um array
+    })
     setIsEditModalOpen(true)
   }
 
   const addFeature = (isEdit = false) => {
-    const feature = isEdit ? newFeature : newFeature
+    const feature = newFeature
     if (feature.trim()) {
       if (isEdit && selectedProduct) {
         setSelectedProduct({
           ...selectedProduct,
-          features: [...selectedProduct.features, feature.trim()]
+          features: [...(selectedProduct.features || []), feature.trim()]
         })
       } else {
         setNewProduct({
           ...newProduct,
-          features: [...newProduct.features, feature.trim()]
+          features: [...(newProduct.features || []), feature.trim()]
         })
       }
       setNewFeature("")
@@ -158,12 +171,12 @@ const ProductsManager = () => {
     if (isEdit && selectedProduct) {
       setSelectedProduct({
         ...selectedProduct,
-        features: selectedProduct.features.filter((_, i) => i !== index)
+        features: (selectedProduct.features || []).filter((_, i) => i !== index)
       })
     } else {
       setNewProduct({
         ...newProduct,
-        features: newProduct.features.filter((_, i) => i !== index)
+        features: (newProduct.features || []).filter((_, i) => i !== index)
       })
     }
   }
@@ -282,7 +295,7 @@ const ProductsManager = () => {
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {newProduct.features.map((feature, index) => (
+                    {(newProduct.features || []).map((feature, index) => (
                       <Badge key={index} variant="secondary" className="flex items-center space-x-1">
                         <span>{feature}</span>
                         <button
@@ -370,10 +383,14 @@ const ProductsManager = () => {
               transition={{ duration: 0.2 }}
             >
               <Card className="overflow-hidden">
-                <div className="aspect-video bg-gray-200 relative">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Package className="h-12 w-12 text-gray-400" />
-                  </div>
+                <div className="aspect-video bg-gray-200 relative overflow-hidden">
+                  {product.image_url ? (
+                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Package className="h-12 w-12 text-gray-400" />
+                    </div>
+                  )}
                   <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-xs">
                     {getCategoryIcon(product.category)} {categories.find(cat => cat.id === product.category)?.name || 'N/A'}
                   </div>
@@ -384,14 +401,14 @@ const ProductsManager = () => {
                   
                   {/* Features */}
                   <div className="flex flex-wrap gap-1 mb-3">
-                    {product.features.slice(0, 3).map((feature, index) => (
+                    {(product.features || []).slice(0, 3).map((feature, index) => (
                       <Badge key={index} variant="outline" className="text-xs">
                         {feature}
                       </Badge>
                     ))}
-                    {product.features.length > 3 && (
+                    {(product.features || []).length > 3 && (
                       <Badge variant="outline" className="text-xs">
-                        +{product.features.length - 3}
+                        +{(product.features || []).length - 3}
                       </Badge>
                     )}
                   </div>
@@ -511,7 +528,7 @@ const ProductsManager = () => {
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {selectedProduct.features.map((feature, index) => (
+                    {(selectedProduct.features || []).map((feature, index) => (
                       <Badge key={index} variant="secondary" className="flex items-center space-x-1">
                         <span>{feature}</span>
                         <button

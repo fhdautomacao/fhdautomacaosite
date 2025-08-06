@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Search, Filter, Package, ArrowRight, CheckCircle, X } from 'lucide-react'
 import { productsAPI } from '../../api/products'
+import { useProductCategories } from '../../hooks/useCategories'
 
 const Products = () => {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('Todos')
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("Todos")
   const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loadingProducts, setLoadingProducts] = useState(true)
+  const { categories: fetchedCategories, loading: loadingCategories, error: categoriesError } = useProductCategories()
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -15,108 +16,31 @@ const Products = () => {
         const data = await productsAPI.getAll()
         setProducts(data)
       } catch (error) {
-        console.error('Erro ao carregar produtos:', error)
-        // Fallback para dados estáticos em caso de erro
-        setProducts(fallbackProducts)
+        console.error("Erro ao carregar produtos:", error)
+        setProducts([]) // Definir como array vazio em caso de erro
       } finally {
-        setLoading(false)
+        setLoadingProducts(false)
       }
     }
 
     fetchProducts()
   }, [])
 
-  const fallbackProducts = [
-    {
-      name: "Unidade Hidráulica",
-      category: "Sistemas Hidráulicos",
-      description: "Unidades hidráulicas completas para diversas aplicações industriais",
-      features: ["Alta Pressão", "Controle Preciso", "Baixo Ruído"],
-      price: "Sob Consulta"
-    },
-    {
-      name: "Cilindro Hidráulico",
-      category: "Atuadores",
-      description: "Cilindros hidráulicos de alta performance e durabilidade",
-      features: ["Vedação Dupla", "Resistente", "Longa Vida Útil"],
-      price: "Sob Consulta"
-    },
-    {
-      name: "Válvulas Proporcionais",
-      category: "Controle",
-      description: "Válvulas proporcionais para controle preciso de fluxo e pressão",
-      features: ["Controle Eletrônico", "Alta Precisão", "Resposta Rápida"],
-      price: "Sob Consulta"
-    },
-    {
-      name: "Válvulas Direcionais",
-      category: "Controle",
-      description: "Válvulas direcionais para controle de direção do fluxo hidráulico",
-      features: ["4 Vias", "Acionamento Manual", "Vedação Perfeita"],
-      price: "Sob Consulta"
-    },
-    {
-      name: "Bombas de Engrenagem",
-      category: "Bombas",
-      description: "Bombas de engrenagem robustas e eficientes",
-      features: ["Alto Rendimento", "Baixa Manutenção", "Operação Silenciosa"],
-      price: "Sob Consulta"
-    },
-    {
-      name: "Bombas de Palhetas Variáveis",
-      category: "Bombas",
-      description: "Bombas de palhetas com vazão variável para economia de energia",
-      features: ["Vazão Variável", "Economia de Energia", "Controle Automático"],
-      price: "Sob Consulta"
-    },
-    {
-      name: "Bombas de Pistões",
-      category: "Bombas",
-      description: "Bombas de pistões para aplicações de alta pressão",
-      features: ["Alta Pressão", "Durabilidade", "Eficiência Máxima"],
-      price: "Sob Consulta"
-    },
-    {
-      name: "Motor Hidráulico",
-      category: "Motores",
-      description: "Motores hidráulicos de alta eficiência e torque",
-      features: ["Alto Torque", "Velocidade Variável", "Baixa Manutenção"],
-      price: "Sob Consulta"
-    },
-    {
-      name: "Acumuladores Hidráulicos",
-      category: "Armazenamento",
-      description: "Acumuladores para armazenamento de energia hidráulica",
-      features: ["Armazenamento Seguro", "Resposta Rápida", "Longa Durabilidade"],
-      price: "Sob Consulta"
-    },
-    {
-      name: "Comandos Hidráulicos",
-      category: "Controle",
-      description: "Sistemas de comando para operação hidráulica",
-      features: ["Interface Intuitiva", "Controle Preciso", "Segurança Operacional"],
-      price: "Sob Consulta"
-    },
-    {
-      name: "Mini Unidade Hidráulica",
-      category: "Sistemas Compactos",
-      description: "Unidades hidráulicas compactas da Bucher Hydraulics",
-      features: ["Design Compacto", "Fácil Instalação", "Alta Performance"],
-      price: "Sob Consulta"
-    }
-  ]
-
-  const categories = ['Todos', ...new Set(products.map(product => product.category))]
+  // Obter apenas as categorias que realmente existem nos produtos
+  const usedCategoryIds = [...new Set(products.map(prod => prod.category))]
+  const usedCategories = fetchedCategories.filter(cat => usedCategoryIds.includes(cat.id))
+  const allCategories = ["Todos", ...usedCategories.map(cat => cat.name)]
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.features.some(feature => feature.toLowerCase().includes(searchTerm.toLowerCase()))
-    const matchesCategory = selectedCategory === 'Todos' || product.category === selectedCategory
+    const matchesCategory = selectedCategory === "Todos" || 
+                            (fetchedCategories.find(cat => cat.id === product.category)?.name === selectedCategory)
     return matchesSearch && matchesCategory
   })
 
-  const getCategoryColor = (category) => {
+  const getCategoryColor = (categoryName) => {
     const colors = {
       'Sistemas Hidráulicos': 'bg-blue-100 text-blue-800 border-blue-200',
       'Atuadores': 'bg-green-100 text-green-800 border-green-200',
@@ -126,7 +50,15 @@ const Products = () => {
       'Armazenamento': 'bg-yellow-100 text-yellow-800 border-yellow-200',
       'Sistemas Compactos': 'bg-indigo-100 text-indigo-800 border-indigo-200'
     }
-    return colors[category] || 'bg-gray-100 text-gray-800 border-gray-200'
+    return colors[categoryName] || 'bg-gray-100 text-gray-800 border-gray-200'
+  }
+
+  if (loadingProducts || loadingCategories) {
+    return <div className="text-center py-20">Carregando produtos...</div>
+  }
+
+  if (categoriesError) {
+    return <div className="text-center py-20 text-red-500">Erro ao carregar categorias: {categoriesError.message}</div>
   }
 
   return (
@@ -168,7 +100,7 @@ const Products = () => {
               />
               {searchTerm && (
                 <button
-                  onClick={() => setSearchTerm('')}
+                  onClick={() => setSearchTerm("")}
                   className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
                   <X size={20} />
@@ -176,39 +108,26 @@ const Products = () => {
               )}
             </div>
 
-            {/* Filter Button */}
-            <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                isFilterOpen ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              <Filter size={20} />
-              <span>Filtros</span>
-            </button>
-          </div>
-
-          {/* Filter Categories */}
-          {isFilterOpen && (
+            {/* Filter Categories */}
             <div className="mt-6 pt-6 border-t border-gray-200 animate-fade-in">
               <h4 className="text-sm font-semibold text-gray-700 mb-4">Filtrar por categoria:</h4>
               <div className="grid grid-cols-2 md:flex md:flex-wrap gap-2 md:gap-3">
-                {categories.map((category, index) => (
+                {allCategories.map((categoryName, index) => (
                   <button
                     key={index}
-                    onClick={() => setSelectedCategory(category)}
+                    onClick={() => setSelectedCategory(categoryName)}
                     className={`px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-semibold transition-all duration-300 ${
-                      selectedCategory === category
-                        ? 'bg-blue-600 text-white shadow-lg'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      selectedCategory === categoryName
+                        ? "bg-blue-600 text-white shadow-lg"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
-                    {category}
+                    {categoryName}
                   </button>
                 ))}
               </div>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Results Counter */}
@@ -238,8 +157,8 @@ const Products = () => {
               </div>
               
               <div className="p-4 md:p-6">
-                <div className={`inline-block px-2 md:px-3 py-1 rounded-full text-xs font-semibold mb-3 border ${getCategoryColor(product.category)}`}>
-                  {product.category}
+                <div className={`inline-block px-2 md:px-3 py-1 rounded-full text-xs font-semibold mb-3 border ${getCategoryColor(fetchedCategories.find(cat => cat.id === product.category)?.name || product.category)}`}>
+                  {fetchedCategories.find(cat => cat.id === product.category)?.name || product.category}
                 </div>
                 
                 <h3 className="text-base md:text-lg font-bold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors duration-300">
@@ -347,4 +266,5 @@ const Products = () => {
 }
 
 export default Products
+
 

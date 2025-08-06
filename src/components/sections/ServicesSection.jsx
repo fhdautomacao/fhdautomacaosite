@@ -3,15 +3,17 @@ import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowRight, Wrench, Settings, Zap, Shield, Clock, Award } from 'lucide-react'
+import { useServiceCategories } from '../../hooks/useCategories'
 
 const ServicesSection = () => {
   const [services, setServices] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [loadingServices, setLoadingServices] = useState(true)
+  const [errorServices, setErrorServices] = useState(null)
+  const { categories: fetchedCategories, loading: loadingCategories, error: categoriesError } = useServiceCategories()
 
   // Função para buscar serviços do banco de dados
   const fetchServices = async () => {
-    setLoading(true)
+    setLoadingServices(true)
     try {
       const { data, error } = await supabase
         .from("services")
@@ -24,9 +26,9 @@ const ServicesSection = () => {
       setServices(data || [])
     } catch (error) {
       console.error("Erro ao carregar serviços:", error)
-      setError(error.message)
+      setErrorServices(error.message)
     } finally {
-      setLoading(false)
+      setLoadingServices(false)
     }
   }
 
@@ -35,7 +37,8 @@ const ServicesSection = () => {
   }, [])
 
   // Função para mapear ícones baseado no nome ou categoria
-  const getServiceIcon = (iconName, category) => {
+  const getServiceIcon = (iconName, categoryId) => {
+    const categoryName = fetchedCategories.find(cat => cat.id === categoryId)?.name || categoryId
     // Se o ícone for um emoji, retorna ele
     if (iconName && iconName.length <= 2) {
       return <span className="text-4xl">{iconName}</span>
@@ -51,13 +54,13 @@ const ServicesSection = () => {
       'default': <Zap className="h-8 w-8 text-blue-600" />
     }
 
-    return iconMap[category] || iconMap['default']
+    return iconMap[categoryName] || iconMap['default']
   }
 
   // Usar apenas dados da API
   const displayServices = services
 
-  if (loading) {
+  if (loadingServices || loadingCategories) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -68,14 +71,14 @@ const ServicesSection = () => {
     )
   }
 
-  if (error || services.length === 0) {
+  if (errorServices || categoriesError || services.length === 0) {
     return (
       <section className="py-20">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Nossos Serviços</h2>
           <div className="text-center">
             <p className="text-gray-600 mb-4">
-              {error ? `Erro ao carregar serviços: ${error}` : 'Nenhum serviço encontrado.'}
+              {errorServices ? `Erro ao carregar serviços: ${errorServices}` : categoriesError ? `Erro ao carregar categorias: ${categoriesError.message}` : 'Nenhum serviço encontrado.'}
             </p>
             <Button onClick={fetchServices}>
               Tentar novamente

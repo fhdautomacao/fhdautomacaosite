@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, X, Camera, Filter, ArrowRight } from 'lucide-react'
 import { galleryAPI } from '../../api/gallery'
+import { useGalleryCategories } from '../../hooks/useCategories'
 
 const Gallery = () => {
   const [selectedImage, setSelectedImage] = useState(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedCategory, setSelectedCategory] = useState('Todos')
   const [images, setImages] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loadingImages, setLoadingImages] = useState(true)
+  const { categories: fetchedCategories, loading: loadingCategories, error: categoriesError } = useGalleryCategories()
 
   useEffect(() => {
     const fetchGalleryItems = async () => {
@@ -16,109 +18,26 @@ const Gallery = () => {
         setImages(data)
       } catch (error) {
         console.error('Erro ao carregar galeria:', error)
-        // Fallback para dados estáticos em caso de erro
-        setImages(fallbackImages)
+        setImages([]) // Definir como array vazio em caso de erro
       } finally {
-        setLoading(false)
+        setLoadingImages(false)
       }
     }
 
     fetchGalleryItems()
   }, [])
 
-  // Placeholder images with categories - in a real implementation, these would be actual images
-  const fallbackImages = [
-    {
-      id: 1,
-      title: "Unidade Hidráulica em Operação",
-      description: "Sistema hidráulico completo instalado em cliente",
-      thumbnail: "🏭",
-      category: "Unidades Hidráulicas"
-    },
-    {
-      id: 2,
-      title: "Manutenção de Cilindro",
-      description: "Serviço de manutenção preventiva em cilindro hidráulico",
-      thumbnail: "🔧",
-      category: "Cilindros"
-    },
-    {
-      id: 3,
-      title: "Instalação de Tubulação",
-      description: "Instalação especializada de tubulação hidráulica",
-      thumbnail: "🔩",
-      category: "Tubulações"
-    },
-    {
-      id: 4,
-      title: "Bomba Hidráulica",
-      description: "Bomba hidráulica de alta pressão recém reparada",
-      thumbnail: "⚙️",
-      category: "Bombas"
-    },
-    {
-      id: 5,
-      title: "Válvulas de Controle",
-      description: "Sistema de válvulas proporcionais instalado",
-      thumbnail: "🎛️",
-      category: "Válvulas"
-    },
-    {
-      id: 6,
-      title: "Projeto Personalizado",
-      description: "Solução customizada para cliente industrial",
-      thumbnail: "📐",
-      category: "Projetos"
-    },
-    {
-      id: 7,
-      title: "Teste de Qualidade",
-      description: "Teste de performance em unidade hidráulica",
-      thumbnail: "📊",
-      category: "Testes"
-    },
-    {
-      id: 8,
-      title: "Equipe Técnica",
-      description: "Nossa equipe especializada em ação",
-      thumbnail: "👥",
-      category: "Equipe"
-    },
-    {
-      id: 9,
-      title: "Cilindro Hidráulico Novo",
-      description: "Cilindro hidráulico fabricado sob medida",
-      thumbnail: "🔩",
-      category: "Cilindros"
-    },
-    {
-      id: 10,
-      title: "Bomba de Pistões",
-      description: "Bomba de pistões para alta pressão",
-      thumbnail: "⚙️",
-      category: "Bombas"
-    },
-    {
-      id: 11,
-      title: "Sistema de Válvulas",
-      description: "Conjunto de válvulas direcionais instaladas",
-      thumbnail: "🎛️",
-      category: "Válvulas"
-    },
-    {
-      id: 12,
-      title: "Unidade Compacta",
-      description: "Mini unidade hidráulica para aplicação específica",
-      thumbnail: "🏭",
-      category: "Unidades Hidráulicas"
-    }
-  ]
-
-  const categories = ['Todos', ...new Set(images.map(img => img.category))]
+  // Obter apenas as categorias que realmente existem nas imagens
+  const usedCategoryIds = [...new Set(images.map(img => img.category))]
+  const usedCategories = fetchedCategories.filter(cat => usedCategoryIds.includes(cat.id))
+  const allCategories = ['Todos', ...usedCategories.map(cat => cat.name)]
 
   const filteredImages = selectedCategory === 'Todos' 
     ? images 
-    : images.filter(img => img.category === selectedCategory)
+    : images.filter(img => {
+        const categoryObject = fetchedCategories.find(cat => cat.id === img.category)
+        return categoryObject && categoryObject.name === selectedCategory
+      })
 
   const openModal = (image, index) => {
     setSelectedImage(image)
@@ -141,7 +60,7 @@ const Gallery = () => {
     setSelectedImage(filteredImages[prevIndex])
   }
 
-  const getCategoryColor = (category) => {
+  const getCategoryColor = (categoryName) => {
     const colors = {
       'Unidades Hidráulicas': 'bg-blue-100 text-blue-800 border-blue-200',
       'Cilindros': 'bg-green-100 text-green-800 border-green-200',
@@ -152,7 +71,15 @@ const Gallery = () => {
       'Testes': 'bg-red-100 text-red-800 border-red-200',
       'Equipe': 'bg-pink-100 text-pink-800 border-pink-200'
     }
-    return colors[category] || 'bg-gray-100 text-gray-800 border-gray-200'
+    return colors[categoryName] || 'bg-gray-100 text-gray-800 border-gray-200'
+  }
+
+  if (loadingImages || loadingCategories) {
+    return <div className="text-center py-20">Carregando galeria...</div>
+  }
+
+  if (categoriesError) {
+    return <div className="text-center py-20 text-red-500">Erro ao carregar categorias: {categoriesError.message}</div>
   }
 
   return (
@@ -193,17 +120,17 @@ const Gallery = () => {
             </div>
             
             <div className="flex flex-wrap gap-3">
-              {categories.map((category, index) => (
+              {allCategories.map((categoryName, index) => (
                 <button
                   key={index}
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => setSelectedCategory(categoryName)}
                   className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-105 ${
-                    selectedCategory === category
+                    selectedCategory === categoryName
                       ? 'bg-blue-600 text-white shadow-lg'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  {category}
+                  {categoryName}
                 </button>
               ))}
             </div>
@@ -223,8 +150,8 @@ const Gallery = () => {
                 <img src={image.image_url} alt={image.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
                 
                 {/* Category Badge */}
-                <div className={`absolute top-3 left-3 px-2 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(image.category)} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
-                  {image.category}
+                <div className={`absolute top-3 left-3 px-2 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(fetchedCategories.find(cat => cat.id === image.category)?.name || image.category)} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
+                  {fetchedCategories.find(cat => cat.id === image.category)?.name || image.category}
                 </div>
                 
                 {/* Overlay */}
@@ -296,8 +223,8 @@ const Gallery = () => {
 
               {/* Image Info */}
               <div className="text-black mt-6 text-center">
-                <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border mb-4 ${getCategoryColor(selectedImage.category)}`}>
-                  {selectedImage.category}
+                <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border mb-4 ${getCategoryColor(fetchedCategories.find(cat => cat.id === selectedImage.category)?.name || selectedImage.category)}`}>
+                  {fetchedCategories.find(cat => cat.id === selectedImage.category)?.name || selectedImage.category}
                 </div>
                 <h3 className="text-3xl font-bold mb-3">{selectedImage.title}</h3>
                 <p className="text-gray-300 text-lg mb-4">{selectedImage.description}</p>

@@ -59,6 +59,28 @@ export const productsAPI = {
     if (error) throw error
   },
 
+  // Upload de imagem para o storage
+  async uploadImage(file) {
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${Date.now()}.${fileExt}`
+    const filePath = `product_images/${fileName}`
+
+    const { data, error } = await supabase.storage
+      .from('fhd-automacao-bucket')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+      })
+
+    if (error) throw error
+
+    const { data: publicURL } = supabase.storage
+      .from('fhd-automacao-bucket')
+      .getPublicUrl(filePath)
+
+    return publicURL.publicUrl
+  },
+
   // Buscar produtos por categoria
   async getByCategory(category) {
     const { data, error } = await supabase
