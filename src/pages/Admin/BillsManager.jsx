@@ -16,7 +16,9 @@ import {
   AlertCircle,
   ArrowRight,
   Download,
-  Upload
+  Upload,
+  Calculator,
+  TrendingUp
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,12 +29,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { billsAPI } from '@/api/bills'
 import { companiesAPI } from '@/api/companies'
 import { useAuth } from '@/contexts/AuthContext'
+import ProfitSharingManager from './ProfitSharingManager'
 
 const BillsManager = () => {
   const { userPermissions } = useAuth()
+  const [activeTab, setActiveTab] = useState('bills')
   const [bills, setBills] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -499,14 +504,35 @@ const BillsManager = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900">Gerenciar Boletos</h2>
-          <p className="text-gray-600">Controle de boletos a pagar e a receber</p>
+          <h2 className="text-3xl font-bold text-gray-900">Gestão Financeira</h2>
+          <p className="text-gray-600">Controle de boletos e divisão de lucros</p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Boleto
-        </Button>
       </div>
+
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="bills" className="flex items-center space-x-2">
+            <DollarSign className="h-4 w-4" />
+            <span>Boletos</span>
+          </TabsTrigger>
+          <TabsTrigger value="profit-sharing" className="flex items-center space-x-2">
+            <Calculator className="h-4 w-4" />
+            <span>Divisão de Lucros</span>
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="bills" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900">Controle de Boletos</h3>
+              <p className="text-gray-600">Boletos a pagar e a receber</p>
+            </div>
+            <Button onClick={() => setShowCreateModal(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Boleto
+            </Button>
+          </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -1047,6 +1073,12 @@ const BillsManager = () => {
           )}
         </DialogContent>
       </Dialog>
+        </TabsContent>
+
+        <TabsContent value="profit-sharing">
+          <ProfitSharingManager />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
