@@ -116,7 +116,7 @@ export default function BillsManager() {
     try {
       await billsAPI.updateInstallment(selectedInstallment.id, {
         status: selectedInstallment.status,
-        paid_date: selectedInstallment.status === 'paid' ? new Date().toISOString().split('T')[0] : null,
+        paid_date: selectedInstallment.status === 'paid' ? selectedInstallment.paid_date : null,
         payment_notes: selectedInstallment.payment_notes
       })
       
@@ -660,6 +660,11 @@ export default function BillsManager() {
                           <p className="text-sm text-gray-600">
                             Vencimento: {new Date(installment.due_date).toLocaleDateString('pt-BR')}
                           </p>
+                          {installment.paid_date && (
+                            <p className="text-sm text-green-600">
+                              Pago em: {new Date(installment.paid_date).toLocaleDateString('pt-BR')}
+                            </p>
+                          )}
                         </div>
                         <div>
                           <span className="font-semibold">{formatCurrency(installment.amount)}</span>
@@ -747,6 +752,22 @@ export default function BillsManager() {
                     </SelectContent>
                   </Select>
                 </div>
+                
+                {/* Data de Pagamento - aparece apenas quando status é "Pago" */}
+                {selectedInstallment.status === 'paid' && (
+                  <div>
+                    <Label>Data do Pagamento</Label>
+                    <Input
+                      type="date"
+                      value={selectedInstallment.paid_date || new Date().toISOString().split('T')[0]}
+                      onChange={(e) => setSelectedInstallment({...selectedInstallment, paid_date: e.target.value})}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Selecione a data em que o pagamento foi realizado
+                    </p>
+                  </div>
+                )}
                 
                 <div>
                   <Label>Observações do Pagamento</Label>

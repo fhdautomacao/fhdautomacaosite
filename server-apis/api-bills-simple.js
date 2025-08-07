@@ -155,9 +155,6 @@ async function handleUploadReceipt(req, res, supabase, user) {
             .eq('id', billId)
             .single();
 
-          console.log('📋 Informações do boleto:', billInfo);
-          console.log('❌ Erro ao buscar boleto:', billError);
-
           // Ler o arquivo
           const fileBuffer = fs.readFileSync(file.filepath);
           
@@ -184,15 +181,8 @@ async function handleUploadReceipt(req, res, supabase, user) {
             }
             
             descriptiveName = `${cleanCompanyName}_${dueDate}_${amount}_Parcela${installmentNumber}`;
-            
-            console.log('🏢 Nome da empresa:', companyName);
-            console.log('🧹 Nome limpo:', cleanCompanyName);
-            console.log('📅 Data de vencimento:', dueDate);
-            console.log('💰 Valor:', amount);
-            console.log('�� Nome descritivo:', descriptiveName);
           } else {
             descriptiveName = `Comprovante_Parcela${installmentNumber}`;
-            console.log('⚠️ Informações do boleto não encontradas, usando nome padrão');
           }
           
           // Nome técnico para o arquivo (mantém compatibilidade)
@@ -250,8 +240,6 @@ async function handleUploadReceipt(req, res, supabase, user) {
             path: filePath
           };
 
-          console.log('📤 Resultado do upload:', uploadResult);
-
           // Atualizar banco de dados com informações do comprovante
           const updateData = {
             payment_receipt_url: urlData.publicUrl,
@@ -261,8 +249,6 @@ async function handleUploadReceipt(req, res, supabase, user) {
             payment_receipt_uploaded_at: new Date().toISOString(),
             payment_receipt_uploaded_by: user.id
           };
-
-          console.log('📝 Dados para atualização:', updateData);
 
           const { error: updateError } = await supabase
             .from('bill_installments')
@@ -275,8 +261,6 @@ async function handleUploadReceipt(req, res, supabase, user) {
               error: `Erro ao atualizar banco de dados: ${updateError.message || updateError.details || JSON.stringify(updateError)}` 
             }));
           }
-
-          console.log('✅ Banco de dados atualizado com sucesso');
 
           // Limpar arquivo temporário
           fs.unlinkSync(file.filepath);

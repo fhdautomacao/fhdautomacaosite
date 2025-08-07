@@ -238,7 +238,7 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* CTA Button */}
+          {/* CTA Button - Desktop */}
           <motion.div 
             className="hidden lg:block"
             initial={{ opacity: 0, scale: 0.8 }}
@@ -362,27 +362,7 @@ const Header = () => {
                   </Link>
                 </motion.div>
                 
-                <motion.div 
-                  variants={mobileItemVariants}
-                  className="pt-2"
-                >
-                  <Link to="/contato" onClick={() => setIsMenuOpen(false)}>
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold w-full py-3 rounded-lg shadow-lg transition-all duration-300">
-                        <motion.span
-                          animate={{ x: [0, 2, 0] }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                        >
-                          Solicitar Orçamento
-                        </motion.span>
-                      </Button>
-                    </motion.div>
-                  </Link>
-                </motion.div>
+
               </div>
             </motion.nav>
           )}

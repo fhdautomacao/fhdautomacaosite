@@ -111,9 +111,9 @@ const Header = () => {
             </Link>
           </nav>
 
-          {/* CTA Button - Removido conforme solicitado */}
+          {/* CTA Button - Desktop */}
           <div className="hidden lg:block">
-            <Link to="/contato">
+            <Link to="/orcamento">
               <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
                 Solicitar Orçamento
               </Button>
@@ -196,7 +196,7 @@ const Header = () => {
                 <span>Contato</span>
               </Link>
               <div className="pt-3 border-t border-gray-200/20">
-                <Link to="/contato" onClick={() => setIsMenuOpen(false)}>
+                <Link to="/orcamento" onClick={() => setIsMenuOpen(false)}>
                   <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold w-full py-2 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300">
                     Solicitar Orçamento
                   </Button>
