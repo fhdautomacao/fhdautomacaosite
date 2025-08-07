@@ -202,7 +202,7 @@ async function handleUploadReceipt(req, res, supabase, user) {
              console.error('❌ Erro ao buscar parcela no banco:', fetchError);
              console.error('❌ Detalhes do erro:', JSON.stringify(fetchError, null, 2));
              return resolve(res.status(500).json({ 
-               error: 'Erro ao buscar parcela no banco de dados' 
+               error: `Erro ao buscar parcela no banco de dados: ${fetchError.message || fetchError.details || JSON.stringify(fetchError)}` 
              }));
            }
            
@@ -240,7 +240,7 @@ async function handleUploadReceipt(req, res, supabase, user) {
              console.error('❌ Erro ao atualizar banco de dados:', updateError);
              console.error('❌ Detalhes do erro:', JSON.stringify(updateError, null, 2));
              return resolve(res.status(500).json({ 
-               error: 'Erro ao atualizar banco de dados' 
+               error: `Erro ao atualizar banco de dados: ${updateError.message || updateError.details || JSON.stringify(updateError)}` 
              }));
            }
           
