@@ -250,17 +250,23 @@ async function handleUploadReceipt(req, res, supabase, user) {
             path: filePath
           };
 
+          console.log('📤 Resultado do upload:', uploadResult);
+
           // Atualizar banco de dados com informações do comprovante
+          const updateData = {
+            payment_receipt_url: urlData.publicUrl,
+            payment_receipt_filename: technicalFileName,
+            payment_receipt_display_name: displayFileName,
+            payment_receipt_path: filePath,
+            payment_receipt_uploaded_at: new Date().toISOString(),
+            payment_receipt_uploaded_by: user.id
+          };
+
+          console.log('📝 Dados para atualização:', updateData);
+
           const { error: updateError } = await supabase
             .from('bill_installments')
-            .update({
-              payment_receipt_url: urlData.publicUrl,
-              payment_receipt_filename: technicalFileName,
-              payment_receipt_display_name: displayFileName,
-              payment_receipt_path: filePath,
-              payment_receipt_uploaded_at: new Date().toISOString(),
-              payment_receipt_uploaded_by: user.id
-            })
+            .update(updateData)
             .eq('id', installmentId);
           
           if (updateError) {
@@ -269,6 +275,8 @@ async function handleUploadReceipt(req, res, supabase, user) {
               error: `Erro ao atualizar banco de dados: ${updateError.message || updateError.details || JSON.stringify(updateError)}` 
             }));
           }
+
+          console.log('✅ Banco de dados atualizado com sucesso');
 
           // Limpar arquivo temporário
           fs.unlinkSync(file.filepath);
