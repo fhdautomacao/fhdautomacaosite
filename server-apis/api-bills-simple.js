@@ -155,6 +155,9 @@ async function handleUploadReceipt(req, res, supabase, user) {
             .eq('id', billId)
             .single();
 
+          console.log('📋 Informações do boleto:', billInfo);
+          console.log('❌ Erro ao buscar boleto:', billError);
+
           // Ler o arquivo
           const fileBuffer = fs.readFileSync(file.filepath);
           
@@ -168,20 +171,36 @@ async function handleUploadReceipt(req, res, supabase, user) {
           
           if (billInfo) {
             const companyName = billInfo.companies?.name || billInfo.company_name || 'Empresa';
-            const dueDate = billInfo.due_date ? new Date(billInfo.due_date).toLocaleDateString('pt-BR').replace(/\//g, '-') : 'Data';
-            const amount = billInfo.total_amount ? `R$${billInfo.total_amount.toString().replace('.', ',').replace(',', '-')}` : 'Valor';
+            // Limpar nome da empresa (remover caracteres especiais)
+            const cleanCompanyName = companyName.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_').substring(0, 30);
             
-            descriptiveName = `${companyName}_${dueDate}_${amount}_Parcela${installmentNumber}`;
+            const dueDate = billInfo.due_date ? new Date(billInfo.due_date).toLocaleDateString('pt-BR').replace(/\//g, '-') : 'Data';
+            
+            // Formatar valor de forma mais limpa
+            let amount = 'Valor';
+            if (billInfo.total_amount) {
+              const formattedAmount = billInfo.total_amount.toString().replace('.', ',').replace(',', '-');
+              amount = `R$${formattedAmount}`;
+            }
+            
+            descriptiveName = `${cleanCompanyName}_${dueDate}_${amount}_Parcela${installmentNumber}`;
+            
+            console.log('🏢 Nome da empresa:', companyName);
+            console.log('🧹 Nome limpo:', cleanCompanyName);
+            console.log('📅 Data de vencimento:', dueDate);
+            console.log('💰 Valor:', amount);
+            console.log('�� Nome descritivo:', descriptiveName);
           } else {
             descriptiveName = `Comprovante_Parcela${installmentNumber}`;
+            console.log('⚠️ Informações do boleto não encontradas, usando nome padrão');
           }
           
           // Nome técnico para o arquivo (mantém compatibilidade)
           const technicalFileName = `bill_${billId}_installment_${installmentNumber}_${timestamp}.${extension}`;
           const filePath = `payment-receipts/${billId}/${technicalFileName}`;
           
-          // Nome descritivo para exibição
-          const displayFileName = `${descriptiveName}_${timestamp}.${extension}`;
+          // Nome descritivo para exibição (sem timestamp para ser mais limpo)
+          const displayFileName = `${descriptiveName}.${extension}`;
 
           // Upload para o Supabase Storage usando Service Role Key (contorna RLS)
           const { data, error } = await supabase.storage
