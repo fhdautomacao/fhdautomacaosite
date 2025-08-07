@@ -65,7 +65,7 @@ export default async function handler(req, res) {
     if (!user) {
       console.log('⚠️ Usuário não autenticado, mas permitindo acesso para desenvolvimento');
       user = {
-        id: 'dev-user',
+        id: '00000000-0000-0000-0000-000000000000', // UUID válido para desenvolvimento
         email: 'dev@example.com'
       };
     }
