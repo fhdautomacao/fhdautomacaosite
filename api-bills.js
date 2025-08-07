@@ -1,12 +1,32 @@
 import { createClient } from '@supabase/supabase-js'
+import multer from 'multer'
 import uploadService from '../src/services/uploadService.js'
+
+// Configurar multer para processar FormData
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true)
+    } else {
+      cb(new Error('Apenas arquivos PDF são permitidos'), false)
+    }
+  }
+})
+
+// Middleware para processar upload de arquivo
+const uploadMiddleware = upload.single('file')
 
 export default async function handler(req, res) {
   console.log('API Bills chamada:', {
     method: req.method,
     headers: req.headers,
     query: req.query,
-    url: req.url
+    url: req.url,
+    body: req.body ? 'Body presente' : 'Body vazio'
   })
 
   try {
@@ -52,7 +72,7 @@ export default async function handler(req, res) {
           return await handleGetBills(req, res, supabase)
         }
       case 'POST':
-        if (req.url.includes('/installments/')) {
+        if (req.url.includes('/installments/upload')) {
           return await handleUploadReceipt(req, res, supabase, user)
         } else {
           return await handleCreateBill(req, res, supabase, user)
@@ -304,66 +324,94 @@ async function handleUpdateInstallment(req, res, supabase, user) {
 
 async function handleUploadReceipt(req, res, supabase, user) {
   try {
-    const { billId, installmentNumber, file } = req.body
+    console.log('Iniciando handleUploadReceipt');
+    console.log('URL:', req.url);
+    console.log('Method:', req.method);
+    console.log('Headers:', req.headers);
+    
+    // Usar multer para processar FormData
+    return new Promise((resolve, reject) => {
+      uploadMiddleware(req, res, async (err) => {
+        if (err) {
+          console.error('Erro no multer:', err);
+          return resolve(res.status(400).json({ 
+            error: err.message || 'Erro no processamento do arquivo' 
+          }));
+        }
 
-    if (!billId || !installmentNumber || !file) {
-      return res.status(400).json({ 
-        error: 'Dados obrigatórios: billId, installmentNumber, file' 
+        try {
+          console.log('Multer processado com sucesso');
+          console.log('Body:', req.body);
+          console.log('File:', req.file);
+          
+          const billId = req.body.billId;
+          const installmentNumber = req.body.installmentNumber;
+          const file = req.file;
+
+          if (!billId || !installmentNumber || !file) {
+            return resolve(res.status(400).json({ 
+              error: 'Dados obrigatórios: billId, installmentNumber, file' 
+            }));
+          }
+
+          // Verificar se a parcela existe
+          const { data: installment, error: installmentError } = await supabase
+            .from('bill_installments')
+            .select('*')
+            .eq('bill_id', billId)
+            .eq('installment_number', installmentNumber)
+            .single()
+
+          if (installmentError || !installment) {
+            return resolve(res.status(404).json({ error: 'Parcela não encontrada' }))
+          }
+
+          // Fazer upload do arquivo
+          const uploadResult = await uploadService.uploadPaymentReceipt(
+            file, 
+            billId, 
+            installmentNumber
+          )
+
+          if (!uploadResult.success) {
+            return resolve(res.status(400).json({ error: uploadResult.error }))
+          }
+
+          // Atualizar parcela com informações do comprovante
+          const { data: updatedInstallment, error: updateError } = await supabase
+            .from('bill_installments')
+            .update({
+              payment_receipt_url: uploadResult.url,
+              payment_receipt_filename: uploadResult.filename,
+              payment_receipt_uploaded_at: new Date().toISOString(),
+              payment_receipt_uploaded_by: user.id,
+              status: 'paid',
+              paid_date: new Date().toISOString()
+            })
+            .eq('id', installment.id)
+            .select()
+            .single()
+
+          if (updateError) {
+            console.error('Erro ao atualizar parcela:', updateError)
+            return resolve(res.status(500).json({ error: 'Erro ao atualizar parcela' }))
+          }
+
+          return resolve(res.status(200).json({
+            success: true,
+            installment: updatedInstallment,
+            receipt: {
+              url: uploadResult.url,
+              filename: uploadResult.filename
+            }
+          }))
+
+        } catch (error) {
+          console.error('Erro em handleUploadReceipt:', error)
+          return resolve(res.status(500).json({ error: 'Erro interno do servidor' }))
+        }
       })
-    }
-
-    // Verificar se a parcela existe
-    const { data: installment, error: installmentError } = await supabase
-      .from('bill_installments')
-      .select('*')
-      .eq('bill_id', billId)
-      .eq('installment_number', installmentNumber)
-      .single()
-
-    if (installmentError || !installment) {
-      return res.status(404).json({ error: 'Parcela não encontrada' })
-    }
-
-    // Fazer upload do arquivo
-    const uploadResult = await uploadService.uploadPaymentReceipt(
-      file, 
-      billId, 
-      installmentNumber
-    )
-
-    if (!uploadResult.success) {
-      return res.status(400).json({ error: uploadResult.error })
-    }
-
-    // Atualizar parcela com informações do comprovante
-    const { data: updatedInstallment, error: updateError } = await supabase
-      .from('bill_installments')
-      .update({
-        payment_receipt_url: uploadResult.url,
-        payment_receipt_filename: uploadResult.filename,
-        payment_receipt_uploaded_at: new Date().toISOString(),
-        payment_receipt_uploaded_by: user.id,
-        status: 'paid',
-        paid_date: new Date().toISOString()
-      })
-      .eq('id', installment.id)
-      .select()
-      .single()
-
-    if (updateError) {
-      console.error('Erro ao atualizar parcela:', updateError)
-      return res.status(500).json({ error: 'Erro ao atualizar parcela' })
-    }
-
-    return res.status(200).json({
-      success: true,
-      installment: updatedInstallment,
-      receipt: {
-        url: uploadResult.url,
-        filename: uploadResult.filename
-      }
     })
-
   } catch (error) {
     console.error('Erro em handleUploadReceipt:', error)
     return res.status(500).json({ error: 'Erro interno do servidor' })

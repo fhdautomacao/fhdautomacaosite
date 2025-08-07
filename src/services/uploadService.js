@@ -58,8 +58,9 @@ class UploadService {
       errors.push(`Arquivo muito grande. Máximo: ${this.maxFileSize / (1024 * 1024)}MB`);
     }
 
-    // Verificar tipo
-    if (!this.allowedTypes.includes(file.type)) {
+    // Verificar tipo - multer pode usar mimetype
+    const fileType = file.mimetype || file.type;
+    if (!this.allowedTypes.includes(fileType)) {
       errors.push('Apenas arquivos PDF são permitidos');
     }
 
@@ -89,13 +90,14 @@ class UploadService {
       }
 
       // Gerar nome único
-      const fileName = this.generateFileName(file.name, billId, installmentNumber);
+      const fileName = this.generateFileName(file.originalname || file.name, billId, installmentNumber);
       const filePath = `${this.folderName}/${billId}/${fileName}`;
 
-      // Upload do arquivo
+      // Upload do arquivo - usar buffer do multer se disponível
+      const fileBuffer = file.buffer || file;
       const { data, error } = await supabase.storage
         .from(this.bucketName)
-        .upload(filePath, file, {
+        .upload(filePath, fileBuffer, {
           cacheControl: '3600',
           upsert: false
         });

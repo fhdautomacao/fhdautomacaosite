@@ -31,6 +31,10 @@
       "dest": "/api-bills.js"
     },
     {
+      "src": "/api/bills/installments/upload",
+      "dest": "/api-bills.js"
+    },
+    {
       "src": "/api/quotations",
       "dest": "/api-quotations.js"
     },
