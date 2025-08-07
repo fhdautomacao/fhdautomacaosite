@@ -26,8 +26,12 @@ const Header = () => {
                   src="/logo.png" 
                   alt="FHD Automação Industrial Logo" 
                   className="h-8 lg:h-10 w-auto transition-transform duration-300 group-hover:scale-105"
+                  onLoad={() => {
+                    console.log('Logo carregado com sucesso');
+                  }}
                   onError={(e) => {
                     console.error('Erro ao carregar logo:', e.target.src);
+                    console.error('Erro details:', e);
                     setLogoError(true);
                   }}
                 />
