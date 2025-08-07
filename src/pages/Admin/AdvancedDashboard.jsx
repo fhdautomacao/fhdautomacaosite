@@ -787,18 +787,7 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
                   <DollarSign className="h-4 w-4 mr-2" />
                   Financeiro
                 </TabsTrigger>
-                <TabsTrigger value="operations" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Operações
-                </TabsTrigger>
-                <TabsTrigger value="team" className="data-[state=active]:bg-orange-600 data-[state=active]:text-white">
-                  <Users className="h-4 w-4 mr-2" />
-                  Equipe
-                </TabsTrigger>
-                <TabsTrigger value="company" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
-                  <Building className="h-4 w-4 mr-2" />
-                  Empresa
-                </TabsTrigger>
+
               </TabsList>
               
               {/* Conteúdo das Abas */}
@@ -843,10 +832,6 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
                             <div>
                               <p className="text-sm font-medium text-green-700">Receita Total</p>
                               <p className="text-2xl font-bold text-green-900">{formatCompactCurrency(dashboardData.totalRevenue)}</p>
-                              <div className="flex items-center mt-2">
-                                <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
-                                <span className="text-xs text-green-600">+12.5% este mês</span>
-                              </div>
                             </div>
                             <div className="p-3 bg-green-100 rounded-full">
                               <DollarSign className="h-6 w-6 text-green-600" />
@@ -867,10 +852,6 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
                             <div>
                               <p className="text-sm font-medium text-red-700">Despesas Totais</p>
                               <p className="text-2xl font-bold text-red-900">{formatCompactCurrency(dashboardData.totalExpenses)}</p>
-                              <div className="flex items-center mt-2">
-                                <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
-                                <span className="text-xs text-red-600">+8.2% este mês</span>
-                              </div>
                             </div>
                             <div className="p-3 bg-red-100 rounded-full">
                               <CreditCard className="h-6 w-6 text-red-600" />
@@ -891,16 +872,6 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
                             <div>
                               <p className="text-sm font-medium text-blue-700">Lucro Líquido</p>
                               <p className={`text-2xl font-bold ${dashboardData.netProfit >= 0 ? 'text-blue-900' : 'text-red-900'}`}>{formatCompactCurrency(dashboardData.netProfit)}</p>
-                              <div className="flex items-center mt-2">
-                                {dashboardData.netProfit >= 0 ? (
-                                  <TrendingUp className="h-4 w-4 text-blue-600 mr-1" />
-                                ) : (
-                                  <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
-                                )}
-                                <span className={`text-xs ${dashboardData.netProfit >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                                  {dashboardData.netProfit >= 0 ? '+15.3%' : '-5.2%'} este mês
-                                </span>
-                              </div>
                             </div>
                             <div className={`p-3 rounded-full ${dashboardData.netProfit >= 0 ? 'bg-blue-100' : 'bg-red-100'}`}>
                               <Target className={`h-6 w-6 ${dashboardData.netProfit >= 0 ? 'text-blue-600' : 'text-red-600'}`} />
@@ -921,10 +892,6 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
                             <div>
                               <p className="text-sm font-medium text-gray-700">Margem de Lucro</p>
                               <p className="text-2xl font-bold text-gray-900">{dashboardData.profitMargin.toFixed(1)}%</p>
-                              <div className="flex items-center mt-2">
-                                <Target className="h-4 w-4 text-gray-600 mr-1" />
-                                <span className="text-xs text-gray-600">Meta: 25%</span>
-                              </div>
                             </div>
                             <div className="p-3 bg-gray-100 rounded-full">
                               <Target className="h-6 w-6 text-gray-600" />
@@ -1034,94 +1001,52 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
                     </motion.div>
                   </div>
 
-                  {/* Gráficos */}
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-                    {/* Tendência de Receitas e Despesas */}
-                    <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 1.1 }}
-                    >
-                      <Card className="shadow-lg">
-                        <CardHeader>
-                          <CardTitle className="flex items-center space-x-2">
-                            <BarChart3 className="h-5 w-5" />
-                            <span>Tendência Financeira (7 dias)</span>
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <ResponsiveContainer width="100%" height={300}>
-                            <AreaChart data={dashboardData.revenueHistory}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="date" />
-                              <YAxis tickFormatter={(value) => formatCompactCurrency(value)} />
-                              <Tooltip formatter={(value) => formatCurrency(value)} />
-                              <Area 
-                                type="monotone" 
-                                dataKey="receitas" 
-                                stackId="1"
-                                stroke="#10b981" 
-                                fill="#10b981" 
-                                fillOpacity={0.6} 
-                                name="Receitas"
-                              />
-                              <Area 
-                                type="monotone" 
-                                dataKey="despesas" 
-                                stackId="2"
-                                stroke="#ef4444" 
-                                fill="#ef4444" 
-                                fillOpacity={0.6} 
-                                name="Despesas"
-                              />
-                            </AreaChart>
-                          </ResponsiveContainer>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
+                                     {/* Gráficos */}
+                   <div className="grid grid-cols-1 gap-4 sm:gap-6">
+                    
 
-                    {/* Status de Orçamentos */}
-                    <motion.div
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 1.2 }}
-                    >
-                      <Card className="shadow-lg">
-                        <CardHeader>
-                          <CardTitle className="flex items-center space-x-2">
-                            <BarChart3 className="h-5 w-5" />
-                            <span>Status dos Orçamentos</span>
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <ResponsiveContainer width="100%" height={300}>
-                            <RechartsPieChart>
-                              <Pie
-                                data={dashboardData.quotationsTrend}
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={70}
-                                innerRadius={30}
-                                fill="#8884d8"
-                                dataKey="value"
-                                label={false}
-                              >
-                                {dashboardData.quotationsTrend.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={entry.color} />
-                                ))}
-                              </Pie>
-                              <Tooltip formatter={(value, name) => [value, name]} />
-                              <Legend 
-                                verticalAlign="bottom" 
-                                height={36}
-                                iconType="circle"
-                                wrapperStyle={{ paddingTop: '20px' }}
-                              />
-                            </RechartsPieChart>
-                          </ResponsiveContainer>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
+                                         {/* Status de Orçamentos */}
+                     <motion.div
+                       initial={{ opacity: 0, x: 20 }}
+                       animate={{ opacity: 1, x: 0 }}
+                       transition={{ delay: 1.1 }}
+                     >
+                       <Card className="shadow-lg">
+                         <CardHeader>
+                           <CardTitle className="flex items-center space-x-2">
+                             <BarChart3 className="h-5 w-5" />
+                             <span>Status dos Orçamentos</span>
+                           </CardTitle>
+                         </CardHeader>
+                         <CardContent>
+                           <ResponsiveContainer width="100%" height={400}>
+                             <RechartsPieChart>
+                               <Pie
+                                 data={dashboardData.quotationsTrend}
+                                 cx="50%"
+                                 cy="50%"
+                                 outerRadius={100}
+                                 innerRadius={50}
+                                 fill="#8884d8"
+                                 dataKey="value"
+                                 label={false}
+                               >
+                                 {dashboardData.quotationsTrend.map((entry, index) => (
+                                   <Cell key={`cell-${index}`} fill={entry.color} />
+                                 ))}
+                               </Pie>
+                               <Tooltip formatter={(value, name) => [value, name]} />
+                               <Legend 
+                                 verticalAlign="bottom" 
+                                 height={36}
+                                 iconType="circle"
+                                 wrapperStyle={{ paddingTop: '20px' }}
+                               />
+                             </RechartsPieChart>
+                           </ResponsiveContainer>
+                         </CardContent>
+                       </Card>
+                     </motion.div>
                   </div>
                 </TabsContent>
 
@@ -1191,249 +1116,11 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
                   </div>
                 </TabsContent>
 
-                {/* Aba: Operações */}
-                <TabsContent value="operations" className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card className="shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                          <Settings className="h-5 w-5" />
-                          <span>Performance Operacional</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {Object.entries(dashboardData.performance).map(([key, value]) => (
-                          <div key={key} className="flex justify-between items-center">
-                            <span className="text-sm font-medium capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                            <div className="flex items-center space-x-2">
-                              <Progress value={value} className="w-20 h-2" />
-                              <span className="text-sm font-bold">{value}%</span>
-                            </div>
-                          </div>
-                        ))}
-                      </CardContent>
-                    </Card>
 
-                    <Card className="shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                          <Activity className="h-5 w-5" />
-                          <span>Atividades Recentes</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          {dashboardData.recentActivities.map((activity, index) => (
-                            <motion.div
-                              key={activity.id}
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: index * 0.1 }}
-                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                            >
-                              <div className="flex items-center space-x-3">
-                                <div className={`p-2 rounded-full ${
-                                  activity.type === 'project' ? 'bg-blue-100' :
-                                  activity.type === 'maintenance' ? 'bg-green-100' :
-                                  'bg-purple-100'
-                                }`}>
-                                  <Settings className={`h-4 w-4 ${
-                                    activity.type === 'project' ? 'text-blue-600' :
-                                    activity.type === 'maintenance' ? 'text-green-600' :
-                                    'text-purple-600'
-                                  }`} />
-                                </div>
-                                <div>
-                                  <h4 className="font-semibold text-sm">{activity.title}</h4>
-                                  <p className="text-xs text-gray-600">{activity.description}</p>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <p className="font-bold text-sm">{formatCurrency(activity.value)}</p>
-                                <Badge variant={activity.priority === 'high' ? 'destructive' : 'secondary'} className="text-xs">
-                                  {activity.priority}
-                                </Badge>
-                              </div>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
 
-                {/* Aba: Equipe */}
-                <TabsContent value="team" className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card className="shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                          <Users className="h-5 w-5" />
-                          <span>Equipe Atual</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {dashboardData.team.map((member, index) => (
-                            <motion.div
-                              key={member.id}
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: index * 0.1 }}
-                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                            >
-                              <div className="flex items-center space-x-3">
-                                <Avatar>
-                                  <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <h4 className="font-semibold text-sm">{member.name}</h4>
-                                  <p className="text-xs text-gray-600">{member.role}</p>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="flex items-center space-x-2">
-                                  <div className={`w-2 h-2 rounded-full ${
-                                    member.status === 'online' ? 'bg-green-500' :
-                                    member.status === 'busy' ? 'bg-yellow-500' :
-                                    'bg-gray-500'
-                                  }`} />
-                                  <span className="text-xs text-gray-600">{member.status}</span>
-                                </div>
-                                <p className="text-xs text-gray-600">{member.projects} projetos</p>
-                              </div>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
 
-                    <Card className="shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                          <Target className="h-5 w-5" />
-                          <span>Performance da Equipe</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {dashboardData.team.map((member, index) => (
-                            <div key={member.id} className="space-y-2">
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm font-medium">{member.name}</span>
-                                <span className="text-sm font-bold">{member.performance}%</span>
-                              </div>
-                              <Progress value={member.performance} className="h-2" />
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
 
-                {/* Aba: Empresa */}
-                <TabsContent value="company" className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card className="shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                          <Building className="h-5 w-5" />
-                          <span>Informações da Empresa</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="space-y-3">
-                          <div className="flex justify-between">
-                            <span className="text-sm font-medium">Nome</span>
-                            <span className="text-sm">{dashboardData.companyInfo.name}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm font-medium">CNPJ</span>
-                            <span className="text-sm">{dashboardData.companyInfo.cnpj}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm font-medium">Endereço</span>
-                            <span className="text-sm">{dashboardData.companyInfo.address}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm font-medium">Cidade</span>
-                            <span className="text-sm">{dashboardData.companyInfo.city}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm font-medium">Telefone</span>
-                            <span className="text-sm">{dashboardData.companyInfo.phone}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm font-medium">Email</span>
-                            <span className="text-sm">{dashboardData.companyInfo.email}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm font-medium">Website</span>
-                            <span className="text-sm">{dashboardData.companyInfo.website}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm font-medium">Fundada</span>
-                            <span className="text-sm">{dashboardData.companyInfo.founded}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm font-medium">Funcionários</span>
-                            <span className="text-sm">{dashboardData.companyInfo.employees}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm font-medium">Projetos</span>
-                            <span className="text-sm">{dashboardData.companyInfo.projects}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm font-medium">Satisfação</span>
-                            <span className="text-sm">{dashboardData.companyInfo.satisfaction}/5.0</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
 
-                    <Card className="shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                          <Award className="h-5 w-5" />
-                          <span>Especialidades e Certificações</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div>
-                          <h4 className="font-semibold mb-2">Especialidades</h4>
-                          <div className="flex flex-wrap gap-2">
-                            {dashboardData.companyInfo.specialties.map((specialty, index) => (
-                              <Badge key={index} variant="secondary" className="text-xs">
-                                {specialty}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold mb-2">Certificações</h4>
-                          <div className="flex flex-wrap gap-2">
-                            {dashboardData.companyInfo.certifications.map((cert, index) => (
-                              <Badge key={index} variant="outline" className="text-xs">
-                                {cert}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold mb-2">Principais Clientes</h4>
-                          <div className="flex flex-wrap gap-2">
-                            {dashboardData.companyInfo.clients.map((client, index) => (
-                              <Badge key={index} variant="default" className="text-xs">
-                                {client}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
               </div>
             </Tabs>
           </motion.div>
