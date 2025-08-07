@@ -81,4 +81,4 @@ export default async function handler(req, res) {
     console.error('Erro na API de login:', error)
     return res.status(500).json({ error: 'Erro interno do servidor' })
   }
-}
+} 
