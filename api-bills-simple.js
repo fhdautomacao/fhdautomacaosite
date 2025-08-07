@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
+import formidable from 'formidable'
+import fs from 'fs'
 
 export default async function handler(req, res) {
   console.log('API Bills Simple chamada:', {
@@ -83,26 +85,99 @@ async function handleUploadReceipt(req, res, supabase, user) {
   try {
     console.log('Iniciando handleUploadReceipt');
     console.log('Content-Type:', req.headers['content-type']);
-    console.log('Body length:', req.body ? Object.keys(req.body).length : 'Body vazio');
 
-    // Para FormData, precisamos processar o body de forma diferente
-    // Vamos usar uma abordagem mais simples para desenvolvimento
-    
-    // Simular um upload bem-sucedido para teste
-    const mockUploadResult = {
-      success: true,
-      url: 'https://example.com/mock-receipt.pdf',
-      filename: `receipt_${Date.now()}.pdf`,
-      path: `payment-receipts/mock/bill_1_installment_1_${Date.now()}.pdf`
-    };
+    // Configurar formidable para processar FormData
+    const form = formidable({
+      maxFileSize: 10 * 1024 * 1024, // 10MB
+      keepExtensions: true,
+      filter: function ({name, originalName, mimetype}) {
+        // Aceitar apenas PDFs
+        return mimetype && mimetype.includes("pdf");
+      }
+    });
 
-    console.log('📤 Upload simulado:', mockUploadResult);
+    // Processar o upload
+    return new Promise((resolve, reject) => {
+      form.parse(req, async (err, fields, files) => {
+        if (err) {
+          console.error('Erro ao processar FormData:', err);
+          return resolve(res.status(400).json({ 
+            error: 'Erro ao processar arquivo' 
+          }));
+        }
 
-    return res.status(200).json({
-      success: true,
-      message: 'Upload simulado com sucesso',
-      receipt: mockUploadResult,
-      test: true
+        try {
+          console.log('📁 Campos recebidos:', fields);
+          console.log('📄 Arquivos recebidos:', files);
+
+          const billId = fields.billId?.[0];
+          const installmentNumber = fields.installmentNumber?.[0];
+          const file = files.file?.[0];
+
+          if (!billId || !installmentNumber || !file) {
+            return resolve(res.status(400).json({ 
+              error: 'Dados obrigatórios: billId, installmentNumber, file' 
+            }));
+          }
+
+          console.log('📤 Iniciando upload real para Supabase...');
+
+          // Ler o arquivo
+          const fileBuffer = fs.readFileSync(file.filepath);
+          
+          // Gerar nome único para o arquivo
+          const timestamp = Date.now();
+          const originalName = file.originalFilename || 'receipt.pdf';
+          const extension = originalName.split('.').pop();
+          const fileName = `bill_${billId}_installment_${installmentNumber}_${timestamp}.${extension}`;
+          const filePath = `payment-receipts/${billId}/${fileName}`;
+
+          // Upload para o Supabase Storage
+          const { data, error } = await supabase.storage
+            .from('arquivos')
+            .upload(filePath, fileBuffer, {
+              contentType: 'application/pdf',
+              cacheControl: '3600',
+              upsert: false
+            });
+
+          if (error) {
+            console.error('❌ Erro no upload para Supabase:', error);
+            return resolve(res.status(500).json({ 
+              error: 'Erro ao fazer upload para o storage' 
+            }));
+          }
+
+          // Obter URL pública
+          const { data: urlData } = supabase.storage
+            .from('arquivos')
+            .getPublicUrl(filePath);
+
+          const uploadResult = {
+            success: true,
+            url: urlData.publicUrl,
+            filename: fileName,
+            path: filePath
+          };
+
+          console.log('✅ Upload real concluído:', uploadResult);
+
+          // Limpar arquivo temporário
+          fs.unlinkSync(file.filepath);
+
+          return resolve(res.status(200).json({
+            success: true,
+            message: 'Upload realizado com sucesso',
+            receipt: uploadResult
+          }));
+
+        } catch (error) {
+          console.error('❌ Erro no processamento:', error);
+          return resolve(res.status(500).json({ 
+            error: 'Erro interno do servidor' 
+          }));
+        }
+      });
     });
 
   } catch (error) {
