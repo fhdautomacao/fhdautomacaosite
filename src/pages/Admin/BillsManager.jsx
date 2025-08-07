@@ -2,12 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { 
   Plus, 
   Search, 
-  Filter, 
   Edit, 
   Trash2, 
   Eye, 
-  Download, 
-  Upload,
   FileText,
   Calendar,
   DollarSign
@@ -31,9 +28,8 @@ import {
   SelectValue 
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import PaymentReceiptUpload from '@/components/PaymentReceiptUpload'
-import billsAPI from '@/services/billsService'
+import { billsAPI } from '@/api/bills'
 
 export default function BillsManager() {
   const [bills, setBills] = useState([])
@@ -64,7 +60,7 @@ export default function BillsManager() {
   const loadBills = async () => {
     try {
       setLoading(true)
-      const data = await billsAPI.getBills()
+      const data = await billsAPI.getAll()
       setBills(data)
     } catch (error) {
       console.error('Erro ao carregar boletos:', error)
@@ -75,7 +71,7 @@ export default function BillsManager() {
 
   const handleCreateBill = async () => {
     try {
-      await billsAPI.createBill(formData)
+      await billsAPI.create(formData)
       setShowCreateModal(false)
       setFormData({
         company_name: '',
@@ -95,7 +91,7 @@ export default function BillsManager() {
 
   const handleUpdateBill = async () => {
     try {
-      await billsAPI.updateBill(selectedBill.id, formData)
+      await billsAPI.update(selectedBill.id, formData)
       setShowEditModal(false)
       loadBills()
     } catch (error) {
@@ -108,7 +104,7 @@ export default function BillsManager() {
     if (!confirm('Tem certeza que deseja excluir este boleto?')) return
     
     try {
-      await billsAPI.deleteBill(billId)
+      await billsAPI.delete(billId)
       loadBills()
     } catch (error) {
       console.error('Erro ao excluir boleto:', error)
