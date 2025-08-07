@@ -79,9 +79,6 @@ const PaymentReceiptUpload = ({
       // Fazer upload
       const response = await fetch('/api/bills/installments/upload', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        },
         body: formData
       });
 
@@ -151,10 +148,7 @@ const PaymentReceiptUpload = ({
 
     try {
       const response = await fetch(`/api/bills/installments/${installment.id}/receipt`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
+        method: 'DELETE'
       });
 
       if (!response.ok) {

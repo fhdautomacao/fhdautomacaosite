@@ -19,17 +19,30 @@ export default async function handler(req, res) {
 
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Verificar autenticação
-    const authHeader = req.headers.authorization
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Token de autenticação necessário' })
-    }
-
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    // Verificar autenticação - tentar sessão do Supabase primeiro, depois token via header
+    let user = null;
     
-    if (authError || !user) {
-      return res.status(401).json({ error: 'Token inválido' })
+    // Tentar sessão do Supabase
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    if (!sessionError && session?.user) {
+      user = session.user;
+    }
+    
+    // Se não encontrou sessão, tentar token via header (para mobile)
+    if (!user) {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user: tokenUser }, error: authError } = await supabase.auth.getUser(token);
+        
+        if (!authError && tokenUser) {
+          user = tokenUser;
+        }
+      }
+    }
+    
+    if (!user) {
+      return res.status(401).json({ error: 'Usuário não autenticado' })
     }
 
     console.log('Usuário autenticado:', { userId: user.id, email: user.email })
