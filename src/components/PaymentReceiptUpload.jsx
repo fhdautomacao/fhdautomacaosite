@@ -181,7 +181,18 @@ const PaymentReceiptUpload = ({
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
+    if (!dateString || dateString === 'null' || dateString === 'undefined') {
+      return 'Data não disponível';
+    }
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Data inválida';
+      }
+      return date.toLocaleDateString('pt-BR');
+    } catch (error) {
+      return 'Data inválida';
+    }
   };
 
   const formatCurrency = (amount) => {
@@ -201,27 +212,28 @@ const PaymentReceiptUpload = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Informações da parcela */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-gray-500" />
-            <div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-3">
+            <Calendar className="h-4 w-4 text-gray-500 flex-shrink-0" />
+            <div className="min-w-0">
               <p className="text-sm text-gray-600">Vencimento</p>
-              <p className="font-medium">{formatDate(installment.due_date)}</p>
+              <p className="font-medium truncate">{formatDate(installment.due_date)}</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4 text-gray-500" />
-            <div>
+          <div className="flex items-center gap-3">
+            <DollarSign className="h-4 w-4 text-gray-500 flex-shrink-0" />
+            <div className="min-w-0">
               <p className="text-sm text-gray-600">Valor</p>
-              <p className="font-medium">{formatCurrency(installment.amount)}</p>
+              <p className="font-medium truncate">{formatCurrency(installment.amount)}</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 sm:col-span-2 lg:col-span-1">
             <Badge 
               variant={installment.status === 'paid' ? 'default' : 
                       installment.status === 'overdue' ? 'destructive' : 'secondary'}
+              className="flex-shrink-0"
             >
               {installment.status === 'paid' ? 'Pago' : 
                installment.status === 'overdue' ? 'Vencido' : 'Pendente'}
@@ -232,23 +244,23 @@ const PaymentReceiptUpload = ({
         {/* Comprovante existente */}
         {installment.payment_receipt_url && (
           <div className="p-4 border border-green-200 bg-green-50 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <div>
-                  <p className="font-medium text-green-800">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-green-800 mb-1">
                     Comprovante enviado
                   </p>
-                  <p className="text-sm text-green-600">
-                    {installment.payment_receipt_filename}
+                  <p className="text-sm text-green-600 truncate">
+                    {installment.payment_receipt_filename || 'Arquivo PDF'}
                   </p>
-                  <p className="text-xs text-green-500">
+                  <p className="text-xs text-green-500 mt-1">
                     Enviado em {formatDate(installment.payment_receipt_uploaded_at)}
                   </p>
                 </div>
               </div>
               
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-shrink-0">
                 <Button
                   variant="outline"
                   size="sm"

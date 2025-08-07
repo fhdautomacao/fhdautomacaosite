@@ -76,6 +76,11 @@ export default async function handler(req, res) {
     if (req.url.includes('/installments/upload')) {
       return await handleUploadReceipt(req, res, supabase, user)
     }
+    
+    // Rota para excluir comprovante
+    if (req.method === 'DELETE' && req.url.includes('/installments/') && req.url.includes('/receipt')) {
+      return await handleDeleteReceipt(req, res, supabase, user)
+    }
 
     // Para outras rotas, retornar erro por enquanto
     return res.status(404).json({ error: 'Endpoint não encontrado' })
@@ -197,5 +202,82 @@ async function handleUploadReceipt(req, res, supabase, user) {
   } catch (error) {
     console.error('Erro em handleUploadReceipt:', error)
     return res.status(500).json({ error: 'Erro interno do servidor' })
+  }
+}
+
+async function handleDeleteReceipt(req, res, supabase, user) {
+  try {
+    console.log('🗑️ Iniciando exclusão de comprovante');
+    
+    // Extrair o ID da parcela da URL
+    // URL esperada: /api/bills/installments/{installmentId}/receipt
+    const urlParts = req.url.split('/');
+    const installmentIdIndex = urlParts.findIndex(part => part === 'installments') + 1;
+    const installmentId = urlParts[installmentIdIndex];
+    
+    if (!installmentId) {
+      console.error('❌ ID da parcela não encontrado na URL');
+      return res.status(400).json({ error: 'ID da parcela não fornecido' });
+    }
+    
+    console.log('📋 ID da parcela:', installmentId);
+    
+    // Buscar informações da parcela no banco de dados
+    const { data: installment, error: fetchError } = await supabase
+      .from('bills')
+      .select('payment_receipt_path, payment_receipt_url')
+      .eq('id', installmentId)
+      .single();
+    
+    if (fetchError) {
+      console.error('❌ Erro ao buscar parcela:', fetchError);
+      return res.status(404).json({ error: 'Parcela não encontrada' });
+    }
+    
+    if (!installment.payment_receipt_path) {
+      console.log('⚠️ Parcela não possui comprovante para excluir');
+      return res.status(404).json({ error: 'Comprovante não encontrado' });
+    }
+    
+    console.log('📁 Caminho do arquivo para exclusão:', installment.payment_receipt_path);
+    
+    // Excluir arquivo do storage
+    const { error: deleteError } = await supabase.storage
+      .from('arquivos')
+      .remove([installment.payment_receipt_path]);
+    
+    if (deleteError) {
+      console.error('❌ Erro ao excluir arquivo do storage:', deleteError);
+      return res.status(500).json({ error: 'Erro ao excluir arquivo do storage' });
+    }
+    
+    console.log('✅ Arquivo excluído do storage com sucesso');
+    
+    // Atualizar banco de dados para remover referências ao comprovante
+    const { error: updateError } = await supabase
+      .from('bills')
+      .update({
+        payment_receipt_url: null,
+        payment_receipt_path: null,
+        payment_receipt_filename: null,
+        payment_receipt_uploaded_at: null
+      })
+      .eq('id', installmentId);
+    
+    if (updateError) {
+      console.error('❌ Erro ao atualizar banco de dados:', updateError);
+      return res.status(500).json({ error: 'Erro ao atualizar banco de dados' });
+    }
+    
+    console.log('✅ Banco de dados atualizado com sucesso');
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Comprovante excluído com sucesso'
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro em handleDeleteReceipt:', error);
+    return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

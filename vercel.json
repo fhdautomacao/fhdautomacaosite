@@ -35,6 +35,10 @@
       "dest": "/api-bills-simple.js"
     },
     {
+      "src": "/api/bills/installments/(.*)/receipt",
+      "dest": "/api-bills-simple.js"
+    },
+    {
       "src": "/api/quotations",
       "dest": "/api-quotations.js"
     },
