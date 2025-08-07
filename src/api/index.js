@@ -15,6 +15,7 @@ export { storageAPI } from './storage'
 export { seoAPI } from './seo'
 export { testimonialsAPI } from './testimonials'
 export { profitSharingAPI } from './profitSharing'
+export { costsAPI } from './costs'
 export { authAPI } from './auth'
 
 // APIs do servidor (comunicação via endpoints)

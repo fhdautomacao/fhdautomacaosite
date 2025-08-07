@@ -45,6 +45,23 @@ const CompaniesManager = () => {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [companyBills, setCompanyBills] = useState([])
+  const [expandedBillId, setExpandedBillId] = useState(null)
+  // Abrir automaticamente detalhes da empresa via query (?companyId=...)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const companyId = params.get('companyId')
+    if (companyId && companies.length) {
+      const company = companies.find(c => String(c.id) === String(companyId))
+      if (company) {
+        setSelectedCompany(company)
+        loadCompanyBills(company.id)
+        setShowDetailsModal(true)
+        // Limpa completamente a URL (sem query params)
+        const base = window.location.pathname
+        window.history.replaceState({}, '', base)
+      }
+    }
+  }, [companies])
 
   const [formData, setFormData] = useState({
     name: '',
@@ -325,6 +342,22 @@ const CompaniesManager = () => {
       case 'active': return 'bg-green-100 text-green-800'
       case 'inactive': return 'bg-gray-100 text-gray-800'
       default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  // Cores para status de pagamentos/boletos
+  const getPaymentStatusColor = (status) => {
+    switch (status) {
+      case 'paid':
+        return 'bg-green-100 text-green-800'
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'overdue':
+        return 'bg-red-100 text-red-800'
+      case 'cancelled':
+        return 'bg-gray-100 text-gray-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
     }
   }
 
@@ -910,26 +943,78 @@ const CompaniesManager = () => {
                 ) : (
                   <div className="space-y-2">
                     {companyBills.map((bill) => (
-                      <div key={bill.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center space-x-4">
-                          <div>
-                            <span className="font-medium">{bill.description}</span>
-                            <p className="text-sm text-gray-600">
-                              {new Date(bill.created_at).toLocaleDateString('pt-BR')}
-                            </p>
+                      <div key={bill.id} className="border rounded-lg">
+                        <div className="flex items-center justify-between p-3">
+                          <div className="flex items-center space-x-4">
+                            <div>
+                              <span className="font-medium">{bill.description}</span>
+                              <p className="text-sm text-gray-600">
+                                {new Date(bill.created_at).toLocaleDateString('pt-BR')}
+                              </p>
+                            </div>
+                            <div>
+                              <span className="font-semibold">{formatCurrency(bill.total_amount)}</span>
+                            </div>
+                            <Badge className={bill.type === 'receivable' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}>
+                              {bill.type === 'receivable' ? 'A Receber' : 'A Pagar'}
+                            </Badge>
+                            <Badge className={getPaymentStatusColor(bill.status)}>
+                              {bill.status === 'pending' ? 'Pendente' : 
+                               bill.status === 'paid' ? 'Pago' : 
+                               bill.status === 'overdue' ? 'Vencido' : 'Cancelado'}
+                            </Badge>
                           </div>
-                          <div>
-                            <span className="font-semibold">{formatCurrency(bill.total_amount)}</span>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setExpandedBillId(expandedBillId === bill.id ? null : bill.id)}
+                            >
+                              <Eye className="h-4 w-4 mr-1" /> Ver
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200 px-3 gap-1"
+                              title="Abrir no Gerenciador de Boletos"
+                              onClick={() => {
+                                const url = `/admin-fhd?open=bills&billId=${bill.id}&origin=company&companyId=${selectedCompany?.id || ''}`
+                                window.location.href = url
+                              }}
+                            >
+                              Ir <ArrowRight className="h-4 w-4" />
+                            </Button>
                           </div>
-                          <Badge className={bill.type === 'receivable' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}>
-                            {bill.type === 'receivable' ? 'A Receber' : 'A Pagar'}
-                          </Badge>
-                          <Badge className={getStatusColor(bill.status)}>
-                            {bill.status === 'pending' ? 'Pendente' : 
-                             bill.status === 'paid' ? 'Pago' : 
-                             bill.status === 'overdue' ? 'Vencido' : 'Cancelado'}
-                          </Badge>
                         </div>
+
+                        {expandedBillId === bill.id && (
+                          <div className="px-4 pb-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-3">
+                              <div>
+                                <span className="text-gray-500">Primeiro vencimento:</span>
+                                <p className="font-medium">{bill.first_due_date ? new Date(bill.first_due_date).toLocaleDateString('pt-BR') : '-'}</p>
+                              </div>
+                              <div>
+                                <span className="text-gray-500">Parcelas:</span>
+                                <p className="font-medium">{bill.bill_installments?.length || bill.installments || 0}</p>
+                              </div>
+                            </div>
+                            <div className="border rounded-md divide-y max-h-64 overflow-y-auto">
+                              {(bill.bill_installments || []).map((inst) => (
+                                <div key={inst.id} className="flex items-center justify-between p-2">
+                                  <div className="flex items-center gap-4">
+                                    <span className="text-sm text-gray-600">Parcela {inst.installment_number}</span>
+                                    <span className="text-sm">{new Date(inst.due_date).toLocaleDateString('pt-BR')}</span>
+                                    <span className="font-semibold">{formatCurrency(inst.amount)}</span>
+                                    <Badge className={getPaymentStatusColor(inst.status)}>
+                                      {inst.status === 'pending' ? 'Pendente' : inst.status === 'paid' ? 'Pago' : inst.status === 'overdue' ? 'Vencido' : 'Cancelado'}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

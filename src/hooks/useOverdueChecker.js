@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { billsAPI } from '@/api/bills'
 import { profitSharingAPI } from '@/api/profitSharing'
 import { useNotifications } from './useNotifications'
+import { costsAPI } from '@/api/costs'
 import { useAuth } from '@/contexts/AuthContext'
 
 /**
@@ -57,11 +58,17 @@ export const useOverdueChecker = (enabled = true, intervalMinutes = 60) => {
       } else {
         console.log('ℹ️ Nenhum pagamento de sócio vencido encontrado')
       }
+
+      // Verificar custos vencidos
+      const costsResult = await costsAPI.updateOverdueStatus().catch(() => ({ total: 0 }))
+      if (costsResult.total > 0) {
+        console.log(`✅ ${costsResult.total} parcela(s) de custo atualizada(s) para 'vencido'`)
+      }
       
       return {
         bills: billsResult,
         profitSharing: profitSharingResult,
-        totalUpdated: billsResult.total + profitSharingResult.total
+        totalUpdated: billsResult.total + profitSharingResult.total + (costsResult.total || 0)
       }
     } catch (error) {
       // Ignorar erros de CORS ou rede quando não autenticado

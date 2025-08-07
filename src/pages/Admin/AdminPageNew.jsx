@@ -36,8 +36,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/contexts/AuthContext'
 import { useOverdueChecker } from '@/hooks/useOverdueChecker'
+import { menuPrefsAPI } from '@/api/menuPrefs'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Switch } from '@/components/ui/switch'
 
 // Import existing managers
 import GalleryManager from './GalleryManager'
@@ -48,6 +52,7 @@ import BillsManager from './BillsManager'
 import CompaniesManager from './CompaniesManager'
 import ProfitSharingManager from './ProfitSharingManager'
 import AdvancedDashboard from './AdvancedDashboard'
+import CostsManager from './CostsManager'
 
 // Import new content managers
 import ServicesManager from './ContentManagers/ServicesManager'
@@ -59,7 +64,12 @@ const AdminPageNew = () => {
   const [activeSection, setActiveSection] = useState('dashboard')
   // Sidebar sempre aberto no desktop, fechado no mobile por padrão
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const { logout, userPermissions } = useAuth()
+  const [menuSearch, setMenuSearch] = useState('')
+  const [visibilityMap, setVisibilityMap] = useState({})
+  const [manageMenuOpen, setManageMenuOpen] = useState(false)
+  const [manageSearch, setManageSearch] = useState('')
+  const { logout, userPermissions, user } = useAuth()
+  const [accountOpen, setAccountOpen] = useState(false)
   
   // Ativar verificação automática de boletos vencidos
   useOverdueChecker(true, 30) // Verificar a cada 30 minutos
@@ -81,6 +91,32 @@ const AdminPageNew = () => {
     
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Deep-linking: abrir seção e detalhe via query (?open=bills&billId=...)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const open = params.get('open')
+    if (open && navigationItems.some(i => i.id === open)) {
+      setActiveSection(open)
+      // se veio de uma empresa específica, abrir o modal de detalhes dela automaticamente
+      if (open === 'companies') {
+        // opcionalmente poderíamos destacar a empresa pelo companyId
+      }
+    }
+  }, [])
+
+  // Carregar preferências de visibilidade do menu ao iniciar
+  useEffect(() => {
+    async function loadPrefs() {
+      try {
+        const map = await menuPrefsAPI.getMap()
+        setVisibilityMap(map)
+      } catch {
+        // silencioso
+      }
+    }
+    loadPrefs()
   }, [])
 
   const handleLogout = () => {
@@ -149,6 +185,16 @@ const AdminPageNew = () => {
       section: 'bills',
       children: [
         { id: 'bills', label: 'Controle de Boletos', icon: DollarSign }
+      ],
+      requiresPermission: 'canAccessBills'
+    },
+    {
+      id: 'costs',
+      label: 'Custos',
+      icon: DollarSign,
+      section: 'costs',
+      children: [
+        { id: 'costs', label: 'Gestão de Custos', icon: DollarSign }
       ],
       requiresPermission: 'canAccessBills'
     },
@@ -310,6 +356,17 @@ const AdminPageNew = () => {
           </div>
         )
 
+      case 'costs':
+        return userPermissions.canAccessBills ? <CostsManager /> : (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Acesso Negado</h3>
+              <p className="text-gray-600">Você não tem permissão para acessar esta seção.</p>
+            </div>
+          </div>
+        )
+
       case 'companies':
         return userPermissions.canAccessBills ? <CompaniesManager /> : (
           <div className="flex items-center justify-center h-64">
@@ -372,23 +429,25 @@ const AdminPageNew = () => {
           transition={{ duration: 0.3 }}
           className="fixed inset-y-0 left-0 z-50 w-64 sm:w-72 bg-white shadow-lg lg:static lg:inset-0 flex flex-col"
         >
-          <div className="flex items-center justify-between h-16 px-4 sm:px-6 border-b">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="p-2 bg-blue-600 rounded-lg">
-                <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+          <div className="h-16 px-4 sm:px-6 border-b flex items-center">
+            <div className="grid items-center w-full gap-2 [grid-template-columns:1fr_auto]">
+              {/* Buscar seção no lugar da logo */}
+              <div className="relative">
+                <Search className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Input value={menuSearch} onChange={e=>setMenuSearch(e.target.value)} placeholder="Buscar seção..." className="pl-9 w-full h-11 text-base rounded-lg" />
               </div>
-              <div>
-                <h1 className="text-base sm:text-lg font-bold text-gray-900">Admin FHD</h1>
+              {/* Botão fechar (apenas mobile) */}
+              <div className="flex justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSidebarOpen(false)}
+                  className="lg:hidden p-2"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2"
-            >
-              <X className="h-5 w-5" />
-            </Button>
           </div>
 
           <nav className="mt-4 px-3 flex-1 overflow-y-auto pb-4">
@@ -399,6 +458,9 @@ const AdminPageNew = () => {
                   return null
                 }
                 
+                const hidden = visibilityMap[item.id] === false
+                const matches = !menuSearch || item.label.toLowerCase().includes(menuSearch.toLowerCase())
+                if (hidden || !matches) return null
                 return (
                   <div key={item.id}>
                     <Button
@@ -415,6 +477,17 @@ const AdminPageNew = () => {
                       <item.icon className="h-4 w-4 mr-3 flex-shrink-0" />
                       <span className="truncate">{item.label}</span>
                     </Button>
+                    {activeSection === item.id && (
+                      <div className="ml-10 -mt-2 mb-2 flex gap-2">
+                        <Button variant="ghost" size="sm" onClick={async()=>{
+                          const newVal = !(visibilityMap[item.id] === false)
+                          await menuPrefsAPI.setVisibility(item.id, !newVal)
+                          setVisibilityMap(prev=>({ ...prev, [item.id]: !newVal }))
+                        }}>
+                          {visibilityMap[item.id] === false ? 'Mostrar' : 'Ocultar'}
+                        </Button>
+                      </div>
+                    )}
                     {item.children && (
                       <div className="ml-6 mt-1 space-y-1">
                         {item.children.map((child) => {
@@ -422,6 +495,9 @@ const AdminPageNew = () => {
                           if (item.requiresPermission && !userPermissions[item.requiresPermission]) {
                             return null
                           }
+                          const childHidden = visibilityMap[child.id] === false
+                          const childMatches = !menuSearch || child.label.toLowerCase().includes(menuSearch.toLowerCase())
+                          if (childHidden || !childMatches) return null
                           
                           return (
                             <Button
@@ -454,7 +530,7 @@ const AdminPageNew = () => {
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header */}
-          <header className="bg-white shadow-sm border-b h-14 sm:h-16 flex items-center justify-between px-3 sm:px-6">
+          <header className="bg-white shadow-sm border-b h-14 sm:h-16 flex items-center justify-between px-3 sm:px-6 relative">
             <div className="flex items-center space-x-2 sm:space-x-4">
               <Button
                 variant="ghost"
@@ -464,7 +540,7 @@ const AdminPageNew = () => {
               >
                 <Menu className="h-5 w-5" />
               </Button>
-              <div className="flex items-center space-x-1 sm:space-x-2">
+            <div className="flex items-center space-x-1 sm:space-x-2">
                 <Home className="h-4 w-4 text-gray-400 hidden sm:block" />
                 <span className="text-sm text-gray-600 hidden sm:block">/</span>
                 <span className="text-sm sm:text-base font-medium text-gray-900 capitalize truncate">
@@ -473,7 +549,9 @@ const AdminPageNew = () => {
               </div>
             </div>
             <div className="flex items-center space-x-1 sm:space-x-4">
-              <Button variant="outline" size="sm" className="hidden sm:inline-flex">
+            {/* Removida a busca antiga do header */}
+              <Button variant="outline" size="sm" onClick={()=>setManageMenuOpen(true)}>Gerenciar Menu</Button>
+              <Button variant="outline" size="sm" className="hidden sm:inline-flex" onClick={() => window.open('/', '_blank') }>
                 <Eye className="h-4 w-4 mr-2" />
                 Ver Site
               </Button>
@@ -481,41 +559,33 @@ const AdminPageNew = () => {
                 <Bell className="h-4 w-4" />
                 <span className="sr-only">Notificações</span>
               </Button>
-              <Button variant="outline" size="sm" className="sm:hidden p-2">
+              <Button variant="outline" size="sm" className="sm:hidden p-2" onClick={() => window.open('/', '_blank') }>
                 <Eye className="h-4 w-4" />
                 <span className="sr-only">Ver Site</span>
               </Button>
-              
-              {/* User Info */}
-              <div className="hidden sm:flex items-center space-x-3 border-l pl-4">
-                <div className="flex items-center space-x-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="text-sm">A</AvatarFallback>
-                  </Avatar>
-                  <div className="hidden md:block">
-                    <p className="text-sm font-medium text-gray-900">Admin</p>
-                    <p className="text-xs text-gray-500">admin@fhdautomacao.com.br</p>
+              {/* Logo com menu de conta (no lugar do botão sair) */}
+              <DropdownMenu open={accountOpen} onOpenChange={setAccountOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="px-2" onClick={()=>setAccountOpen((v)=>!v)}>
+                    <div className="flex items-center">
+                      <div className="p-1.5 bg-blue-600 rounded-md">
+                        <Shield className="h-4 w-4 text-white" />
+                      </div>
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64">
+                  <DropdownMenuLabel>Conta</DropdownMenuLabel>
+                  <div className="px-3 pb-2 text-sm">
+                    <div className="font-medium truncate">{user?.user_metadata?.name || 'Admin'}</div>
+                    <div className="text-gray-500 truncate">{user?.email || 'admin@fhdautomacao.com.br'}</div>
                   </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="hidden lg:inline-flex"
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sair
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="lg:hidden p-2"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span className="sr-only">Sair</span>
-                </Button>
-              </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
+                    <LogOut className="h-4 w-4 mr-2" /> Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
 
@@ -544,6 +614,56 @@ const AdminPageNew = () => {
       
       {/* Notifications */}
       <QuotationNotification />
+
+      {/* Dialog de Gerenciamento do Menu */}
+      <Dialog open={manageMenuOpen} onOpenChange={setManageMenuOpen}>
+        <DialogContent className="max-w-2xl top-[34%]">
+          <DialogHeader>
+            <DialogTitle>Gerenciar visibilidade do menu</DialogTitle>
+            <DialogDescription>Oculte ou mostre seções. Suas preferências ficam salvas nesta conta.</DialogDescription>
+          </DialogHeader>
+          <div className="mb-3">
+            <Input placeholder="Buscar seção..." value={manageSearch} onChange={e=>setManageSearch(e.target.value)} />
+          </div>
+          <div className="space-y-2 max-h-[60vh] overflow-auto">
+            {navigationItems.map(item => {
+              const itemMatch = !manageSearch || item.label.toLowerCase().includes(manageSearch.toLowerCase())
+              return (
+                <div key={item.id} className="border rounded-md p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="font-medium">{item.label}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600">{visibilityMap[item.id] === false ? 'Oculta' : 'Visível'}</span>
+                      <Switch checked={!(visibilityMap[item.id] === false)} onCheckedChange={async(checked)=>{
+                        await menuPrefsAPI.setVisibility(item.id, checked)
+                        setVisibilityMap(prev=>({ ...prev, [item.id]: checked }))
+                      }} />
+                    </div>
+                  </div>
+                  {item.children && itemMatch && (
+                    <div className="mt-2 space-y-1">
+                      {item.children
+                        .filter(child => !manageSearch || child.label.toLowerCase().includes(manageSearch.toLowerCase()))
+                        .map(child => (
+                          <div key={child.id} className="flex items-center justify-between pl-4">
+                            <span className="text-sm">{child.label}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-600">{visibilityMap[child.id] === false ? 'Oculta' : 'Visível'}</span>
+                              <Switch checked={!(visibilityMap[child.id] === false)} onCheckedChange={async(checked)=>{
+                                await menuPrefsAPI.setVisibility(child.id, checked)
+                                setVisibilityMap(prev=>({ ...prev, [child.id]: checked }))
+                              }} />
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

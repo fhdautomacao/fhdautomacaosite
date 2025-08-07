@@ -66,6 +66,53 @@ export default function BillsManager() {
     loadCompanies()
   }, [])
 
+  // Abrir um boleto específico via query param billId
+  useEffect(() => {
+    const openByParam = async () => {
+      const params = new URLSearchParams(window.location.search)
+      const billId = params.get('billId')
+      const open = params.get('open')
+      if (open && open !== 'bills') return
+      if (!billId) return
+      const origin = params.get('origin')
+      const companyId = params.get('companyId')
+      // garantir que os dados estejam carregados
+      try {
+        if (bills.length === 0) {
+          const data = await billsAPI.getAll()
+          setBills(data)
+          const found = data.find(b => String(b.id) === String(billId))
+          if (found) {
+            setSelectedBill(found)
+            setShowDetailsModal(true)
+          }
+        } else {
+          const found = bills.find(b => String(b.id) === String(billId))
+          if (found) {
+            setSelectedBill(found)
+            setShowDetailsModal(true)
+          }
+        }
+        // armazenar retorno para empresa (se necessário)
+        if (origin === 'company' && companyId) {
+          setReturnToCompanyId(companyId)
+          setReturnBillId(billId)
+        }
+      } catch {}
+    }
+    openByParam()
+  }, [bills])
+
+  // redirecionar ao fechar o modal quando há origem company
+  const [returnToCompanyId, setReturnToCompanyId] = useState(null)
+  const [returnBillId, setReturnBillId] = useState(null)
+  useEffect(() => {
+    if (returnToCompanyId && !showDetailsModal) {
+      const extra = returnBillId ? `&billId=${returnBillId}` : ''
+      window.location.href = `/admin-fhd?open=companies&companyId=${returnToCompanyId}${extra}`
+    }
+  }, [showDetailsModal, returnToCompanyId])
+
   const loadBills = async () => {
     try {
       setLoading(true)
@@ -564,33 +611,40 @@ export default function BillsManager() {
       {/* Bills List */}
       <div className="bg-white rounded-lg shadow">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full border-separate border-spacing-0">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">#</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
                   Empresa
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
                   Tipo
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
                   Valor
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
                   Parcelas
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                  Pagas
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
                   Ações
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredBills.map((bill) => (
-                <tr key={bill.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+              {filteredBills.map((bill, idx) => {
+                const paidInstallments = (bill.bill_installments || []).filter(i => i.status === 'paid').length
+                return (
+                <tr key={bill.id} className="hover:bg-gray-50 border-b border-gray-100">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r border-gray-100">{idx + 1}</td>
+                  <td className="px-6 py-4 whitespace-nowrap border-r border-gray-100">
                     <div>
                       <div className="text-sm font-medium text-gray-900">
                         {bill.company_name}
@@ -600,25 +654,28 @@ export default function BillsManager() {
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap border-r border-gray-100">
                     <Badge className={getTypeColor(bill.type)}>
                       {bill.type === 'receivable' ? 'A Receber' : 'A Pagar'}
                     </Badge>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-100">
                     {formatCurrency(bill.total_amount)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap border-r border-gray-100">
                     <Badge className={getStatusColor(bill.status)}>
                       {bill.status === 'pending' ? 'Pendente' : 
                        bill.status === 'paid' ? 'Pago' : 
                        bill.status === 'overdue' ? 'Vencido' : 'Cancelado'}
                     </Badge>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-100">
                     {bill.bill_installments?.length || 0} parcelas
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-100">
+                    {paidInstallments} pagas
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium border-r border-gray-100">
                     <div className="flex space-x-2">
                       <Button
                         variant="outline"
@@ -660,7 +717,7 @@ export default function BillsManager() {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>
