@@ -14,7 +14,6 @@ import AdminPageNew from '@/pages/Admin/AdminPageNew.jsx'
 import LoginPage from '@/pages/Admin/LoginPage.jsx'
 import ProtectedRoute from '@/components/common/ProtectedRoute'
 import { AuthProvider } from '@/contexts/AuthContext'
-import './App.css'
 
 function App() {
   return (
