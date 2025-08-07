@@ -50,6 +50,7 @@ export default function BillsManager() {
     company_name: '',
     total_amount: '',
     installments: 1,
+    installment_interval: 30,
     first_due_date: '',
     description: '',
     type: 'receivable',
@@ -107,47 +108,49 @@ export default function BillsManager() {
         alert('Informe um número válido de parcelas.')
         return
       }
-      if (!formData.first_due_date) {
-        alert('Informe a data do primeiro vencimento.')
-        return
-      }
-      if (!formData.description) {
-        alert('Informe uma descrição para o boleto.')
-        return
-      }
+             if (!formData.first_due_date) {
+         alert('Informe a data do primeiro vencimento.')
+         return
+       }
+       if (!formData.installment_interval || formData.installment_interval < 1) {
+         alert('Informe um intervalo válido entre parcelas.')
+         return
+       }
+       if (!formData.description) {
+         alert('Informe uma descrição para o boleto.')
+         return
+       }
 
       // Criar o boleto primeiro
       const newBill = await billsAPI.create(formData)
       
-      // Gerar as parcelas automaticamente
-      if (newBill && formData.installments > 0 && formData.first_due_date) {
-        await billsAPI.generateInstallments(
-          newBill.id,
-          parseFloat(formData.total_amount),
-          formData.installments,
-          30, // intervalo de 30 dias entre parcelas
-          formData.first_due_date
-        )
-      }
+             // Gerar as parcelas automaticamente
+       if (newBill && formData.installments > 0 && formData.first_due_date) {
+         await billsAPI.generateInstallments(
+           newBill.id,
+           parseFloat(formData.total_amount),
+           formData.installments,
+           formData.installment_interval, // intervalo personalizado entre parcelas
+           formData.first_due_date
+         )
+       }
       
       // Fechar modal e limpar formulário
       setShowCreateModal(false)
-      setFormData({
-        company_id: '',
-        company_name: '',
-        total_amount: '',
-        installments: 1,
-        first_due_date: '',
-        description: '',
-        type: 'receivable',
-        admin_notes: ''
-      })
+             setFormData({
+         company_id: '',
+         company_name: '',
+         total_amount: '',
+         installments: 1,
+         installment_interval: 30,
+         first_due_date: '',
+         description: '',
+         type: 'receivable',
+         admin_notes: ''
+       })
       
       // Recarregar os dados imediatamente
       await loadBills()
-      
-      // Mostrar mensagem de sucesso
-      alert('Boleto criado com sucesso! As parcelas foram geradas automaticamente.')
     } catch (error) {
       console.error('Erro ao criar boleto:', error)
       alert('Erro ao criar boleto. Tente novamente.')
@@ -159,7 +162,6 @@ export default function BillsManager() {
       await billsAPI.update(selectedBill.id, formData)
       setShowEditModal(false)
       await loadBills()
-      alert('Boleto atualizado com sucesso!')
     } catch (error) {
       console.error('Erro ao atualizar boleto:', error)
       alert('Erro ao atualizar boleto. Tente novamente.')
@@ -172,7 +174,6 @@ export default function BillsManager() {
     try {
       await billsAPI.delete(billId)
       await loadBills()
-      alert('Boleto excluído com sucesso!')
     } catch (error) {
       console.error('Erro ao excluir boleto:', error)
       alert('Erro ao excluir boleto. Tente novamente.')
@@ -199,7 +200,6 @@ export default function BillsManager() {
       
       setShowInstallmentModal(false)
       setSelectedInstallment(null)
-      alert('Parcela atualizada com sucesso!')
     } catch (err) {
       console.error("Erro ao atualizar parcela:", err)
       
@@ -550,24 +550,40 @@ export default function BillsManager() {
               />
             </div>
             
-            <div>
-              <Label>Número de Parcelas</Label>
-              <Input
-                type="number"
-                min="1"
-                value={formData.installments}
-                onChange={(e) => setFormData({...formData, installments: parseInt(e.target.value)})}
-              />
-            </div>
-            
-            <div>
-              <Label>Data do Primeiro Vencimento</Label>
-              <Input
-                type="date"
-                value={formData.first_due_date}
-                onChange={(e) => setFormData({...formData, first_due_date: e.target.value})}
-              />
-            </div>
+                         <div>
+               <Label>Número de Parcelas</Label>
+               <Input
+                 type="number"
+                 min="1"
+                 value={formData.installments}
+                 onChange={(e) => setFormData({...formData, installments: parseInt(e.target.value)})}
+               />
+             </div>
+             
+             <div>
+               <Label>Intervalo entre Parcelas (dias)</Label>
+               <Select value={formData.installment_interval} onValueChange={(value) => setFormData({...formData, installment_interval: parseInt(value)})}>
+                 <SelectTrigger>
+                   <SelectValue />
+                 </SelectTrigger>
+                 <SelectContent>
+                   <SelectItem value={30}>30 dias</SelectItem>
+                   <SelectItem value={36}>36 dias</SelectItem>
+                   <SelectItem value={48}>48 dias</SelectItem>
+                   <SelectItem value={60}>60 dias</SelectItem>
+                   <SelectItem value={90}>90 dias</SelectItem>
+                 </SelectContent>
+               </Select>
+             </div>
+             
+             <div>
+               <Label>Data do Primeiro Vencimento</Label>
+               <Input
+                 type="date"
+                 value={formData.first_due_date}
+                 onChange={(e) => setFormData({...formData, first_due_date: e.target.value})}
+               />
+             </div>
             
             <div>
               <Label>Tipo</Label>
