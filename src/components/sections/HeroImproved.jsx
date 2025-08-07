@@ -95,7 +95,7 @@ const Hero = () => {
       {/* Background with Industrial Pattern */}
       <motion.div 
         style={{ y, opacity }}
-        className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 md:from-slate-900 md:via-slate-800 md:to-blue-900 from-blue-50 via-blue-100 to-blue-200"
+        className="absolute inset-0 bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 md:from-slate-900 md:via-slate-800 md:to-blue-900"
       >
         {/* Geometric Pattern Overlay */}
         <div className="absolute inset-0 opacity-10">
@@ -118,7 +118,7 @@ const Hero = () => {
         </div>
         
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/50 to-transparent md:from-blue-900/50 md:to-transparent from-blue-200/30 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-200/30 to-transparent md:from-blue-900/50 md:to-transparent"></div>
       </motion.div>
 
       {/* Floating Elements */}
@@ -155,12 +155,12 @@ const Hero = () => {
               >
                 <Award className="text-yellow-400 mr-2" size={20} />
               </motion.div>
-              <span className="text-blue-100 md:text-blue-100 text-blue-800 font-semibold">Líderes em Automação Industrial</span>
+              <span className="text-blue-800 md:text-blue-100 font-semibold">Líderes em Automação Industrial</span>
             </motion.div>
 
             {/* Main Heading */}
             <motion.div variants={itemVariants} className="space-y-6">
-              <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-white md:text-white text-gray-800 leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-gray-800 md:text-white leading-tight">
                 <motion.span
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -194,7 +194,7 @@ const Hero = () => {
               </h1>
               <motion.p 
                 variants={itemVariants}
-                className="text-lg md:text-xl lg:text-2xl text-blue-100 md:text-blue-100 text-gray-700 leading-relaxed max-w-2xl"
+                className="text-lg md:text-xl lg:text-2xl text-gray-700 md:text-blue-100 leading-relaxed max-w-2xl"
               >
                 Transformamos desafios industriais em soluções eficientes com mais de{' '}
                 <span className="text-yellow-400 font-bold">10 anos</span> de experiência 
@@ -212,30 +212,30 @@ const Hero = () => {
                 whileHover={{ scale: 1.05 }}
                 className="text-center"
               >
-                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white md:text-white text-gray-800 mb-2">
+                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800 md:text-white mb-2">
                   {costCount}%
                 </div>
-                <div className="text-blue-300 md:text-blue-300 text-gray-600 text-xs md:text-sm">Redução de Custos</div>
+                <div className="text-gray-600 md:text-blue-300 text-xs md:text-sm">Redução de Custos</div>
               </motion.div>
               <motion.div 
                 ref={productsRef}
                 whileHover={{ scale: 1.05 }}
                 className="text-center"
               >
-                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white md:text-white text-gray-800 mb-2">
+                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800 md:text-white mb-2">
                   {productsCount}+
                 </div>
-                <div className="text-blue-300 md:text-blue-300 text-gray-600 text-xs md:text-sm">Produtos no Catálogo</div>
+                <div className="text-gray-600 md:text-blue-300 text-xs md:text-sm">Produtos no Catálogo</div>
               </motion.div>
               <motion.div 
                 ref={sectorsRef}
                 whileHover={{ scale: 1.05 }}
                 className="text-center"
               >
-                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white md:text-white text-gray-800 mb-2">
+                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800 md:text-white mb-2">
                   {sectorsCount}+
                 </div>
-                <div className="text-blue-300 md:text-blue-300 text-gray-600 text-xs md:text-sm">Setores Atendidos</div>
+                <div className="text-gray-600 md:text-blue-300 text-xs md:text-sm">Setores Atendidos</div>
               </motion.div>
             </motion.div>
 
@@ -261,7 +261,7 @@ const Hero = () => {
                   >
                     <CheckCircle className="text-green-400" size={18} />
                   </motion.div>
-                  <span className="text-blue-100 md:text-blue-100 text-gray-700 text-sm md:text-base">{benefit}</span>
+                  <span className="text-gray-700 md:text-blue-100 text-sm md:text-base">{benefit}</span>
                 </motion.div>
               ))}
             </motion.div>
@@ -314,12 +314,12 @@ const Hero = () => {
             <motion.div 
               whileHover={{ scale: 1.02, rotateY: 5 }}
               transition={{ duration: 0.3 }}
-              className="relative bg-gradient-to-br from-white/10 to-white/5 md:from-white/10 md:to-white/5 from-white/90 to-white/95 backdrop-blur-lg rounded-3xl p-4 md:p-6 lg:p-8 border border-white/20 md:border-white/20 border-gray-200 shadow-2xl"
+              className="relative bg-white/95 md:bg-gradient-to-br md:from-white/10 md:to-white/5 backdrop-blur-lg rounded-3xl p-4 md:p-6 lg:p-8 border border-gray-200 md:border-white/20 shadow-2xl"
             >
               {/* Industrial Equipment Visualization */}
               <div className="space-y-4 md:space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white md:text-white text-gray-800">Nossos Diferenciais</h3>
+                  <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800 md:text-white">Nossos Diferenciais</h3>
                   <motion.div 
                     animate={pulseAnimation}
                     className="bg-green-500 w-3 h-3 rounded-full"
@@ -348,7 +348,7 @@ const Hero = () => {
                       >
                         <item.icon className={`text-${item.color}-400 mb-2`} size={20} />
                       </motion.div>
-                      <div className="text-white md:text-white text-gray-800 font-semibold text-xs md:text-sm">{item.title}</div>
+                      <div className="text-gray-800 md:text-white font-semibold text-xs md:text-sm">{item.title}</div>
                       <div className={`text-${item.color}-300 text-xs`}>{item.subtitle}</div>
                     </motion.div>
                   ))}
@@ -362,7 +362,7 @@ const Hero = () => {
                   className="bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl p-3 md:p-4 border border-green-400/30"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-white md:text-white text-gray-800 font-semibold text-xs md:text-sm">Satisfação do Cliente</span>
+                    <span className="text-gray-800 md:text-white font-semibold text-xs md:text-sm">Satisfação do Cliente</span>
                     <span className="text-green-400 font-bold text-sm md:text-base">100%</span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
@@ -410,13 +410,13 @@ const Hero = () => {
         transition={{ delay: 3, duration: 1 }}
         className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
       >
-        <div className="flex flex-col items-center space-y-2 text-white/60 md:text-white/60 text-gray-600">
+        <div className="flex flex-col items-center space-y-2 text-gray-600 md:text-white/60">
           <span className="text-sm">Role para baixo</span>
-                      <div className="w-6 h-10 border-2 border-white/30 md:border-white/30 border-gray-400 rounded-full flex justify-center">
+                      <div className="w-6 h-10 border-2 border-gray-400 md:border-white/30 rounded-full flex justify-center">
             <motion.div 
               animate={{ y: [0, 12, 0] }}
               transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-              className="w-1 h-3 bg-white/60 md:bg-white/60 bg-gray-600 rounded-full mt-2"
+              className="w-1 h-3 bg-gray-600 md:bg-white/60 rounded-full mt-2"
             />
           </div>
         </div>
