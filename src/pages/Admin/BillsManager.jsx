@@ -66,6 +66,7 @@ export default function BillsManager() {
       setLoading(true)
       const data = await billsAPI.getAll()
       setBills(data)
+      console.log('Boletos carregados:', data.length, 'registros')
     } catch (error) {
       console.error('Erro ao carregar boletos:', error)
     } finally {
@@ -129,6 +130,7 @@ export default function BillsManager() {
         )
       }
       
+      // Fechar modal e limpar formulário
       setShowCreateModal(false)
       setFormData({
         company_id: '',
@@ -140,7 +142,12 @@ export default function BillsManager() {
         type: 'receivable',
         admin_notes: ''
       })
-      loadBills()
+      
+      // Recarregar os dados imediatamente
+      await loadBills()
+      
+      // Mostrar mensagem de sucesso
+      alert('Boleto criado com sucesso! As parcelas foram geradas automaticamente.')
     } catch (error) {
       console.error('Erro ao criar boleto:', error)
       alert('Erro ao criar boleto. Tente novamente.')
@@ -151,7 +158,8 @@ export default function BillsManager() {
     try {
       await billsAPI.update(selectedBill.id, formData)
       setShowEditModal(false)
-      loadBills()
+      await loadBills()
+      alert('Boleto atualizado com sucesso!')
     } catch (error) {
       console.error('Erro ao atualizar boleto:', error)
       alert('Erro ao atualizar boleto. Tente novamente.')
@@ -163,7 +171,8 @@ export default function BillsManager() {
     
     try {
       await billsAPI.delete(billId)
-      loadBills()
+      await loadBills()
+      alert('Boleto excluído com sucesso!')
     } catch (error) {
       console.error('Erro ao excluir boleto:', error)
       alert('Erro ao excluir boleto. Tente novamente.')
@@ -178,39 +187,19 @@ export default function BillsManager() {
         payment_notes: selectedInstallment.payment_notes
       })
       
-      // Atualizar o estado local do selectedBill
-      if (selectedBill) {
-        const updatedInstallments = selectedBill.bill_installments?.map(installment => 
-          installment.id === selectedInstallment.id 
-            ? { ...installment, ...selectedInstallment }
-            : installment
-        )
-        
-        setSelectedBill({
-          ...selectedBill,
-          bill_installments: updatedInstallments
-        })
-      }
+      // Recarregar os dados do banco para garantir sincronização
+      await loadBills()
       
-      // Atualizar também na lista de boletos
-      setBills(prevBills => 
-        prevBills.map(bill => {
-          if (bill.id === selectedBill?.id) {
-            return {
-              ...bill,
-              bill_installments: bill.bill_installments?.map(installment => 
-                installment.id === selectedInstallment.id 
-                  ? { ...installment, ...selectedInstallment }
-                  : installment
-              )
-            }
-          }
-          return bill
-        })
-      )
+      // Atualizar o selectedBill com os dados mais recentes
+      const updatedBills = await billsAPI.getAll()
+      const updatedBill = updatedBills.find(bill => bill.id === selectedBill?.id)
+      if (updatedBill) {
+        setSelectedBill(updatedBill)
+      }
       
       setShowInstallmentModal(false)
       setSelectedInstallment(null)
+      alert('Parcela atualizada com sucesso!')
     } catch (err) {
       console.error("Erro ao atualizar parcela:", err)
       
