@@ -217,6 +217,39 @@ export const billsAPI = {
     return data
   },
 
+  // Recalcular e atualizar o status do boleto a partir do status das parcelas
+  async recalculateBillStatus(billId) {
+    // Buscar status das parcelas
+    const { data: installments, error: instError } = await supabase
+      .from('bill_installments')
+      .select('status')
+      .eq('bill_id', billId)
+
+    if (instError) throw instError
+
+    if (!installments || installments.length === 0) {
+      return null
+    }
+
+    const allPaid = installments.every(i => i.status === 'paid')
+    const hasOverdue = installments.some(i => i.status === 'overdue')
+
+    let newStatus = 'pending'
+    if (allPaid) newStatus = 'paid'
+    else if (hasOverdue) newStatus = 'overdue'
+
+    // Atualizar somente se necessário
+    const { data: updated, error: updError } = await supabase
+      .from('bills')
+      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .eq('id', billId)
+      .select('id, status')
+      .single()
+
+    if (updError) throw updError
+    return updated?.status || newStatus
+  },
+
   // Atualizar status de uma parcela
   async updateInstallment(id, updates) {
     const { data, error } = await supabase

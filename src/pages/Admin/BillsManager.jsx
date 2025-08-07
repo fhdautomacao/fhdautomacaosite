@@ -192,6 +192,15 @@ export default function BillsManager() {
         payment_notes: selectedInstallment.payment_notes
       })
       
+      // Após atualizar a parcela, recalcular o status do boleto
+      if (selectedBill?.id) {
+        try {
+          await billsAPI.recalculateBillStatus(selectedBill.id)
+        } catch (e) {
+          console.warn('Falha ao recalcular status do boleto:', e)
+        }
+      }
+
       // Recarregar os dados do banco para garantir sincronização
       await loadBills()
       
