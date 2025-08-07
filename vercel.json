@@ -11,9 +11,25 @@
     {
       "src": "api/**/*.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api-*.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
+    {
+      "src": "/api/auth/login",
+      "dest": "/api-auth-login.js"
+    },
+    {
+      "src": "/api/auth/logout",
+      "dest": "/api-auth-logout.js"
+    },
+    {
+      "src": "/api/test",
+      "dest": "/api-test.js"
+    },
     {
       "src": "/api/(.*)",
       "dest": "/api/$1"
