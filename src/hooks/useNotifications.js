@@ -1,26 +1,47 @@
 import { useEffect, useCallback } from 'react'
 import pushNotificationService from '@/services/pushNotificationService'
+import { useAuth } from '@/contexts/AuthContext'
 
 /**
  * Hook para gerenciar notificações push
  */
 export const useNotifications = () => {
+  const { user } = useAuth()
   
   // Inicializar notificações automaticamente
   useEffect(() => {
+    // Só inicializar se o usuário estiver autenticado
+    if (!user) {
+      return
+    }
+
     const initNotifications = async () => {
+      // Só executar se o usuário estiver autenticado
+      if (!user) {
+        return
+      }
+
       try {
         const status = await pushNotificationService.getStatus()
         if (status.supported && !status.configured) {
           console.log('📱 Notificações disponíveis mas não configuradas')
         }
       } catch (error) {
+        // Ignorar erros de CORS ou rede quando não autenticado
+        if (error.message && (
+          error.message.includes('NetworkError') || 
+          error.message.includes('CORS') ||
+          error.message.includes('fetch')
+        )) {
+          console.log('ℹ️ Verificação de notificações ignorada (usuário não autenticado)')
+          return
+        }
         console.error('Erro ao verificar status de notificações:', error)
       }
     }
     
     initNotifications()
-  }, [])
+  }, [user])
 
   // Enviar notificação de boletos vencidos
   const notifyOverdueBills = useCallback(async (count, bills = []) => {

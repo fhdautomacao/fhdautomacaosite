@@ -3,17 +3,33 @@ import { Bell, X, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { quotationsAPI } from '@/api/quotations'
+import { useAuth } from '@/contexts/AuthContext'
 
 const QuotationNotification = ({ variant = 'floating' }) => {
   const [pendingCount, setPendingCount] = useState(0)
   const [isVisible, setIsVisible] = useState(true)
+  const { user } = useAuth()
 
   useEffect(() => {
+    // Só carregar se o usuário estiver autenticado
+    if (!user) {
+      return
+    }
+
     const loadPendingCount = async () => {
       try {
         const stats = await quotationsAPI.getCountByStatus()
         setPendingCount(stats.pending)
       } catch (error) {
+        // Ignorar erros de CORS ou rede quando não autenticado
+        if (error.message && (
+          error.message.includes('NetworkError') || 
+          error.message.includes('CORS') ||
+          error.message.includes('fetch')
+        )) {
+          console.log('ℹ️ Requisição de orçamentos ignorada (usuário não autenticado)')
+          return
+        }
         console.error('Erro ao carregar contagem de orçamentos:', error)
       }
     }
@@ -24,9 +40,10 @@ const QuotationNotification = ({ variant = 'floating' }) => {
     const interval = setInterval(loadPendingCount, 30000)
     
     return () => clearInterval(interval)
-  }, [])
+  }, [user])
 
-  if (!isVisible || pendingCount === 0) {
+  // Não renderizar se não estiver visível, não há pendentes, ou usuário não autenticado
+  if (!isVisible || pendingCount === 0 || !user) {
     return null
   }
 
