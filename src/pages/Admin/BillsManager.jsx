@@ -7,7 +7,8 @@ import {
   Eye, 
   FileText,
   Calendar,
-  DollarSign
+  DollarSign,
+  Download
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -38,6 +39,9 @@ export default function BillsManager() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
+  const [companyFilter, setCompanyFilter] = useState('all')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
@@ -276,25 +280,88 @@ export default function BillsManager() {
                          bill.description?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === 'all' || bill.status === statusFilter
     const matchesType = typeFilter === 'all' || bill.type === typeFilter
-    return matchesSearch && matchesStatus && matchesType
+    const createdDate = (bill.created_at || '').split('T')[0]
+    const matchesDate = (!startDate || createdDate >= startDate) && (!endDate || createdDate <= endDate)
+    const billCompanyId = bill.company_id || bill.companies?.id
+    const matchesCompany = companyFilter === 'all' || billCompanyId === companyFilter
+    return matchesSearch && matchesStatus && matchesType && matchesDate && matchesCompany
   })
 
-  const totalReceivable = bills
+  const totalReceivable = filteredBills
     .filter(bill => bill.type === 'receivable' && bill.status === 'pending')
     .reduce((sum, bill) => sum + parseFloat(bill.total_amount || 0), 0)
 
-  const totalOverdue = bills
+  const totalOverdue = filteredBills
     .filter(bill => bill.status === 'overdue')
     .reduce((sum, bill) => sum + parseFloat(bill.total_amount || 0), 0)
 
-  const pendingInstallments = bills
+  const pendingInstallments = filteredBills
     .filter(bill => bill.status === 'pending')
     .flatMap(bill => bill.bill_installments || [])
     .filter(installment => installment.status === 'pending')
 
-  const overdueInstallments = bills
+  const overdueInstallments = filteredBills
     .flatMap(bill => bill.bill_installments || [])
     .filter(installment => installment.status === 'overdue')
+
+  // Novos totais e contagens
+  const totalPayable = filteredBills
+    .filter(bill => bill.type === 'payable' && bill.status === 'pending')
+    .reduce((sum, bill) => sum + parseFloat(bill.total_amount || 0), 0)
+
+  const openBills = filteredBills.filter(b => b.status === 'pending')
+  const openBillsAmount = openBills.reduce((s, b) => s + parseFloat(b.total_amount || 0), 0)
+
+  const paidBills = filteredBills.filter(b => b.status === 'paid')
+  const paidBillsAmount = paidBills.reduce((s, b) => s + parseFloat(b.total_amount || 0), 0)
+
+  const overdueBills = filteredBills.filter(b => b.status === 'overdue')
+  const overdueBillsAmount = overdueBills.reduce((s, b) => s + parseFloat(b.total_amount || 0), 0)
+
+  const allInstallments = filteredBills.flatMap(b => b.bill_installments || [])
+  const paidInstallments = allInstallments.filter(i => i.status === 'paid')
+  const paidInstallmentsAmount = paidInstallments.reduce((s, i) => s + parseFloat(i.amount || 0), 0)
+  const pendingInstallmentsAmount = pendingInstallments.reduce((s, i) => s + parseFloat(i.amount || 0), 0)
+  const overdueInstallmentsAmount = overdueInstallments.reduce((s, i) => s + parseFloat(i.amount || 0), 0)
+
+  const handleExportCSV = () => {
+    const headers = [
+      'ID','Empresa','Tipo','Valor Total','Status','Parcelas','Parcelas Pagas','Parcelas Pendentes','Parcelas Vencidas','Valor Pagas','Valor Pendentes','Valor Vencidas','Criado Em','Primeiro Vencimento'
+    ]
+    const rows = filteredBills.map(b => {
+      const installments = b.bill_installments || []
+      const paid = installments.filter(i => i.status === 'paid')
+      const pend = installments.filter(i => i.status === 'pending')
+      const over = installments.filter(i => i.status === 'overdue')
+      const sum = arr => arr.reduce((s, i) => s + parseFloat(i.amount || 0), 0)
+      return [
+        b.id,
+        (b.company_name || b.companies?.name || '').replaceAll(';', ','),
+        b.type,
+        String(b.total_amount).replace('.', ','),
+        b.status,
+        installments.length,
+        paid.length,
+        pend.length,
+        over.length,
+        String(sum(paid)).replace('.', ','),
+        String(sum(pend)).replace('.', ','),
+        String(sum(over)).replace('.', ','),
+        (b.created_at || '').split('T')[0],
+        (installments[0]?.due_date || '').split('T')[0]
+      ]
+    })
+    const csv = [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `boletos_${new Date().toISOString().slice(0,10)}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
 
   if (loading) {
     return (
@@ -312,14 +379,20 @@ export default function BillsManager() {
           <h1 className="text-3xl font-bold">Boletos</h1>
           <p className="text-gray-600">Gerencie todos os boletos e parcelas</p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Boleto
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExportCSV}>
+            <Download className="h-4 w-4 mr-2" />
+            Exportar CSV
+          </Button>
+          <Button onClick={() => setShowCreateModal(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Boleto
+          </Button>
+        </div>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
@@ -328,6 +401,18 @@ export default function BillsManager() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total a Receber</p>
               <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalReceivable)}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <DollarSign className="h-6 w-6 text-purple-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Total a Pagar</p>
+              <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalPayable)}</p>
             </div>
           </div>
         </div>
@@ -350,8 +435,35 @@ export default function BillsManager() {
               <FileText className="h-6 w-6 text-yellow-600" />
             </div>
             <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Boletos em Aberto</p>
+              <p className="text-2xl font-bold text-gray-900">{openBills.length}</p>
+              <p className="text-xs text-gray-500">{formatCurrency(openBillsAmount)}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <Calendar className="h-6 w-6 text-green-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Boletos Pagos</p>
+              <p className="text-2xl font-bold text-gray-900">{paidBills.length}</p>
+              <p className="text-xs text-gray-500">{formatCurrency(paidBillsAmount)}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <FileText className="h-6 w-6 text-yellow-600" />
+            </div>
+            <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Parcelas Pendentes</p>
               <p className="text-2xl font-bold text-gray-900">{pendingInstallments.length}</p>
+              <p className="text-xs text-gray-500">{formatCurrency(pendingInstallmentsAmount)}</p>
             </div>
           </div>
         </div>
@@ -364,6 +476,20 @@ export default function BillsManager() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Parcelas Vencidas</p>
               <p className="text-2xl font-bold text-gray-900">{overdueInstallments.length}</p>
+              <p className="text-xs text-gray-500">{formatCurrency(overdueInstallmentsAmount)}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <DollarSign className="h-6 w-6 text-green-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Parcelas Pagas</p>
+              <p className="text-2xl font-bold text-gray-900">{paidInstallments.length}</p>
+              <p className="text-xs text-gray-500">{formatCurrency(paidInstallmentsAmount)}</p>
             </div>
           </div>
         </div>
@@ -383,6 +509,12 @@ export default function BillsManager() {
           </div>
         </div>
         
+        <div className="flex items-center gap-2">
+          <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+          <span className="text-gray-500">até</span>
+          <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+        </div>
+
         <Select value={typeFilter} onValueChange={setTypeFilter}>
           <SelectTrigger className="w-full sm:w-48">
             <SelectValue />
@@ -404,6 +536,18 @@ export default function BillsManager() {
             <SelectItem value="paid">Pago</SelectItem>
             <SelectItem value="overdue">Vencido</SelectItem>
             <SelectItem value="cancelled">Cancelado</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={companyFilter} onValueChange={setCompanyFilter}>
+          <SelectTrigger className="w-full sm:w-56">
+            <SelectValue placeholder="Empresa" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas as Empresas</SelectItem>
+            {companies.map(c => (
+              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

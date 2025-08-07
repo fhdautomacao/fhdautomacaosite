@@ -363,13 +363,42 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
     const safeProfitSharings = Array.isArray(profitSharings) ? profitSharings : []
     const safeCompanies = Array.isArray(companies) ? companies : []
     
-    // Calcular receitas e lucros
-    const receivableBills = safeBills.filter(b => b && b.type === 'receivable' && b.status === 'paid')
-    const totalRevenue = receivableBills.reduce((sum, bill) => sum + parseFloat(bill.total_amount || 0), 0)
-    
-    const payableBills = safeBills.filter(b => b && b.type === 'payable' && b.status === 'paid')
-    const totalExpenses = payableBills.reduce((sum, bill) => sum + parseFloat(bill.total_amount || 0), 0)
-    
+    // Calcular receitas e despesas
+    // Ajuste: considerar valores pagos e pendentes para não exibir zero quando há contas a pagar/receber
+    const consideredStatuses = new Set(['paid', 'pending', 'overdue'])
+
+    const receivableBills = safeBills.filter(
+      bill => bill && bill.type === 'receivable' && consideredStatuses.has(bill.status)
+    )
+    const totalRevenue = receivableBills.reduce(
+      (sum, bill) => sum + parseFloat(bill.total_amount || 0),
+      0
+    )
+
+    const payableBills = safeBills.filter(
+      bill => bill && bill.type === 'payable' && consideredStatuses.has(bill.status)
+    )
+    const billsExpenses = payableBills.reduce(
+      (sum, bill) => sum + parseFloat(bill.total_amount || 0),
+      0
+    )
+
+    // Incluir parcelas de divisão de lucros (pagas e pendentes) como parte das despesas
+    const partnerPaymentsExpenses = safeProfitSharings.reduce((acc, ps) => {
+      const installments = Array.isArray(ps?.profit_sharing_installments)
+        ? ps.profit_sharing_installments
+        : []
+      const subtotal = installments.reduce((s, inst) => {
+        if (!inst) return s
+        return consideredStatuses.has(inst.status)
+          ? s + parseFloat(inst.amount || 0)
+          : s
+      }, 0)
+      return acc + subtotal
+    }, 0)
+
+    const totalExpenses = billsExpenses + partnerPaymentsExpenses
+
     const netProfit = totalRevenue - totalExpenses
     const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0
 
