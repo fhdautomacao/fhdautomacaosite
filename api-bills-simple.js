@@ -132,23 +132,13 @@ async function handleUploadReceipt(req, res, supabase, user) {
           const fileName = `bill_${billId}_installment_${installmentNumber}_${timestamp}.${extension}`;
           const filePath = `payment-receipts/${billId}/${fileName}`;
 
-                     // Upload para o Supabase Storage
+                     // Upload para o Supabase Storage (como na galeria)
            console.log('📤 Tentando upload para bucket: arquivos');
            console.log('📁 Caminho do arquivo:', filePath);
            console.log('📏 Tamanho do arquivo:', fileBuffer.length, 'bytes');
+           console.log('👤 Usuário autenticado:', user.id);
            
-           // Verificar se o bucket existe primeiro
-           try {
-             const { data: buckets, error: listError } = await supabase.storage.listBuckets();
-             console.log('📦 Buckets disponíveis:', buckets?.map(b => b.name) || 'Nenhum bucket encontrado');
-             if (listError) {
-               console.log('❌ Erro ao listar buckets:', listError);
-             }
-           } catch (err) {
-             console.log('❌ Erro ao verificar buckets:', err);
-           }
-           
-           // Upload para o bucket arquivos (usado em todo o projeto)
+           // Upload direto para o bucket arquivos (mesmo método da galeria)
            const { data, error } = await supabase.storage
              .from('arquivos')
              .upload(filePath, fileBuffer, {
