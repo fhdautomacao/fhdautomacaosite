@@ -184,39 +184,65 @@ async function handleUploadReceipt(req, res, supabase, user) {
           // Atualizar banco de dados com informações do comprovante
           console.log('📝 Atualizando banco de dados...');
           
-          // Buscar o ID da parcela na tabela bill_installments
-          const { data: installments, error: fetchError } = await supabase
-            .from('bill_installments')
-            .select('id')
-            .eq('bill_id', billId)
-            .eq('installment_number', installmentNumber)
-            .single();
+                     // Buscar o ID da parcela na tabela bill_installments
+           console.log('🔍 Buscando parcela no banco...');
+           console.log('📋 billId:', billId);
+           console.log('📋 installmentNumber:', installmentNumber);
+           
+           const { data: installments, error: fetchError } = await supabase
+             .from('bill_installments')
+             .select('id')
+             .eq('bill_id', billId)
+             .eq('installment_number', installmentNumber)
+             .single();
+           
+           console.log('📊 Resultado da busca:', { installments, fetchError });
+           
+           if (fetchError) {
+             console.error('❌ Erro ao buscar parcela no banco:', fetchError);
+             console.error('❌ Detalhes do erro:', JSON.stringify(fetchError, null, 2));
+             return resolve(res.status(500).json({ 
+               error: 'Erro ao buscar parcela no banco de dados' 
+             }));
+           }
+           
+           if (!installments) {
+             console.error('❌ Parcela não encontrada no banco');
+             return resolve(res.status(404).json({ 
+               error: 'Parcela não encontrada no banco de dados' 
+             }));
+           }
           
-          if (fetchError) {
-            console.error('❌ Erro ao buscar parcela no banco:', fetchError);
-            return resolve(res.status(500).json({ 
-              error: 'Erro ao buscar parcela no banco de dados' 
-            }));
-          }
-          
-          // Atualizar a parcela com as informações do comprovante
-          const { error: updateError } = await supabase
-            .from('bill_installments')
-            .update({
-              payment_receipt_url: urlData.publicUrl,
-              payment_receipt_filename: fileName,
-              payment_receipt_path: filePath,
-              payment_receipt_uploaded_at: new Date().toISOString(),
-              payment_receipt_uploaded_by: user.id
-            })
-            .eq('id', installments.id);
-          
-          if (updateError) {
-            console.error('❌ Erro ao atualizar banco de dados:', updateError);
-            return resolve(res.status(500).json({ 
-              error: 'Erro ao atualizar banco de dados' 
-            }));
-          }
+                     // Atualizar a parcela com as informações do comprovante
+           console.log('📝 Dados para atualização:', {
+             payment_receipt_url: urlData.publicUrl,
+             payment_receipt_filename: fileName,
+             payment_receipt_path: filePath,
+             payment_receipt_uploaded_at: new Date().toISOString(),
+             payment_receipt_uploaded_by: user.id,
+             installment_id: installments.id
+           });
+           
+           const { error: updateError } = await supabase
+             .from('bill_installments')
+             .update({
+               payment_receipt_url: urlData.publicUrl,
+               payment_receipt_filename: fileName,
+               payment_receipt_path: filePath,
+               payment_receipt_uploaded_at: new Date().toISOString(),
+               payment_receipt_uploaded_by: user.id
+             })
+             .eq('id', installments.id);
+           
+           console.log('📊 Resultado da atualização:', { updateError });
+           
+           if (updateError) {
+             console.error('❌ Erro ao atualizar banco de dados:', updateError);
+             console.error('❌ Detalhes do erro:', JSON.stringify(updateError, null, 2));
+             return resolve(res.status(500).json({ 
+               error: 'Erro ao atualizar banco de dados' 
+             }));
+           }
           
           console.log('✅ Banco de dados atualizado com sucesso');
 
