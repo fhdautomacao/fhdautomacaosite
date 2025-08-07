@@ -19,6 +19,7 @@ import {
 const PaymentReceiptUpload = ({ 
   billId, 
   installment, 
+  billData, // Dados do bill para informações da empresa
   onUploadSuccess, 
   onUploadError,
   isUploading = false 
@@ -135,10 +136,19 @@ const PaymentReceiptUpload = ({
       const response = await fetch(installment.payment_receipt_url);
       const blob = await response.blob();
       
+      // Gerar nome descritivo do arquivo
+      const companyName = billData?.company_name || 'Empresa';
+      const dueDate = installment.due_date ? new Date(installment.due_date).toLocaleDateString('pt-BR').replace(/\//g, '-') : 'Data';
+      const amount = installment.amount ? installment.amount.toString().replace('.', ',').replace(',', '-') : 'Valor';
+      const installmentNumber = installment.installment_number || '';
+      
+      // Criar nome do arquivo: Empresa_Data_Valor_Parcela_Comprovante.pdf
+      const descriptiveName = `${companyName}_${dueDate}_R$${amount}_Parcela${installmentNumber}_Comprovante.pdf`;
+      
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = installment.payment_receipt_filename || 'comprovante.pdf';
+      a.download = descriptiveName;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -244,14 +254,14 @@ const PaymentReceiptUpload = ({
         {/* Comprovante existente */}
         {installment.payment_receipt_url && (
           <div className="p-4 border border-green-200 bg-green-50 rounded-lg">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col gap-4">
               <div className="flex items-start gap-3">
                 <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-green-800 mb-1">
                     Comprovante enviado
                   </p>
-                  <p className="text-sm text-green-600 truncate">
+                  <p className="text-sm text-green-600 break-all">
                     {installment.payment_receipt_filename || 'Arquivo PDF'}
                   </p>
                   <p className="text-xs text-green-500 mt-1">
@@ -305,10 +315,10 @@ const PaymentReceiptUpload = ({
 
             {selectedFile && (
               <div className="p-3 border border-blue-200 bg-blue-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-blue-600" />
-                  <div>
-                    <p className="font-medium text-blue-800">{selectedFile.name}</p>
+                <div className="flex items-start gap-2">
+                  <FileText className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-blue-800 break-all">{selectedFile.name}</p>
                     <p className="text-sm text-blue-600">
                       {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                     </p>

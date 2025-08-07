@@ -763,6 +763,7 @@ export default function BillsManager() {
               <PaymentReceiptUpload
                 billId={selectedBill?.id}
                 installment={selectedInstallment}
+                billData={selectedBill}
                 onUploadSuccess={(result) => {
                   // Atualizar o estado local com as informações do comprovante
                   setSelectedInstallment({
