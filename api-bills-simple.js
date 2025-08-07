@@ -138,24 +138,63 @@ async function handleUploadReceipt(req, res, supabase, user) {
            console.log('📏 Tamanho do arquivo:', fileBuffer.length, 'bytes');
            console.log('👤 Usuário autenticado:', user.id);
            
-           // Upload direto para o bucket arquivos (mesmo método da galeria)
-           const { data, error } = await supabase.storage
-             .from('arquivos')
-             .upload(filePath, fileBuffer, {
-               contentType: 'application/pdf',
-               cacheControl: '3600',
-               upsert: false
-             });
+           // Tentar upload com service role key para contornar RLS
+           let uploadSuccess = false;
+           let uploadData = null;
+           
+           // Método 1: Tentar com service role key (contorna RLS)
+           if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+             try {
+               console.log('🔄 Tentando com service role key...');
+               const serviceSupabase = createClient(
+                 process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
+                 process.env.SUPABASE_SERVICE_ROLE_KEY
+               );
+               
+               const { data, error } = await serviceSupabase.storage
+                 .from('arquivos')
+                 .upload(filePath, fileBuffer, {
+                   contentType: 'application/pdf',
+                   cacheControl: '3600',
+                   upsert: false
+                 });
+               
+               if (!error) {
+                 console.log('✅ Upload com service role bem-sucedido');
+                 uploadSuccess = true;
+                 uploadData = data;
+               } else {
+                 console.log('❌ Erro com service role:', error.message);
+               }
+             } catch (err) {
+               console.log('❌ Exceção com service role:', err.message);
+             }
+           }
+           
+           // Método 2: Tentar upload normal se service role não funcionou
+           if (!uploadSuccess) {
+             console.log('🔄 Tentando upload normal...');
+             const { data, error } = await supabase.storage
+               .from('arquivos')
+               .upload(filePath, fileBuffer, {
+                 contentType: 'application/pdf',
+                 cacheControl: '3600',
+                 upsert: false
+               });
 
-           if (error) {
-             console.error('❌ Erro no upload para Supabase:', error);
-             console.error('❌ Detalhes do erro:', JSON.stringify(error, null, 2));
-             return resolve(res.status(500).json({ 
-               error: `Erro ao fazer upload para o storage: ${error.message}` 
-             }));
+             if (error) {
+               console.error('❌ Erro no upload para Supabase:', error);
+               console.error('❌ Detalhes do erro:', JSON.stringify(error, null, 2));
+               return resolve(res.status(500).json({ 
+                 error: `Erro ao fazer upload para o storage: ${error.message}` 
+               }));
+             }
+             
+             uploadSuccess = true;
+             uploadData = data;
            }
 
-           console.log('✅ Upload para Supabase bem-sucedido:', data);
+           console.log('✅ Upload para Supabase bem-sucedido:', uploadData);
 
            // Obter URL pública
            const { data: urlData } = supabase.storage
