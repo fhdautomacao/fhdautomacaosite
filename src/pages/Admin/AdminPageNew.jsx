@@ -370,7 +370,7 @@ const AdminPageNew = () => {
             x: !isMobile() ? 0 : (sidebarOpen ? 0 : -300)
           }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-y-0 left-0 z-50 w-64 sm:w-72 bg-white shadow-lg lg:static lg:inset-0"
+          className="fixed inset-y-0 left-0 z-50 w-64 sm:w-72 bg-white shadow-lg lg:static lg:inset-0 flex flex-col"
         >
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 border-b">
             <div className="flex items-center space-x-2 sm:space-x-3">
@@ -391,7 +391,7 @@ const AdminPageNew = () => {
             </Button>
           </div>
 
-          <nav className="mt-4 px-3 flex-1 overflow-y-auto">
+          <nav className="mt-4 px-3 flex-1 overflow-y-auto pb-4">
             <div className="space-y-1">
               {navigationItems.map((item) => {
                 // Verificar permissões
@@ -449,27 +449,6 @@ const AdminPageNew = () => {
               })}
             </div>
           </nav>
-
-          <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 border-t bg-white">
-            <div className="flex items-center space-x-2 sm:space-x-3 mb-3">
-              <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                <AvatarFallback className="text-xs sm:text-sm">A</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm font-medium text-gray-900">Admin</p>
-                <p className="text-xs text-gray-500 truncate">admin@fhdautomacao.com.br</p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full h-9"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              <span className="text-sm">Sair</span>
-            </Button>
-          </div>
         </motion.aside>
 
         {/* Main Content */}
@@ -506,6 +485,37 @@ const AdminPageNew = () => {
                 <Eye className="h-4 w-4" />
                 <span className="sr-only">Ver Site</span>
               </Button>
+              
+              {/* User Info */}
+              <div className="hidden sm:flex items-center space-x-3 border-l pl-4">
+                <div className="flex items-center space-x-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="text-sm">A</AvatarFallback>
+                  </Avatar>
+                  <div className="hidden md:block">
+                    <p className="text-sm font-medium text-gray-900">Admin</p>
+                    <p className="text-xs text-gray-500">admin@fhdautomacao.com.br</p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="hidden lg:inline-flex"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sair
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="lg:hidden p-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="sr-only">Sair</span>
+                </Button>
+              </div>
             </div>
           </header>
 
