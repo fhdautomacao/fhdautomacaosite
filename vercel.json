@@ -32,7 +32,7 @@
     },
     {
       "src": "/api/bills/installments/upload",
-      "dest": "/api-bills.js"
+      "dest": "/api-bills-simple.js"
     },
     {
       "src": "/api/quotations",
