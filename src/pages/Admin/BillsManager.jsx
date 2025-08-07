@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import React, { useState, useEffect } from 'react'
 import { 
   Plus, 
   Search, 
@@ -7,207 +6,68 @@ import {
   Edit, 
   Trash2, 
   Eye, 
-  DollarSign, 
-  Calendar,
-  Building,
-  FileText,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  ArrowRight,
-  Download,
+  Download, 
   Upload,
-  Calculator,
-  TrendingUp,
-  Clock,
-  X
+  FileText,
+  Calendar,
+  DollarSign
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle 
+} from '@/components/ui/dialog'
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { billsAPI } from '@/api/bills'
-import { companiesAPI } from '@/api/companies'
-import { useAuth } from '@/contexts/AuthContext'
-import ProfitSharingManager from './ProfitSharingManager'
+import PaymentReceiptUpload from '@/components/PaymentReceiptUpload'
+import billsAPI from '@/services/billsService'
 
-const BillsManager = () => {
-  const { userPermissions } = useAuth()
-  const [activeTab, setActiveTab] = useState('bills')
+export default function BillsManager() {
   const [bills, setBills] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterType, setFilterType] = useState('all')
-  const [filterStatus, setFilterStatus] = useState('all')
-  const [selectedBill, setSelectedBill] = useState(null)
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [typeFilter, setTypeFilter] = useState('all')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [showInstallmentModal, setShowInstallmentModal] = useState(false)
+  const [selectedBill, setSelectedBill] = useState(null)
   const [selectedInstallment, setSelectedInstallment] = useState(null)
-
   const [formData, setFormData] = useState({
-    type: 'receivable',
-    company_id: '',
     company_name: '',
-    description: '',
     total_amount: '',
     installments: 1,
-    installment_interval: 30,
     first_due_date: '',
+    description: '',
+    type: 'receivable',
     admin_notes: ''
-  })
-
-  const [companies, setCompanies] = useState([])
-  const [totalReceived, setTotalReceived] = useState(0)
-  const [dateRange, setDateRange] = useState({
-    startDate: '',
-    endDate: '',
-    period: 'all' // all, today, week, month, custom
   })
 
   useEffect(() => {
     loadBills()
-    loadCompanies()
-    loadTotalReceived()
   }, [])
-
-  const loadCompanies = async () => {
-    try {
-      const data = await companiesAPI.getActive()
-      setCompanies(data)
-    } catch (err) {
-      console.error("Erro ao carregar empresas:", err)
-    }
-  }
-
-  const loadTotalReceived = async () => {
-    try {
-      const total = await billsAPI.getTotalReceived()
-      setTotalReceived(total)
-    } catch (err) {
-      console.error("Erro ao carregar total recebido:", err)
-    }
-  }
-
-  const getDateRangeForPeriod = (period) => {
-    const now = new Date()
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    
-    switch (period) {
-      case 'today':
-        return {
-          startDate: today.toISOString(),
-          endDate: new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString()
-        }
-      case 'week':
-        const weekStart = new Date(today)
-        weekStart.setDate(today.getDate() - today.getDay())
-        const weekEnd = new Date(weekStart)
-        weekEnd.setDate(weekStart.getDate() + 7)
-        return {
-          startDate: weekStart.toISOString(),
-          endDate: weekEnd.toISOString()
-        }
-      case 'month':
-        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
-        const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 1)
-        return {
-          startDate: monthStart.toISOString(),
-          endDate: monthEnd.toISOString()
-        }
-      case 'custom':
-        return {
-          startDate: dateRange.startDate ? new Date(dateRange.startDate).toISOString() : null,
-          endDate: dateRange.endDate ? new Date(dateRange.endDate + 'T23:59:59').toISOString() : null
-        }
-      default:
-        return null
-    }
-  }
-
-  const applyDateFilter = async () => {
-    if (dateRange.period === 'all') {
-      loadBills()
-      return
-    }
-
-    const range = getDateRangeForPeriod(dateRange.period)
-    if (!range || !range.startDate || !range.endDate) {
-      loadBills()
-      return
-    }
-
-    try {
-      setLoading(true)
-      const data = await billsAPI.getByDateRange(range.startDate, range.endDate, {
-        type: filterType,
-        status: filterStatus,
-        company_name: searchTerm
-      })
-      setBills(data)
-    } catch (err) {
-      console.error("Erro ao carregar boletos por período:", err)
-      setError("Erro ao filtrar boletos por período.")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    if (dateRange.period !== 'all') {
-      applyDateFilter()
-    }
-  }, [dateRange.period, dateRange.startDate, dateRange.endDate, filterType, filterStatus])
 
   const loadBills = async () => {
     try {
       setLoading(true)
-      setError('')
-      
-      // Primeiro, atualizar status de boletos vencidos
-      try {
-        await billsAPI.updateOverdueStatus()
-      } catch (updateError) {
-        console.warn("Aviso: Não foi possível atualizar status de vencidos:", updateError)
-      }
-      
-      const data = await billsAPI.getAll()
+      const data = await billsAPI.getBills()
       setBills(data)
-    } catch (err) {
-      console.error("Erro ao carregar boletos:", err)
-      
-      // Tratamento específico de erros
-      let errorMessage = "Não foi possível carregar os boletos."
-      
-      if (err.code) {
-        switch (err.code) {
-          case '42501':
-            errorMessage = "Sem permissão para visualizar boletos. Verifique suas credenciais."
-            break
-          case '42P01':
-            errorMessage = "Erro de configuração do banco de dados. Contate o administrador."
-            break
-          case '08006':
-            errorMessage = "Erro de conexão com o banco de dados. Verifique sua internet."
-            break
-          default:
-            if (err.message) {
-              errorMessage = `Erro: ${err.message}`
-            }
-        }
-      } else if (err.message) {
-        errorMessage = err.message
-      }
-      
-      setError(errorMessage)
+    } catch (error) {
+      console.error('Erro ao carregar boletos:', error)
     } finally {
       setLoading(false)
     }
@@ -215,275 +75,44 @@ const BillsManager = () => {
 
   const handleCreateBill = async () => {
     try {
-      // Validações básicas
-      if (!formData.company_name.trim()) {
-        alert("Nome da empresa é obrigatório.")
-        return
-      }
-      
-      if (!formData.description.trim()) {
-        alert("Descrição é obrigatória.")
-        return
-      }
-      
-      if (!formData.total_amount || parseFloat(formData.total_amount) <= 0) {
-        alert("Valor total deve ser maior que zero.")
-        return
-      }
-      
-      if (!formData.first_due_date) {
-        alert("Data de vencimento é obrigatória.")
-        return
-      }
-      
-      if (parseInt(formData.installments) < 1) {
-        alert("Número de parcelas deve ser maior que zero.")
-        return
-      }
-      
-      if (parseInt(formData.installment_interval) < 1) {
-        alert("Intervalo entre parcelas deve ser maior que zero.")
-        return
-      }
-
-      const billData = {
-        ...formData,
-        total_amount: parseFloat(formData.total_amount),
-        installments: parseInt(formData.installments),
-        installment_interval: parseInt(formData.installment_interval)
-      }
-
-      const newBill = await billsAPI.create(billData)
-      
-      // Gerar parcelas automaticamente
-      await billsAPI.generateInstallments(
-        newBill.id,
-        billData.total_amount,
-        billData.installments,
-        billData.installment_interval,
-        billData.first_due_date
-      )
-
+      await billsAPI.createBill(formData)
       setShowCreateModal(false)
       setFormData({
-        type: 'receivable',
-        company_id: '',
         company_name: '',
-        description: '',
         total_amount: '',
         installments: 1,
-        installment_interval: 30,
         first_due_date: '',
+        description: '',
+        type: 'receivable',
         admin_notes: ''
       })
       loadBills()
-    } catch (err) {
-      console.error("Erro ao criar boleto:", err)
-      
-      // Tratamento específico de erros
-      let errorMessage = "Erro ao criar boleto. Tente novamente."
-      
-      if (err.code) {
-        switch (err.code) {
-          case '22001':
-            if (err.message.includes('company_name')) {
-              errorMessage = "Nome da empresa muito longo. Máximo 255 caracteres."
-            } else if (err.message.includes('description')) {
-              errorMessage = "Descrição muito longa. Máximo permitido excedido."
-            } else if (err.message.includes('admin_notes')) {
-              errorMessage = "Observações muito longas."
-            } else {
-              errorMessage = "Campo muito longo. Verifique os dados inseridos."
-            }
-            break
-          case '23502':
-            errorMessage = "Campo obrigatório não preenchido."
-            break
-          case '23503':
-            errorMessage = "Empresa selecionada não existe ou foi removida."
-            break
-          case '23514':
-            if (err.message.includes('type')) {
-              errorMessage = "Tipo de boleto inválido. Use 'receivable' ou 'payable'."
-            } else if (err.message.includes('status')) {
-              errorMessage = "Status inválido. Use 'pending', 'paid', 'overdue' ou 'cancelled'."
-            } else {
-              errorMessage = "Valor inválido em um dos campos."
-            }
-            break
-          case '22P02':
-            errorMessage = "Formato de data inválido. Use o formato DD/MM/AAAA."
-            break
-          case '22003':
-            errorMessage = "Valor numérico fora do limite permitido."
-            break
-          case '42501':
-            errorMessage = "Sem permissão para criar boletos. Verifique suas credenciais."
-            break
-          case '42P01':
-            errorMessage = "Erro de configuração do banco de dados. Contate o administrador."
-            break
-          case '08006':
-            errorMessage = "Erro de conexão com o banco de dados. Verifique sua internet."
-            break
-          default:
-            if (err.message) {
-              errorMessage = `Erro: ${err.message}`
-            }
-        }
-      } else if (err.message) {
-        if (err.message.includes('NaN')) {
-          errorMessage = "Valor inválido. Verifique se os campos numéricos estão corretos."
-        } else if (err.message.includes('date')) {
-          errorMessage = "Data inválida. Verifique o formato da data."
-        } else {
-          errorMessage = err.message
-        }
-      }
-      
-      alert(errorMessage)
+    } catch (error) {
+      console.error('Erro ao criar boleto:', error)
+      alert('Erro ao criar boleto. Tente novamente.')
     }
   }
 
   const handleUpdateBill = async () => {
     try {
-      // Validações básicas
-      if (!formData.company_name.trim()) {
-        alert("Nome da empresa é obrigatório.")
-        return
-      }
-      
-      if (!formData.description.trim()) {
-        alert("Descrição é obrigatória.")
-        return
-      }
-      
-      if (!formData.total_amount || parseFloat(formData.total_amount) <= 0) {
-        alert("Valor total deve ser maior que zero.")
-        return
-      }
-
-      await billsAPI.update(selectedBill.id, {
-        company_name: formData.company_name,
-        description: formData.description,
-        total_amount: parseFloat(formData.total_amount),
-        admin_notes: formData.admin_notes
-      })
-      
+      await billsAPI.updateBill(selectedBill.id, formData)
       setShowEditModal(false)
-      setSelectedBill(null)
       loadBills()
-    } catch (err) {
-      console.error("Erro ao atualizar boleto:", err)
-      
-      // Tratamento específico de erros
-      let errorMessage = "Erro ao atualizar boleto. Tente novamente."
-      
-      if (err.code) {
-        switch (err.code) {
-          case '22001':
-            if (err.message.includes('company_name')) {
-              errorMessage = "Nome da empresa muito longo. Máximo 255 caracteres."
-            } else if (err.message.includes('description')) {
-              errorMessage = "Descrição muito longa. Máximo permitido excedido."
-            } else if (err.message.includes('admin_notes')) {
-              errorMessage = "Observações muito longas."
-            } else {
-              errorMessage = "Campo muito longo. Verifique os dados inseridos."
-            }
-            break
-          case '23502':
-            errorMessage = "Campo obrigatório não preenchido."
-            break
-          case '23503':
-            errorMessage = "Empresa selecionada não existe ou foi removida."
-            break
-          case '22003':
-            errorMessage = "Valor numérico fora do limite permitido."
-            break
-          case '42501':
-            errorMessage = "Sem permissão para atualizar boletos. Verifique suas credenciais."
-            break
-          case '42P01':
-            errorMessage = "Erro de configuração do banco de dados. Contate o administrador."
-            break
-          case 'PGRST116':
-            errorMessage = "Boleto não encontrado ou já foi removido."
-            break
-          default:
-            if (err.message) {
-              errorMessage = `Erro: ${err.message}`
-            }
-        }
-      } else if (err.message) {
-        if (err.message.includes('NaN')) {
-          errorMessage = "Valor inválido. Verifique se os campos numéricos estão corretos."
-        } else {
-          errorMessage = err.message
-        }
-      }
-      
-      alert(errorMessage)
+    } catch (error) {
+      console.error('Erro ao atualizar boleto:', error)
+      alert('Erro ao atualizar boleto. Tente novamente.')
     }
   }
 
-  const handleDeleteBill = async (id) => {
-    if (window.confirm("Tem certeza que deseja excluir este boleto?")) {
-      try {
-        await billsAPI.delete(id)
-        loadBills()
-      } catch (err) {
-        console.error("Erro ao deletar boleto:", err)
-        
-        // Tratamento específico de erros
-        let errorMessage = "Erro ao deletar boleto. Tente novamente."
-        
-        if (err.code) {
-          switch (err.code) {
-            case '23503':
-              errorMessage = "Não é possível deletar este boleto pois ele possui parcelas associadas."
-              break
-            case '42501':
-              errorMessage = "Sem permissão para deletar boletos. Verifique suas credenciais."
-              break
-            case '42P01':
-              errorMessage = "Erro de configuração do banco de dados. Contate o administrador."
-              break
-            case 'PGRST116':
-              errorMessage = "Boleto não encontrado ou já foi removido."
-              break
-            default:
-              if (err.message) {
-                errorMessage = `Erro: ${err.message}`
-              }
-          }
-        } else if (err.message) {
-          errorMessage = err.message
-        }
-        
-        alert(errorMessage)
-      }
-    }
-  }
-
-  const handleUpdateOverdueStatus = async () => {
+  const handleDeleteBill = async (billId) => {
+    if (!confirm('Tem certeza que deseja excluir este boleto?')) return
+    
     try {
-      setLoading(true)
-      const result = await billsAPI.updateOverdueStatus()
-      
-      if (result.total > 0) {
-        alert(`Status atualizado! ${result.total} item(s) marcado(s) como vencido(s).`)
-      } else {
-        alert("Nenhum boleto vencido encontrado.")
-      }
-      
-      // Recarregar a lista de boletos
+      await billsAPI.deleteBill(billId)
       loadBills()
-    } catch (err) {
-      console.error("Erro ao atualizar status de vencidos:", err)
-      alert("Erro ao atualizar status de boletos vencidos. Tente novamente.")
-    } finally {
-      setLoading(false)
+    } catch (error) {
+      console.error('Erro ao excluir boleto:', error)
+      alert('Erro ao excluir boleto. Tente novamente.')
     }
   }
 
@@ -585,33 +214,49 @@ const BillsManager = () => {
   }
 
   const getTypeColor = (type) => {
-    return type === 'receivable' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'
+    switch (type) {
+      case 'receivable': return 'bg-blue-100 text-blue-800'
+      case 'payable': return 'bg-purple-100 text-purple-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
   }
 
-  const formatCurrency = (value) => {
+  const formatCurrency = (amount) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
-    }).format(value)
+    }).format(amount)
   }
 
   const filteredBills = bills.filter(bill => {
-    const matchesSearch = bill.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         bill.description.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesType = filterType === 'all' || bill.type === filterType
-    const matchesStatus = filterStatus === 'all' || bill.status === filterStatus
-    
-    return matchesSearch && matchesType && matchesStatus
+    const matchesSearch = bill.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         bill.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === 'all' || bill.status === statusFilter
+    const matchesType = typeFilter === 'all' || bill.type === typeFilter
+    return matchesSearch && matchesStatus && matchesType
   })
 
-  if (!userPermissions.canAccessBills) {
+  const totalReceivable = bills
+    .filter(bill => bill.type === 'receivable' && bill.status === 'pending')
+    .reduce((sum, bill) => sum + parseFloat(bill.total_amount || 0), 0)
+
+  const totalOverdue = bills
+    .filter(bill => bill.status === 'overdue')
+    .reduce((sum, bill) => sum + parseFloat(bill.total_amount || 0), 0)
+
+  const pendingInstallments = bills
+    .filter(bill => bill.status === 'pending')
+    .flatMap(bill => bill.bill_installments || [])
+    .filter(installment => installment.status === 'pending')
+
+  const overdueInstallments = bills
+    .flatMap(bill => bill.bill_installments || [])
+    .filter(installment => installment.status === 'overdue')
+
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Acesso Negado</h3>
-          <p className="text-gray-600">Você não tem permissão para acessar esta seção.</p>
-        </div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
       </div>
     )
   }
@@ -619,405 +264,227 @@ const BillsManager = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900">Gestão Financeira</h2>
-          <p className="text-gray-600">Controle de boletos e divisão de lucros</p>
+          <h1 className="text-3xl font-bold">Boletos</h1>
+          <p className="text-gray-600">Gerencie todos os boletos e parcelas</p>
         </div>
+        <Button onClick={() => setShowCreateModal(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Novo Boleto
+        </Button>
       </div>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="bills" className="flex items-center space-x-2">
-            <DollarSign className="h-4 w-4" />
-            <span>Boletos</span>
-          </TabsTrigger>
-          <TabsTrigger value="profit-sharing" className="flex items-center space-x-2">
-            <Calculator className="h-4 w-4" />
-            <span>Divisão de Lucros</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="bills" className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900">Controle de Boletos</h3>
-              <p className="text-gray-600">Boletos a pagar e a receber</p>
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <DollarSign className="h-6 w-6 text-green-600" />
             </div>
-            <div className="flex space-x-2">
-              <Button 
-                variant="outline" 
-                onClick={handleUpdateOverdueStatus}
-                disabled={loading}
-              >
-                <Clock className="h-4 w-4 mr-2" />
-                Atualizar Vencidos
-              </Button>
-              <Button onClick={() => setShowCreateModal(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Boleto
-              </Button>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Total a Receber</p>
+              <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalReceivable)}</p>
             </div>
           </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Recebido</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {formatCurrency(totalReceived)}
-                </p>
-              </div>
-              <CheckCircle className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total a Receber</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {formatCurrency(bills.filter(b => b.type === 'receivable' && b.status === 'pending').reduce((sum, b) => sum + b.total_amount, 0))}
-                </p>
-              </div>
-              <DollarSign className="h-8 w-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
+        </div>
         
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total a Pagar</p>
-                <p className="text-2xl font-bold text-orange-600">
-                  {formatCurrency(bills.filter(b => b.type === 'payable' && b.status === 'pending').reduce((sum, b) => sum + b.total_amount, 0))}
-                </p>
-              </div>
-              <DollarSign className="h-8 w-8 text-orange-500" />
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <div className="p-2 bg-red-100 rounded-lg">
+              <Calendar className="h-6 w-6 text-red-600" />
             </div>
-          </CardContent>
-        </Card>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Vencidos</p>
+              <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalOverdue)}</p>
+            </div>
+          </div>
+        </div>
         
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Vencidos</p>
-                <p className="text-2xl font-bold text-red-600">
-                  {bills.filter(b => b.status === 'overdue').length}
-                </p>
-              </div>
-              <AlertCircle className="h-8 w-8 text-red-500" />
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <FileText className="h-6 w-6 text-yellow-600" />
             </div>
-          </CardContent>
-        </Card>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Parcelas Pendentes</p>
+              <p className="text-2xl font-bold text-gray-900">{pendingInstallments.length}</p>
+            </div>
+          </div>
+        </div>
         
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total de Boletos</p>
-                <p className="text-2xl font-bold text-blue-600">{bills.length}</p>
-              </div>
-              <FileText className="h-8 w-8 text-blue-500" />
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <div className="p-2 bg-red-100 rounded-lg">
+              <Calendar className="h-6 w-6 text-red-600" />
             </div>
-          </CardContent>
-        </Card>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Parcelas Vencidas</p>
+              <p className="text-2xl font-bold text-gray-900">{overdueInstallments.length}</p>
+            </div>
+          </div>
+        </div>
       </div>
-
-      {/* Error Display */}
-      {error && (
-        <Alert className="mb-4">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
 
       {/* Filters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
-            <div>
-              <Label>Buscar</Label>
-              <Input
-                placeholder="Empresa ou descrição..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label>Tipo</Label>
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="receivable">A Receber</SelectItem>
-                  <SelectItem value="payable">A Pagar</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Status</Label>
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="pending">Pendente</SelectItem>
-                  <SelectItem value="paid">Pago</SelectItem>
-                  <SelectItem value="overdue">Vencido</SelectItem>
-                  <SelectItem value="cancelled">Cancelado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Período</Label>
-              <Select 
-                value={dateRange.period} 
-                onValueChange={(value) => setDateRange({...dateRange, period: value})}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="today">Hoje</SelectItem>
-                  <SelectItem value="week">Esta Semana</SelectItem>
-                  <SelectItem value="month">Este Mês</SelectItem>
-                  <SelectItem value="custom">Personalizado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {dateRange.period === 'custom' && (
-              <>
-                <div>
-                  <Label>Data Inicial</Label>
-                  <Input
-                    type="date"
-                    value={dateRange.startDate}
-                    onChange={(e) => setDateRange({...dateRange, startDate: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label>Data Final</Label>
-                  <Input
-                    type="date"
-                    value={dateRange.endDate}
-                    onChange={(e) => setDateRange({...dateRange, endDate: e.target.value})}
-                  />
-                </div>
-              </>
-            )}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Buscar boletos..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
-          
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-600">
-              {dateRange.period !== 'all' && (
-                <span>
-                  Mostrando resultados para: {
-                    dateRange.period === 'today' ? 'Hoje' :
-                    dateRange.period === 'week' ? 'Esta Semana' :
-                    dateRange.period === 'month' ? 'Este Mês' :
-                    dateRange.period === 'custom' ? `${dateRange.startDate} a ${dateRange.endDate}` :
-                    'Todos'
-                  }
-                </span>
-              )}
-            </div>
-            <div className="flex items-end gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setDateRange({startDate: '', endDate: '', period: 'all'})
-                  setFilterType('all')
-                  setFilterStatus('all')
-                  setSearchTerm('')
-                  loadBills()
-                }}
-              >
-                <X className="h-4 w-4 mr-2" />
-                Limpar
-              </Button>
-              <Button variant="outline" onClick={dateRange.period === 'all' ? loadBills : applyDateFilter}>
-                <Filter className="h-4 w-4 mr-2" />
-                Atualizar
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+        
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-full sm:w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="receivable">A Receber</SelectItem>
+            <SelectItem value="payable">A Pagar</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full sm:w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="pending">Pendente</SelectItem>
+            <SelectItem value="paid">Pago</SelectItem>
+            <SelectItem value="overdue">Vencido</SelectItem>
+            <SelectItem value="cancelled">Cancelado</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* Bills List */}
-      {loading ? (
-        <div className="text-center py-8">
-          <p className="text-gray-600">Carregando boletos...</p>
-        </div>
-      ) : filteredBills.length === 0 ? (
-        <div className="text-center py-8">
-          <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhum boleto encontrado</h3>
-          <p className="text-gray-600">
-            {bills.length === 0 ? 'Ainda não há boletos cadastrados' : 'Nenhum boleto corresponde aos filtros aplicados'}
-          </p>
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          {filteredBills.map((bill) => (
-            <Card key={bill.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">{bill.company_name}</h3>
-                      <Badge className={getTypeColor(bill.type)}>
-                        {bill.type === 'receivable' ? 'A Receber' : 'A Pagar'}
-                      </Badge>
-                      <Badge className={getStatusColor(bill.status)}>
-                        {bill.status === 'pending' ? 'Pendente' : 
-                         bill.status === 'paid' ? 'Pago' : 
-                         bill.status === 'overdue' ? 'Vencido' : 'Cancelado'}
-                      </Badge>
+      <div className="bg-white rounded-lg shadow">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Empresa
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Tipo
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Valor
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Parcelas
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Ações
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredBills.map((bill) => (
+                <tr key={bill.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {bill.company_name}
+                      </div>
+                      {bill.description && (
+                        <div className="text-sm text-gray-500">{bill.description}</div>
+                      )}
                     </div>
-                    
-                    <p className="text-gray-600 mb-3">{bill.description}</p>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <span className="font-medium text-gray-500">Valor Total:</span>
-                        <p className="font-semibold text-gray-900">{formatCurrency(bill.total_amount)}</p>
-                      </div>
-                      <div>
-                        <span className="font-medium text-gray-500">Parcelas:</span>
-                        <p className="font-semibold text-gray-900">{bill.installments}x</p>
-                      </div>
-                      <div>
-                        <span className="font-medium text-gray-500">Vencimento:</span>
-                        <p className="font-semibold text-gray-900">
-                          {new Date(bill.first_due_date).toLocaleDateString('pt-BR')}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="font-medium text-gray-500">Criado:</span>
-                        <p className="font-semibold text-gray-900">
-                          {new Date(bill.created_at).toLocaleDateString('pt-BR')}
-                        </p>
-                      </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Badge className={getTypeColor(bill.type)}>
+                      {bill.type === 'receivable' ? 'A Receber' : 'A Pagar'}
+                    </Badge>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatCurrency(bill.total_amount)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Badge className={getStatusColor(bill.status)}>
+                      {bill.status === 'pending' ? 'Pendente' : 
+                       bill.status === 'paid' ? 'Pago' : 
+                       bill.status === 'overdue' ? 'Vencido' : 'Cancelado'}
+                    </Badge>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {bill.bill_installments?.length || 0} parcelas
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedBill(bill)
+                          setShowDetailsModal(true)
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedBill(bill)
+                          setFormData({
+                            company_name: bill.company_name,
+                            total_amount: bill.total_amount,
+                            installments: bill.bill_installments?.length || 1,
+                            first_due_date: bill.bill_installments?.[0]?.due_date?.split('T')[0] || '',
+                            description: bill.description || '',
+                            type: bill.type,
+                            admin_notes: bill.admin_notes || ''
+                          })
+                          setShowEditModal(true)
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteBill(bill.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                  </div>
-                  
-                  <div className="flex space-x-2 ml-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedBill(bill)
-                        setShowDetailsModal(true)
-                      }}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedBill(bill)
-                        setFormData({
-                          type: bill.type,
-                          company_name: bill.company_name,
-                          description: bill.description,
-                          total_amount: bill.total_amount.toString(),
-                          installments: bill.installments,
-                          installment_interval: bill.installment_interval,
-                          first_due_date: bill.first_due_date,
-                          admin_notes: bill.admin_notes || ''
-                        })
-                        setShowEditModal(true)
-                      }}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteBill(bill.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
 
       {/* Create Modal */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Criar Novo Boleto</DialogTitle>
+            <DialogTitle>Novo Boleto</DialogTitle>
             <DialogDescription>
-              Preencha os dados do boleto. As parcelas serão geradas automaticamente.
+              Crie um novo boleto com parcelas.
             </DialogDescription>
           </DialogHeader>
           
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Tipo</Label>
-              <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="receivable">A Receber</SelectItem>
-                  <SelectItem value="payable">A Pagar</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
               <Label>Empresa</Label>
-              <Select 
-                value={formData.company_id} 
-                onValueChange={(value) => {
-                  const selectedCompany = companies.find(c => c.id === value)
-                  setFormData({
-                    ...formData, 
-                    company_id: value,
-                    company_name: selectedCompany ? selectedCompany.name : ''
-                  })
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma empresa" />
-                </SelectTrigger>
-                <SelectContent>
-                  {companies.map((company) => (
-                    <SelectItem key={company.id} value={company.id}>
-                      {company.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="col-span-2">
-              <Label>Descrição</Label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                placeholder="Descrição do serviço ou produto"
-                rows={3}
+              <Input
+                value={formData.company_name}
+                onChange={(e) => setFormData({...formData, company_name: e.target.value})}
               />
             </div>
             
@@ -1028,7 +495,6 @@ const BillsManager = () => {
                 step="0.01"
                 value={formData.total_amount}
                 onChange={(e) => setFormData({...formData, total_amount: e.target.value})}
-                placeholder="0,00"
               />
             </div>
             
@@ -1036,24 +502,14 @@ const BillsManager = () => {
               <Label>Número de Parcelas</Label>
               <Input
                 type="number"
+                min="1"
                 value={formData.installments}
-                onChange={(e) => setFormData({...formData, installments: parseInt(e.target.value) || 1})}
-                min="1"
+                onChange={(e) => setFormData({...formData, installments: parseInt(e.target.value)})}
               />
             </div>
             
             <div>
-              <Label>Intervalo entre Parcelas (dias)</Label>
-              <Input
-                type="number"
-                value={formData.installment_interval}
-                onChange={(e) => setFormData({...formData, installment_interval: parseInt(e.target.value) || 30})}
-                min="1"
-              />
-            </div>
-            
-            <div>
-              <Label>Primeiro Vencimento</Label>
+              <Label>Data do Primeiro Vencimento</Label>
               <Input
                 type="date"
                 value={formData.first_due_date}
@@ -1062,11 +518,19 @@ const BillsManager = () => {
             </div>
             
             <div className="col-span-2">
+              <Label>Descrição</Label>
+              <Textarea
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                rows={3}
+              />
+            </div>
+            
+            <div className="col-span-2">
               <Label>Observações</Label>
               <Textarea
                 value={formData.admin_notes}
                 onChange={(e) => setFormData({...formData, admin_notes: e.target.value})}
-                placeholder="Observações adicionais..."
                 rows={2}
               />
             </div>
@@ -1231,7 +695,7 @@ const BillsManager = () => {
 
       {/* Installment Modal */}
       <Dialog open={showInstallmentModal} onOpenChange={setShowInstallmentModal}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Editar Parcela</DialogTitle>
             <DialogDescription>
@@ -1240,55 +704,110 @@ const BillsManager = () => {
           </DialogHeader>
           
           {selectedInstallment && (
-            <div className="space-y-4">
-              <div>
-                <Label>Status</Label>
-                <Select 
-                  value={selectedInstallment.status} 
-                  onValueChange={(value) => setSelectedInstallment({...selectedInstallment, status: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pendente</SelectItem>
-                    <SelectItem value="paid">Pago</SelectItem>
-                    <SelectItem value="overdue">Vencido</SelectItem>
-                    <SelectItem value="cancelled">Cancelado</SelectItem>
-                  </SelectContent>
-                </Select>
+            <div className="space-y-6">
+              {/* Informações da parcela */}
+              <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-gray-500" />
+                  <div>
+                    <p className="text-sm text-gray-600">Vencimento</p>
+                    <p className="font-medium">{new Date(selectedInstallment.due_date).toLocaleDateString('pt-BR')}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-gray-500" />
+                  <div>
+                    <p className="text-sm text-gray-600">Valor</p>
+                    <p className="font-medium">{formatCurrency(selectedInstallment.amount)}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Badge className={getStatusColor(selectedInstallment.status)}>
+                    {selectedInstallment.status === 'pending' ? 'Pendente' : 
+                     selectedInstallment.status === 'paid' ? 'Pago' : 
+                     selectedInstallment.status === 'overdue' ? 'Vencido' : 'Cancelado'}
+                  </Badge>
+                </div>
               </div>
-              
-              <div>
-                <Label>Observações do Pagamento</Label>
-                <Textarea
-                  value={selectedInstallment.payment_notes || ''}
-                  onChange={(e) => setSelectedInstallment({...selectedInstallment, payment_notes: e.target.value})}
-                  placeholder="Observações sobre o pagamento..."
-                  rows={3}
-                />
+
+              {/* Status e Observações */}
+              <div className="space-y-4">
+                <div>
+                  <Label>Status</Label>
+                  <Select 
+                    value={selectedInstallment.status} 
+                    onValueChange={(value) => setSelectedInstallment({...selectedInstallment, status: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pendente</SelectItem>
+                      <SelectItem value="paid">Pago</SelectItem>
+                      <SelectItem value="overdue">Vencido</SelectItem>
+                      <SelectItem value="cancelled">Cancelado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label>Observações do Pagamento</Label>
+                  <Textarea
+                    value={selectedInstallment.payment_notes || ''}
+                    onChange={(e) => setSelectedInstallment({...selectedInstallment, payment_notes: e.target.value})}
+                    placeholder="Observações sobre o pagamento..."
+                    rows={3}
+                  />
+                </div>
               </div>
-              
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setShowInstallmentModal(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleUpdateInstallment}>
-                  Salvar Alterações
-                </Button>
-              </div>
+
+              {/* Upload de Comprovante */}
+              <PaymentReceiptUpload
+                billId={selectedBill?.id}
+                installment={selectedInstallment}
+                onUploadSuccess={(result) => {
+                  // Atualizar o estado local com as informações do comprovante
+                  setSelectedInstallment({
+                    ...selectedInstallment,
+                    payment_receipt_url: result.url,
+                    payment_receipt_filename: result.filename,
+                    status: 'paid' // Marcar como pago automaticamente
+                  })
+                  
+                  // Atualizar também o selectedBill
+                  if (selectedBill) {
+                    const updatedInstallments = selectedBill.bill_installments?.map(installment => 
+                      installment.id === selectedInstallment.id 
+                        ? { ...installment, ...selectedInstallment }
+                        : installment
+                    )
+                    
+                    setSelectedBill({
+                      ...selectedBill,
+                      bill_installments: updatedInstallments
+                    })
+                  }
+                }}
+                onUploadError={(error) => {
+                  console.error('Erro no upload:', error)
+                  alert(`Erro ao fazer upload: ${error}`)
+                }}
+              />
             </div>
           )}
+          
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => setShowInstallmentModal(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleUpdateInstallment}>
+              Salvar Alterações
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
-        </TabsContent>
-
-        <TabsContent value="profit-sharing">
-          <ProfitSharingManager />
-        </TabsContent>
-      </Tabs>
     </div>
   )
-}
-
-export default BillsManager 
+} 
