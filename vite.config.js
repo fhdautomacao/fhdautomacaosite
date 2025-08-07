@@ -25,9 +25,12 @@ export default defineConfig({
     // Garantir que os assets sejam servidos corretamente
     assetsInlineLimit: 4096,
     cssCodeSplit: true,
-    sourcemap: false
+    sourcemap: false,
+    // Configurações específicas para Vercel
+    outDir: 'dist',
+    assetsDir: 'assets'
   },
-  plugins: [react(),tailwindcss()],
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -40,5 +43,7 @@ export default defineConfig({
   // Otimizações para melhor performance
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom']
-  }
+  },
+  // Configuração para SPA
+  base: '/'
 })
