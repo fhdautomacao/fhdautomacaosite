@@ -93,7 +93,42 @@ export default function BillsManager() {
 
   const handleCreateBill = async () => {
     try {
-      await billsAPI.create(formData)
+      // Validações
+      if (!formData.company_id) {
+        alert('Selecione uma empresa.')
+        return
+      }
+      if (!formData.total_amount || parseFloat(formData.total_amount) <= 0) {
+        alert('Informe um valor total válido.')
+        return
+      }
+      if (!formData.installments || formData.installments < 1) {
+        alert('Informe um número válido de parcelas.')
+        return
+      }
+      if (!formData.first_due_date) {
+        alert('Informe a data do primeiro vencimento.')
+        return
+      }
+      if (!formData.description) {
+        alert('Informe uma descrição para o boleto.')
+        return
+      }
+
+      // Criar o boleto primeiro
+      const newBill = await billsAPI.create(formData)
+      
+      // Gerar as parcelas automaticamente
+      if (newBill && formData.installments > 0 && formData.first_due_date) {
+        await billsAPI.generateInstallments(
+          newBill.id,
+          parseFloat(formData.total_amount),
+          formData.installments,
+          30, // intervalo de 30 dias entre parcelas
+          formData.first_due_date
+        )
+      }
+      
       setShowCreateModal(false)
       setFormData({
         company_id: '',
@@ -545,6 +580,19 @@ export default function BillsManager() {
               />
             </div>
             
+            <div>
+              <Label>Tipo</Label>
+              <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="receivable">A Receber</SelectItem>
+                  <SelectItem value="payable">A Pagar</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
             <div className="col-span-2">
               <Label>Descrição</Label>
               <Textarea
@@ -610,6 +658,19 @@ export default function BillsManager() {
                 value={formData.total_amount}
                 onChange={(e) => setFormData({...formData, total_amount: e.target.value})}
               />
+            </div>
+            
+            <div>
+              <Label>Tipo</Label>
+              <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="receivable">A Receber</SelectItem>
+                  <SelectItem value="payable">A Pagar</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="col-span-2">
@@ -692,41 +753,48 @@ export default function BillsManager() {
               <div>
                 <h4 className="font-semibold text-lg mb-4">Parcelas</h4>
                 <div className="space-y-2">
-                  {selectedBill.bill_installments?.map((installment) => (
-                    <div key={installment.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div>
-                          <span className="font-medium">Parcela {installment.installment_number}</span>
-                          <p className="text-sm text-gray-600">
-                            Vencimento: {new Date(installment.due_date).toLocaleDateString('pt-BR')}
-                          </p>
-                          {installment.paid_date && (
-                            <p className="text-sm text-green-600">
-                              Pago em: {new Date(installment.paid_date).toLocaleDateString('pt-BR')}
+                  {selectedBill.bill_installments && selectedBill.bill_installments.length > 0 ? (
+                    selectedBill.bill_installments.map((installment) => (
+                      <div key={installment.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-4">
+                          <div>
+                            <span className="font-medium">Parcela {installment.installment_number}</span>
+                            <p className="text-sm text-gray-600">
+                              Vencimento: {new Date(installment.due_date).toLocaleDateString('pt-BR')}
                             </p>
-                          )}
+                            {installment.paid_date && (
+                              <p className="text-sm text-green-600">
+                                Pago em: {new Date(installment.paid_date).toLocaleDateString('pt-BR')}
+                              </p>
+                            )}
+                          </div>
+                          <div>
+                            <span className="font-semibold">{formatCurrency(installment.amount)}</span>
+                          </div>
+                          <Badge className={getStatusColor(installment.status)}>
+                            {installment.status === 'pending' ? 'Pendente' : 
+                             installment.status === 'paid' ? 'Pago' : 
+                             installment.status === 'overdue' ? 'Vencido' : 'Cancelado'}
+                          </Badge>
                         </div>
-                        <div>
-                          <span className="font-semibold">{formatCurrency(installment.amount)}</span>
-                        </div>
-                        <Badge className={getStatusColor(installment.status)}>
-                          {installment.status === 'pending' ? 'Pendente' : 
-                           installment.status === 'paid' ? 'Pago' : 
-                           installment.status === 'overdue' ? 'Vencido' : 'Cancelado'}
-                        </Badge>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedInstallment(installment)
+                            setShowInstallmentModal(true)
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedInstallment(installment)
-                          setShowInstallmentModal(true)
-                        }}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-gray-500 border rounded-lg">
+                      <p>Nenhuma parcela encontrada para este boleto.</p>
+                      <p className="text-sm mt-1">As parcelas são geradas automaticamente ao criar o boleto.</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             </div>
