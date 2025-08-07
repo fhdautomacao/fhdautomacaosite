@@ -179,7 +179,7 @@ class AppTheme {
       ),
 
       // Configurações de card
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.white,
         elevation: 2,
         shadowColor: AppColors.shadow,
@@ -238,7 +238,7 @@ class AppTheme {
       ),
 
       // Configurações de dialog
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: AppColors.white,
         elevation: 8,
         shape: RoundedRectangleBorder(
@@ -421,7 +421,7 @@ class AppTheme {
       ),
 
       // Configurações de card para tema escuro
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: const Color(0xFF2A2A2A),
         elevation: 2,
         shadowColor: Colors.black,

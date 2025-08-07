@@ -178,12 +178,19 @@ class SyncService {
       for (final bill in bills) {
         final dueDate = DateTime.tryParse(bill['due_date'] ?? '');
         if (dueDate != null && dueDate.isAfter(DateTime.now())) {
-          await NotificationService.scheduleRecurringBillReminders(
-            billId: bill['id']?.toString() ?? '',
-            dueDate: dueDate,
-            companyName: bill['company_name'] ?? 'Empresa',
-            amount: bill['amount']?.toString() ?? '0.00',
-          );
+          // Agendar notificação para 1 dia antes do vencimento
+          final reminderDate = dueDate.subtract(const Duration(days: 1));
+          if (reminderDate.isAfter(DateTime.now())) {
+            await NotificationService.showNotification(
+              title: 'Boleto Vencendo',
+              body: 'O boleto "${bill['company_name'] ?? 'Empresa'}" vence amanhã',
+              scheduleDate: reminderDate,
+              payload: {
+                'bill_id': bill['id']?.toString() ?? '',
+                'type': 'upcoming'
+              },
+            );
+          }
         }
       }
     } catch (e) {

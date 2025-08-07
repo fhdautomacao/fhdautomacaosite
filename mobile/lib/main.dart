@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:awesome_notifications/awesome_notifications.dart';
 
 import 'app.dart';
 import 'core/services/notification_service.dart';
@@ -35,14 +34,6 @@ void main() async {
   
   // Inicializar notificações
   await NotificationService.initialize();
-  
-  // Configurar notificações para inicialização
-  AwesomeNotifications().setListeners(
-    onActionReceivedMethod: NotificationService.onActionReceivedMethod,
-    onNotificationCreatedMethod: NotificationService.onNotificationCreatedMethod,
-    onNotificationDisplayedMethod: NotificationService.onNotificationDisplayedMethod,
-    onDismissActionReceivedMethod: NotificationService.onDismissActionReceivedMethod,
-  );
   
   runApp(
     const ProviderScope(

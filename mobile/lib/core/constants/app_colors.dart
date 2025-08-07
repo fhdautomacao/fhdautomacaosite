@@ -42,6 +42,9 @@ class AppColors {
   static const Color textTertiary = Color(0xFF94A3B8);
   static const Color textDisabled = Color(0xFFCBD5E1);
   
+  // Cores de sombra
+  static const Color shadow = Color(0xFF000000);
+  
   // Cores específicas para notificações
   static const Color notificationOverdue = Color(0xFFDC2626);
   static const Color notificationWarning = Color(0xFFD97706);

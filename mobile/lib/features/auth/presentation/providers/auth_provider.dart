@@ -6,6 +6,7 @@ import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/services/sync_service.dart';
 import '../../../../core/services/biometric_service.dart';
+import '../../../../core/services/notification_service.dart';
 
 // Auth state
 class AuthState {

@@ -181,6 +181,45 @@ async function handleUploadReceipt(req, res, supabase, user) {
 
           console.log('✅ Upload real concluído:', uploadResult);
 
+          // Atualizar banco de dados com informações do comprovante
+          console.log('📝 Atualizando banco de dados...');
+          
+          // Buscar o ID da parcela na tabela bill_installments
+          const { data: installments, error: fetchError } = await supabase
+            .from('bill_installments')
+            .select('id')
+            .eq('bill_id', billId)
+            .eq('installment_number', installmentNumber)
+            .single();
+          
+          if (fetchError) {
+            console.error('❌ Erro ao buscar parcela no banco:', fetchError);
+            return resolve(res.status(500).json({ 
+              error: 'Erro ao buscar parcela no banco de dados' 
+            }));
+          }
+          
+          // Atualizar a parcela com as informações do comprovante
+          const { error: updateError } = await supabase
+            .from('bill_installments')
+            .update({
+              payment_receipt_url: urlData.publicUrl,
+              payment_receipt_filename: fileName,
+              payment_receipt_path: filePath,
+              payment_receipt_uploaded_at: new Date().toISOString(),
+              payment_receipt_uploaded_by: user.id
+            })
+            .eq('id', installments.id);
+          
+          if (updateError) {
+            console.error('❌ Erro ao atualizar banco de dados:', updateError);
+            return resolve(res.status(500).json({ 
+              error: 'Erro ao atualizar banco de dados' 
+            }));
+          }
+          
+          console.log('✅ Banco de dados atualizado com sucesso');
+
           // Limpar arquivo temporário
           fs.unlinkSync(file.filepath);
 
@@ -224,7 +263,7 @@ async function handleDeleteReceipt(req, res, supabase, user) {
     
     // Buscar informações da parcela no banco de dados
     const { data: installment, error: fetchError } = await supabase
-      .from('bills')
+      .from('bill_installments')
       .select('payment_receipt_path, payment_receipt_url')
       .eq('id', installmentId)
       .single();
@@ -255,12 +294,13 @@ async function handleDeleteReceipt(req, res, supabase, user) {
     
     // Atualizar banco de dados para remover referências ao comprovante
     const { error: updateError } = await supabase
-      .from('bills')
+      .from('bill_installments')
       .update({
         payment_receipt_url: null,
         payment_receipt_path: null,
         payment_receipt_filename: null,
-        payment_receipt_uploaded_at: null
+        payment_receipt_uploaded_at: null,
+        payment_receipt_uploaded_by: null
       })
       .eq('id', installmentId);
     
