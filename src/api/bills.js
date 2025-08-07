@@ -19,7 +19,8 @@ export const billsAPI = {
       .from('bills')
       .select(`
         *,
-        bill_installments (*)
+        bill_installments (*),
+        companies (id, name)
       `)
       .order('created_at', { ascending: false })
     
@@ -33,7 +34,8 @@ export const billsAPI = {
       .from('bills')
       .select(`
         *,
-        bill_installments (*)
+        bill_installments (*),
+        companies (id, name)
       `)
       .eq('type', type)
       .order('created_at', { ascending: false })
@@ -48,7 +50,8 @@ export const billsAPI = {
       .from('bills')
       .select(`
         *,
-        bill_installments (*)
+        bill_installments (*),
+        companies (id, name)
       `)
       .eq('id', id)
       .single()
@@ -86,7 +89,8 @@ export const billsAPI = {
       .from('bills')
       .select(`
         *,
-        bill_installments (*)
+        bill_installments (*),
+        companies (id, name)
       `)
       .eq('status', status)
       .order('created_at', { ascending: false })
@@ -136,7 +140,8 @@ export const billsAPI = {
       .from('bills')
       .select(`
         *,
-        bill_installments (*)
+        bill_installments (*),
+        companies (id, name)
       `)
       .gte('created_at', startDate)
       .lte('created_at', endDate)
@@ -271,7 +276,8 @@ export const billsAPI = {
       .from('bills')
       .select(`
         *,
-        bill_installments (*)
+        bill_installments (*),
+        companies (id, name)
       `)
       .eq('company_id', companyId)
       .order('created_at', { ascending: false })
@@ -324,7 +330,8 @@ export const billsAPI = {
       .from('bills')
       .select(`
         *,
-        bill_installments (*)
+        bill_installments (*),
+        companies (id, name)
       `)
       .eq('status', 'pending')
       .lt('first_due_date', today)

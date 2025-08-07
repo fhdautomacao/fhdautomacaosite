@@ -30,6 +30,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import PaymentReceiptUpload from '@/components/PaymentReceiptUpload'
 import { billsAPI } from '@/api/bills'
+import { companiesAPI } from '@/api/companies'
 
 export default function BillsManager() {
   const [bills, setBills] = useState([])
@@ -43,7 +44,9 @@ export default function BillsManager() {
   const [showInstallmentModal, setShowInstallmentModal] = useState(false)
   const [selectedBill, setSelectedBill] = useState(null)
   const [selectedInstallment, setSelectedInstallment] = useState(null)
+  const [companies, setCompanies] = useState([])
   const [formData, setFormData] = useState({
+    company_id: '',
     company_name: '',
     total_amount: '',
     installments: 1,
@@ -55,6 +58,7 @@ export default function BillsManager() {
 
   useEffect(() => {
     loadBills()
+    loadCompanies()
   }, [])
 
   const loadBills = async () => {
@@ -69,11 +73,30 @@ export default function BillsManager() {
     }
   }
 
+  const loadCompanies = async () => {
+    try {
+      const data = await companiesAPI.getActive()
+      setCompanies(data)
+    } catch (error) {
+      console.error('Erro ao carregar empresas:', error)
+    }
+  }
+
+  const handleCompanyChange = (companyId) => {
+    const company = companies.find(c => c.id === companyId)
+    setFormData({
+      ...formData,
+      company_id: companyId,
+      company_name: company?.name || ''
+    })
+  }
+
   const handleCreateBill = async () => {
     try {
       await billsAPI.create(formData)
       setShowCreateModal(false)
       setFormData({
+        company_id: '',
         company_name: '',
         total_amount: '',
         installments: 1,
@@ -436,7 +459,8 @@ export default function BillsManager() {
                         onClick={() => {
                           setSelectedBill(bill)
                           setFormData({
-                            company_name: bill.company_name,
+                            company_id: bill.company_id || bill.companies?.id || '',
+                            company_name: bill.company_name || bill.companies?.name || '',
                             total_amount: bill.total_amount,
                             installments: bill.bill_installments?.length || 1,
                             first_due_date: bill.bill_installments?.[0]?.due_date?.split('T')[0] || '',
@@ -478,10 +502,18 @@ export default function BillsManager() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Empresa</Label>
-              <Input
-                value={formData.company_name}
-                onChange={(e) => setFormData({...formData, company_name: e.target.value})}
-              />
+              <Select value={formData.company_id} onValueChange={handleCompanyChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma empresa" />
+                </SelectTrigger>
+                <SelectContent>
+                  {companies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
             <div>
@@ -556,10 +588,18 @@ export default function BillsManager() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Empresa</Label>
-              <Input
-                value={formData.company_name}
-                onChange={(e) => setFormData({...formData, company_name: e.target.value})}
-              />
+              <Select value={formData.company_id} onValueChange={handleCompanyChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma empresa" />
+                </SelectTrigger>
+                <SelectContent>
+                  {companies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
             <div>
