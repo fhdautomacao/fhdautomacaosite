@@ -78,8 +78,6 @@ const PaymentReceiptUpload = ({
       clearInterval(progressInterval);
       setUploadProgress(100);
       
-      console.log('📥 Resposta da API:', result);
-      
       if (result.success) {
         setSuccess('Comprovante enviado com sucesso!');
         setSelectedFile(null);
@@ -92,6 +90,7 @@ const PaymentReceiptUpload = ({
           onUploadSuccess({
             url: result.receipt?.url,
             filename: result.receipt?.filename,
+            displayName: result.receipt?.displayName,
             path: result.receipt?.path
           });
         }
@@ -241,7 +240,7 @@ const PaymentReceiptUpload = ({
                     Comprovante enviado
                   </p>
                   <p className="text-sm text-green-600 break-all">
-                    {installment.payment_receipt_filename || 'Arquivo PDF'}
+                    {installment.payment_receipt_display_name || installment.payment_receipt_filename || 'Arquivo PDF'}
                   </p>
                   <p className="text-xs text-green-500 mt-1">
                     Enviado em {formatDate(installment.payment_receipt_uploaded_at)}

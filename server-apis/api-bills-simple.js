@@ -13,12 +13,6 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  console.log('API Bills Simple chamada:', {
-    method: req.method,
-    url: req.url,
-    headers: req.headers
-  })
-
   try {
     // Criar cliente Supabase com Service Role Key para contornar RLS
     const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
@@ -26,8 +20,6 @@ export default async function handler(req, res) {
 
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error('Variáveis do Supabase não encontradas')
-      console.error('URL:', supabaseUrl ? 'Presente' : 'Ausente')
-      console.error('Service Key:', supabaseServiceKey ? 'Presente' : 'Ausente')
       return res.status(500).json({ error: 'Configuração do Supabase não encontrada' })
     }
 
@@ -41,48 +33,35 @@ export default async function handler(req, res) {
     // Verificar autenticação - tentar sessão do Supabase primeiro, depois token via header
     let user = null;
     
-    console.log('🔍 Verificando autenticação...');
-    console.log('Headers:', req.headers);
-    
     // Tentar sessão do Supabase
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    console.log('Sessão Supabase:', session ? 'Encontrada' : 'Não encontrada');
-    console.log('Erro sessão:', sessionError);
     
     if (!sessionError && session?.user) {
       user = session.user;
-      console.log('✅ Usuário autenticado via sessão:', user.email);
     }
     
     // Se não encontrou sessão, tentar token via header (para mobile)
     if (!user) {
       const authHeader = req.headers.authorization;
-      console.log('Header Authorization:', authHeader ? 'Presente' : 'Ausente');
       
       if (authHeader && authHeader.startsWith('Bearer ')) {
         const token = authHeader.replace('Bearer ', '');
-        console.log('Token encontrado, verificando...');
         
         const { data: { user: tokenUser }, error: authError } = await supabase.auth.getUser(token);
-        console.log('Erro token:', authError);
         
         if (!authError && tokenUser) {
           user = tokenUser;
-          console.log('✅ Usuário autenticado via token:', user.email);
         }
       }
     }
     
     // Para desenvolvimento, permitir acesso sem autenticação se não estiver em produção
     if (!user) {
-      console.log('⚠️ Usuário não autenticado, mas permitindo acesso para desenvolvimento');
       user = {
         id: null, // Usar null para desenvolvimento
         email: 'dev@example.com'
       };
     }
-
-    console.log('Usuário autenticado:', { userId: user.id, email: user.email })
 
     // Roteamento baseado na URL
     if (req.url.includes('/installments/upload')) {
@@ -105,19 +84,14 @@ export default async function handler(req, res) {
 
 async function handleUploadReceipt(req, res, supabase, user) {
   try {
-    console.log('Iniciando handleUploadReceipt');
-    console.log('Content-Type:', req.headers['content-type']);
-
     // Configurar formidable para processar FormData
     const form = formidable({
       maxFileSize: 10 * 1024 * 1024, // 10MB
       keepExtensions: true,
       multiples: true,
       filter: function ({name, originalName, mimetype}) {
-        console.log('🔍 Validando arquivo:', { name, originalName, mimetype });
         // Aceitar apenas PDFs
         const isValid = mimetype && mimetype.includes("pdf");
-        console.log('✅ Arquivo válido:', isValid);
         return isValid;
       }
     });
@@ -133,43 +107,25 @@ async function handleUploadReceipt(req, res, supabase, user) {
         }
 
         try {
-          console.log('📁 Campos recebidos:', fields);
-          console.log('📄 Arquivos recebidos:', files);
-          console.log('📋 Tipos de campos:', Object.keys(fields));
-          console.log('📋 Tipos de arquivos:', Object.keys(files));
-
           const installmentId = fields.installmentId?.[0];
           const file = files.file?.[0];
 
-          console.log('🔍 installmentId extraído:', installmentId);
-          console.log('📄 file extraído:', file ? 'Presente' : 'Ausente');
-
           if (!installmentId || !file) {
             console.error('❌ Dados obrigatórios ausentes');
-            console.error('installmentId:', installmentId);
-            console.error('file:', file);
             return resolve(res.status(400).json({ 
               error: 'Dados obrigatórios: installmentId, file' 
             }));
           }
 
-          console.log('📤 Iniciando upload real para Supabase...');
-
           // Buscar informações da parcela primeiro
-          console.log('🔍 Buscando parcela no banco...');
-          console.log('📋 installmentId:', installmentId);
-          
           const { data: installment, error: fetchError } = await supabase
             .from('bill_installments')
             .select('bill_id, installment_number')
             .eq('id', installmentId)
             .single();
           
-          console.log('📊 Resultado da busca:', { installment, fetchError });
-          
           if (fetchError) {
             console.error('❌ Erro ao buscar parcela no banco:', fetchError);
-            console.error('❌ Detalhes do erro:', JSON.stringify(fetchError, null, 2));
             return resolve(res.status(500).json({ 
               error: `Erro ao buscar parcela no banco de dados: ${fetchError.message || fetchError.details || JSON.stringify(fetchError)}` 
             }));
@@ -185,23 +141,49 @@ async function handleUploadReceipt(req, res, supabase, user) {
           const billId = installment.bill_id;
           const installmentNumber = installment.installment_number;
 
+          // Buscar informações do boleto e empresa para criar nome descritivo
+          const { data: billInfo, error: billError } = await supabase
+            .from('bills')
+            .select(`
+              company_name,
+              total_amount,
+              due_date,
+              companies (
+                name
+              )
+            `)
+            .eq('id', billId)
+            .single();
+
           // Ler o arquivo
           const fileBuffer = fs.readFileSync(file.filepath);
           
-          // Gerar nome único para o arquivo
+          // Gerar nome descritivo para o arquivo
           const timestamp = Date.now();
           const originalName = file.originalFilename || 'receipt.pdf';
           const extension = originalName.split('.').pop();
-          const fileName = `bill_${billId}_installment_${installmentNumber}_${timestamp}.${extension}`;
-          const filePath = `payment-receipts/${billId}/${fileName}`;
+          
+          // Criar nome descritivo
+          let descriptiveName = 'Comprovante';
+          
+          if (billInfo) {
+            const companyName = billInfo.companies?.name || billInfo.company_name || 'Empresa';
+            const dueDate = billInfo.due_date ? new Date(billInfo.due_date).toLocaleDateString('pt-BR').replace(/\//g, '-') : 'Data';
+            const amount = billInfo.total_amount ? `R$${billInfo.total_amount.toString().replace('.', ',').replace(',', '-')}` : 'Valor';
+            
+            descriptiveName = `${companyName}_${dueDate}_${amount}_Parcela${installmentNumber}`;
+          } else {
+            descriptiveName = `Comprovante_Parcela${installmentNumber}`;
+          }
+          
+          // Nome técnico para o arquivo (mantém compatibilidade)
+          const technicalFileName = `bill_${billId}_installment_${installmentNumber}_${timestamp}.${extension}`;
+          const filePath = `payment-receipts/${billId}/${technicalFileName}`;
+          
+          // Nome descritivo para exibição
+          const displayFileName = `${descriptiveName}_${timestamp}.${extension}`;
 
           // Upload para o Supabase Storage usando Service Role Key (contorna RLS)
-          console.log('📤 Tentando upload para bucket: arquivos');
-          console.log('📁 Caminho do arquivo:', filePath);
-          console.log('📏 Tamanho do arquivo:', fileBuffer.length, 'bytes');
-          console.log('👤 Usuário autenticado:', user.id);
-          
-          // Upload direto usando Service Role Key (ignora RLS)
           const { data, error } = await supabase.storage
             .from('arquivos')
             .upload(filePath, fileBuffer, {
@@ -212,7 +194,6 @@ async function handleUploadReceipt(req, res, supabase, user) {
 
           if (error) {
             console.error('❌ Erro no upload para Supabase:', error);
-            console.error('❌ Detalhes do erro:', JSON.stringify(error, null, 2));
             
             // Identificar tipo específico de erro
             let errorMessage = 'Erro ao fazer upload para o storage';
@@ -237,8 +218,6 @@ async function handleUploadReceipt(req, res, supabase, user) {
             }));
           }
 
-          console.log('✅ Upload para Supabase bem-sucedido:', data);
-
           // Obter URL pública
           const { data: urlData } = supabase.storage
             .from('arquivos')
@@ -247,47 +226,30 @@ async function handleUploadReceipt(req, res, supabase, user) {
           const uploadResult = {
             success: true,
             url: urlData.publicUrl,
-            filename: fileName,
+            filename: technicalFileName,
+            displayName: displayFileName,
             path: filePath
           };
 
-          console.log('✅ Upload real concluído:', uploadResult);
-
           // Atualizar banco de dados com informações do comprovante
-          console.log('📝 Atualizando banco de dados...');
-          
-          // Atualizar a parcela com as informações do comprovante
-          console.log('📝 Dados para atualização:', {
-            payment_receipt_url: urlData.publicUrl,
-            payment_receipt_filename: fileName,
-            payment_receipt_path: filePath,
-            payment_receipt_uploaded_at: new Date().toISOString(),
-            payment_receipt_uploaded_by: user.id,
-            installment_id: installmentId
-          });
-          
           const { error: updateError } = await supabase
             .from('bill_installments')
             .update({
               payment_receipt_url: urlData.publicUrl,
-              payment_receipt_filename: fileName,
+              payment_receipt_filename: technicalFileName,
+              payment_receipt_display_name: displayFileName,
               payment_receipt_path: filePath,
               payment_receipt_uploaded_at: new Date().toISOString(),
               payment_receipt_uploaded_by: user.id
             })
             .eq('id', installmentId);
           
-          console.log('📊 Resultado da atualização:', { updateError });
-          
           if (updateError) {
             console.error('❌ Erro ao atualizar banco de dados:', updateError);
-            console.error('❌ Detalhes do erro:', JSON.stringify(updateError, null, 2));
             return resolve(res.status(500).json({ 
               error: `Erro ao atualizar banco de dados: ${updateError.message || updateError.details || JSON.stringify(updateError)}` 
             }));
           }
-          
-          console.log('✅ Banco de dados atualizado com sucesso');
 
           // Limpar arquivo temporário
           fs.unlinkSync(file.filepath);
@@ -315,8 +277,6 @@ async function handleUploadReceipt(req, res, supabase, user) {
 
 async function handleDeleteReceipt(req, res, supabase, user) {
   try {
-    console.log('🗑️ Iniciando exclusão de comprovante');
-    
     // Extrair o ID da parcela da URL
     // URL esperada: /api/bills/installments/{installmentId}/receipt
     const urlParts = req.url.split('/');
@@ -327,8 +287,6 @@ async function handleDeleteReceipt(req, res, supabase, user) {
       console.error('❌ ID da parcela não encontrado na URL');
       return res.status(400).json({ error: 'ID da parcela não fornecido' });
     }
-    
-    console.log('📋 ID da parcela:', installmentId);
     
     // Buscar informações da parcela no banco de dados
     const { data: installment, error: fetchError } = await supabase
@@ -347,8 +305,6 @@ async function handleDeleteReceipt(req, res, supabase, user) {
       return res.status(404).json({ error: 'Comprovante não encontrado' });
     }
     
-    console.log('📁 Caminho do arquivo para exclusão:', installment.payment_receipt_path);
-    
     // Excluir arquivo do storage
     const { error: deleteError } = await supabase.storage
       .from('arquivos')
@@ -358,8 +314,6 @@ async function handleDeleteReceipt(req, res, supabase, user) {
       console.error('❌ Erro ao excluir arquivo do storage:', deleteError);
       return res.status(500).json({ error: 'Erro ao excluir arquivo do storage' });
     }
-    
-    console.log('✅ Arquivo excluído do storage com sucesso');
     
     // Atualizar banco de dados para remover referências ao comprovante
     const { error: updateError } = await supabase
@@ -377,8 +331,6 @@ async function handleDeleteReceipt(req, res, supabase, user) {
       console.error('❌ Erro ao atualizar banco de dados:', updateError);
       return res.status(500).json({ error: 'Erro ao atualizar banco de dados' });
     }
-    
-    console.log('✅ Banco de dados atualizado com sucesso');
     
     return res.status(200).json({
       success: true,
