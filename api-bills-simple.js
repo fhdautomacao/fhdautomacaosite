@@ -132,26 +132,45 @@ async function handleUploadReceipt(req, res, supabase, user) {
           const fileName = `bill_${billId}_installment_${installmentNumber}_${timestamp}.${extension}`;
           const filePath = `payment-receipts/${billId}/${fileName}`;
 
-          // Upload para o Supabase Storage
-          const { data, error } = await supabase.storage
-            .from('arquivos')
-            .upload(filePath, fileBuffer, {
-              contentType: 'application/pdf',
-              cacheControl: '3600',
-              upsert: false
-            });
+                     // Upload para o Supabase Storage
+           console.log('📤 Tentando upload para bucket: arquivos');
+           console.log('📁 Caminho do arquivo:', filePath);
+           console.log('📏 Tamanho do arquivo:', fileBuffer.length, 'bytes');
+           
+           // Verificar se o bucket existe primeiro
+           try {
+             const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+             console.log('📦 Buckets disponíveis:', buckets?.map(b => b.name) || 'Nenhum bucket encontrado');
+             if (listError) {
+               console.log('❌ Erro ao listar buckets:', listError);
+             }
+           } catch (err) {
+             console.log('❌ Erro ao verificar buckets:', err);
+           }
+           
+           // Upload para o bucket arquivos (usado em todo o projeto)
+           const { data, error } = await supabase.storage
+             .from('arquivos')
+             .upload(filePath, fileBuffer, {
+               contentType: 'application/pdf',
+               cacheControl: '3600',
+               upsert: false
+             });
 
-          if (error) {
-            console.error('❌ Erro no upload para Supabase:', error);
-            return resolve(res.status(500).json({ 
-              error: 'Erro ao fazer upload para o storage' 
-            }));
-          }
+           if (error) {
+             console.error('❌ Erro no upload para Supabase:', error);
+             console.error('❌ Detalhes do erro:', JSON.stringify(error, null, 2));
+             return resolve(res.status(500).json({ 
+               error: `Erro ao fazer upload para o storage: ${error.message}` 
+             }));
+           }
 
-          // Obter URL pública
-          const { data: urlData } = supabase.storage
-            .from('arquivos')
-            .getPublicUrl(filePath);
+           console.log('✅ Upload para Supabase bem-sucedido:', data);
+
+           // Obter URL pública
+           const { data: urlData } = supabase.storage
+             .from('arquivos')
+             .getPublicUrl(filePath);
 
           const uploadResult = {
             success: true,
