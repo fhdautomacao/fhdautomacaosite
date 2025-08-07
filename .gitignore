@@ -17,12 +17,17 @@ jspm_packages/
 
 # dotenv environment variables file
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # TypeScript cache
 *.tsbuildinfo
 
 # Vite production build
 dist/
+build/
 
 # macOS
 .DS_Store
@@ -64,4 +69,25 @@ supabase/.temp
 .npm-cache/
 **/node_modules/
 **/.pnpm-store/
+
+# Vercel
+.vercel
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional eslint cache
+.eslintcache
 
