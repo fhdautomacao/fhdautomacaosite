@@ -27,6 +27,14 @@
       "dest": "/api-test.js"
     },
     {
+      "src": "/logo.png",
+      "dest": "/logo.png"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/favicon.ico"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
