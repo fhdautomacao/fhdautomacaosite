@@ -1,0 +1,21 @@
+// APIs do frontend (comunicação direta com Supabase)
+export { billsAPI } from './bills'
+export { quotationsAPI } from './quotations'
+export { clientsAPI } from './clients'
+export { companiesAPI } from './companies'
+export { productsAPI } from './products'
+export { servicesAPI } from './services'
+export { galleryAPI } from './gallery'
+export { contactAPI } from './contact'
+export { contactInfoAPI } from './contactInfo'
+export { aboutAPI } from './about'
+export { heroAPI } from './hero'
+export { categoriesAPI } from './categories'
+export { storageAPI } from './storage'
+export { seoAPI } from './seo'
+export { testimonialsAPI } from './testimonials'
+export { profitSharingAPI } from './profitSharing'
+export { authAPI } from './auth'
+
+// APIs do servidor (comunicação via endpoints)
+export * from './server-apis'

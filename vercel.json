@@ -9,46 +9,46 @@
       }
     },
     {
-      "src": "api-*.js",
+      "src": "server-apis/api-*.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/auth/login",
-      "dest": "/api-auth-login.js"
+      "dest": "/server-apis/api-auth-login.js"
     },
     {
       "src": "/api/auth/logout", 
-      "dest": "/api-auth-logout.js"
+      "dest": "/server-apis/api-auth-logout.js"
     },
     {
       "src": "/api/test",
-      "dest": "/api-test.js"
+      "dest": "/server-apis/api-test.js"
     },
     {
       "src": "/api/bills",
-      "dest": "/api-bills.js"
+      "dest": "/server-apis/api-bills.js"
     },
     {
       "src": "/api/bills/installments/upload",
-      "dest": "/api-bills-simple.js"
+      "dest": "/server-apis/api-bills-simple.js"
     },
     {
       "src": "/api/bills/installments/(.*)/receipt",
-      "dest": "/api-bills-simple.js"
+      "dest": "/server-apis/api-bills-simple.js"
     },
     {
       "src": "/api/quotations",
-      "dest": "/api-quotations.js"
+      "dest": "/server-apis/api-quotations.js"
     },
     {
       "src": "/api/clients",
-      "dest": "/api-clients.js"
+      "dest": "/server-apis/api-clients.js"
     },
     {
       "src": "/api/dashboard",
-      "dest": "/api-dashboard.js"
+      "dest": "/server-apis/api-dashboard.js"
     },
     {
       "src": "/logo.png",

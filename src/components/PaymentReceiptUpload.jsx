@@ -5,6 +5,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
+import { billsSimpleAPI } from '@/api/server-apis/bills-simple';
 import { 
   Upload, 
   FileText, 
@@ -77,21 +78,11 @@ const PaymentReceiptUpload = ({
       formData.append('installmentNumber', installment.installment_number);
       formData.append('file', selectedFile);
 
-      // Fazer upload
-      const response = await fetch('/api/bills/installments/upload', {
-        method: 'POST',
-        body: formData
-      });
+      // Fazer upload usando a API organizada
+      const result = await billsSimpleAPI.uploadReceipt(installment.id, selectedFile);
 
       clearInterval(progressInterval);
       setUploadProgress(100);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erro no upload');
-      }
-
-      const result = await response.json();
       
       console.log('📥 Resposta da API:', result);
       
@@ -167,13 +158,7 @@ const PaymentReceiptUpload = ({
     }
 
     try {
-      const response = await fetch(`/api/bills/installments/${installment.id}/receipt`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao excluir comprovante');
-      }
+      await billsSimpleAPI.deleteReceipt(installment.id);
 
       setSuccess('Comprovante excluído com sucesso!');
       
