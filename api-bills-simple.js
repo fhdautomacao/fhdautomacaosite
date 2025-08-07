@@ -85,13 +85,24 @@ async function handleUploadReceipt(req, res, supabase, user) {
     console.log('Content-Type:', req.headers['content-type']);
     console.log('Body length:', req.body ? Object.keys(req.body).length : 'Body vazio');
 
-    // Para desenvolvimento, vamos retornar uma resposta de teste
+    // Para FormData, precisamos processar o body de forma diferente
+    // Vamos usar uma abordagem mais simples para desenvolvimento
+    
+    // Simular um upload bem-sucedido para teste
+    const mockUploadResult = {
+      success: true,
+      url: 'https://example.com/mock-receipt.pdf',
+      filename: `receipt_${Date.now()}.pdf`,
+      path: `payment-receipts/mock/bill_1_installment_1_${Date.now()}.pdf`
+    };
+
+    console.log('📤 Upload simulado:', mockUploadResult);
+
     return res.status(200).json({
       success: true,
-      message: 'API funcionando corretamente',
-      test: true,
-      body: req.body ? 'Body presente' : 'Body vazio',
-      contentType: req.headers['content-type']
+      message: 'Upload simulado com sucesso',
+      receipt: mockUploadResult,
+      test: true
     });
 
   } catch (error) {

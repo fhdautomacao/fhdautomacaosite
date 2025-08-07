@@ -92,15 +92,25 @@ const PaymentReceiptUpload = ({
 
       const result = await response.json();
       
-      setSuccess('Comprovante enviado com sucesso!');
-      setSelectedFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      console.log('📥 Resposta da API:', result);
+      
+      if (result.success) {
+        setSuccess('Comprovante enviado com sucesso!');
+        setSelectedFile(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
 
-      // Callback de sucesso
-      if (onUploadSuccess) {
-        onUploadSuccess(result);
+        // Callback de sucesso com dados do comprovante
+        if (onUploadSuccess) {
+          onUploadSuccess({
+            url: result.receipt?.url,
+            filename: result.receipt?.filename,
+            path: result.receipt?.path
+          });
+        }
+      } else {
+        throw new Error(result.error || 'Erro no upload');
       }
 
       // Limpar sucesso após 3 segundos
