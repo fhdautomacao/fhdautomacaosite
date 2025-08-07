@@ -14,7 +14,6 @@ import {
   Zap,
   Activity,
   BarChart3,
-  PieChart,
   ArrowUpRight,
   ArrowDownRight,
   Bell,
@@ -27,13 +26,67 @@ import {
   Building,
   Calculator,
   PiggyBank,
-  AlertCircle
+  AlertCircle,
+  Search,
+  Settings,
+  Download,
+  Upload,
+  Star,
+  Award,
+  Globe,
+  Shield,
+  Rocket,
+  Lightbulb,
+  Cpu,
+  Database,
+  Network,
+  Server,
+  Monitor,
+  Smartphone,
+  Tablet,
+  Laptop,
+  Printer,
+  Camera,
+  Video,
+  Mic,
+  Headphones,
+  Wifi,
+  Bluetooth,
+  Usb,
+  Power,
+  Battery,
+  Thermometer,
+  Crosshair,
+  Compass,
+  Map,
+  Navigation,
+  Satellite,
+  Radio,
+  Signal
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
+import { Input } from '@/components/ui/input'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Separator } from '@/components/ui/separator'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from '@/components/ui/dialog'
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from '@/components/ui/tooltip'
 import { 
   LineChart, 
   Line, 
@@ -47,7 +100,6 @@ import {
   XAxis, 
   YAxis, 
   CartesianGrid, 
-  Tooltip, 
   ResponsiveContainer,
   RadialBarChart,
   RadialBar,
@@ -66,6 +118,14 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('30')
   const [refreshing, setRefreshing] = useState(false)
+  const [activeTab, setActiveTab] = useState('overview')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedFilters, setSelectedFilters] = useState({
+    status: 'all',
+    category: 'all',
+    priority: 'all'
+  })
+  const [showFilters, setShowFilters] = useState(false)
   
   // Estados para dados
   const [dashboardData, setDashboardData] = useState({
@@ -95,7 +155,109 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
     
     // Alertas
     criticalAlerts: [],
-    upcomingDeadlines: []
+    upcomingDeadlines: [],
+    
+    // Informações da empresa
+    companyInfo: {
+      name: 'FHD Automação Industrial',
+      cnpj: '12.345.678/0001-90',
+      address: 'Rua das Indústrias, 123 - Centro',
+      city: 'São Paulo - SP',
+      phone: '(11) 99999-9999',
+      email: 'contato@fhdautomacao.com.br',
+      website: 'www.fhdautomacao.com.br',
+      founded: '2015',
+      employees: 25,
+      certifications: ['ISO 9001', 'ISO 14001', 'OHSAS 18001'],
+      specialties: ['Automação Industrial', 'Sistemas Hidráulicos', 'Controle de Processos'],
+      clients: ['Petrobras', 'Vale', 'Gerdau', 'Usiminas'],
+      projects: 150,
+      satisfaction: 4.8
+    },
+    
+    // Métricas de performance
+    performance: {
+      efficiency: 87,
+      quality: 94,
+      delivery: 96,
+      innovation: 89,
+      customerSatisfaction: 92,
+      employeeSatisfaction: 88
+    },
+    
+    // Dados de mercado
+    marketData: {
+      marketShare: 12.5,
+      growthRate: 15.3,
+      competitors: 8,
+      opportunities: 23,
+      threats: 3
+    },
+    
+    // Atividades recentes
+    recentActivities: [
+      {
+        id: 1,
+        type: 'project',
+        title: 'Projeto Petrobras Aprovado',
+        description: 'Sistema de automação para refinaria',
+        value: 250000,
+        status: 'completed',
+        date: '2024-01-15',
+        priority: 'high'
+      },
+      {
+        id: 2,
+        type: 'maintenance',
+        title: 'Manutenção Preventiva Vale',
+        description: 'Equipamentos de mineração',
+        value: 45000,
+        status: 'in_progress',
+        date: '2024-01-20',
+        priority: 'medium'
+      },
+      {
+        id: 3,
+        type: 'installation',
+        title: 'Instalação Sistema Gerdau',
+        description: 'Controle de temperatura',
+        value: 180000,
+        status: 'pending',
+        date: '2024-01-25',
+        priority: 'high'
+      }
+    ],
+    
+    // Equipe
+    team: [
+      {
+        id: 1,
+        name: 'João Silva',
+        role: 'Diretor Técnico',
+        avatar: '/api/placeholder/40/40',
+        status: 'online',
+        projects: 8,
+        performance: 95
+      },
+      {
+        id: 2,
+        name: 'Maria Santos',
+        role: 'Engenheira de Automação',
+        avatar: '/api/placeholder/40/40',
+        status: 'busy',
+        projects: 6,
+        performance: 92
+      },
+      {
+        id: 3,
+        name: 'Carlos Oliveira',
+        role: 'Técnico Hidráulico',
+        avatar: '/api/placeholder/40/40',
+        status: 'offline',
+        projects: 4,
+        performance: 88
+      }
+    ]
   })
 
   useEffect(() => {
@@ -486,302 +648,798 @@ const AdvancedDashboard = ({ onNavigateToSection }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-        >
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard Avançado</h1>
-            <p className="text-gray-600">Visão completa do seu negócio em tempo real</p>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7">Últimos 7 dias</SelectItem>
-                <SelectItem value="30">Últimos 30 dias</SelectItem>
-                <SelectItem value="90">Últimos 90 dias</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Button 
-              onClick={loadDashboardData}
-              disabled={refreshing}
-              variant="outline"
-              size="sm"
-            >
-              <RefreshCcw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-              Atualizar
-            </Button>
-          </div>
-        </motion.div>
-
-        {/* Alertas Críticos */}
-        {dashboardData.criticalAlerts.length > 0 && (
+    <TooltipProvider>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <div className="max-w-7xl mx-auto p-6 space-y-6">
+          {/* Header Principal */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100"
           >
-            <Card className="border-orange-200 bg-orange-50">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-orange-800">
-                  <Bell className="h-5 w-5" />
-                  <span>Alertas Importantes</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                  {dashboardData.criticalAlerts.map((alert, index) => (
-                    <AlertCard key={index} alert={alert} index={index} />
-                  ))}
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl">
+                  <Shield className="h-8 w-8 text-white" />
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {/* Métricas Principais */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <MetricCard
-            title="Receita Total"
-            value={formatCompactCurrency(dashboardData.totalRevenue)}
-            icon={DollarSign}
-            color="green"
-          />
-          <MetricCard
-            title="Despesas Totais"
-            value={formatCompactCurrency(dashboardData.totalExpenses)}
-            icon={CreditCard}
-            color="red"
-          />
-          <MetricCard
-            title="Lucro Líquido"
-            value={formatCompactCurrency(dashboardData.netProfit)}
-            icon={TrendingUp}
-            color={dashboardData.netProfit >= 0 ? "green" : "red"}
-          />
-          <MetricCard
-            title="Margem de Lucro"
-            value={`${dashboardData.profitMargin.toFixed(1)}%`}
-            icon={Target}
-            color={dashboardData.profitMargin >= 20 ? "green" : dashboardData.profitMargin >= 10 ? "yellow" : "red"}
-          />
-        </div>
-
-        {/* Métricas Operacionais */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <MetricCard
-            title="Total de Orçamentos"
-            value={dashboardData.totalQuotations}
-            icon={FileText}
-            color="blue"
-          />
-          <MetricCard
-            title="Empresas Cadastradas"
-            value={dashboardData.totalCompanies}
-            icon={Building}
-            color="purple"
-          />
-          <MetricCard
-            title="Boletos Pendentes"
-            value={dashboardData.totalBills - dashboardData.paidBills}
-            icon={Clock}
-            color="yellow"
-          />
-          <MetricCard
-            title="Divisões de Lucro"
-            value={dashboardData.totalProfitSharings}
-            icon={PiggyBank}
-            color="indigo"
-          />
-        </div>
-
-        {/* Métricas Críticas */}
-        {(dashboardData.overdueBills > 0 || dashboardData.overduePartnerPayments > 0 || dashboardData.pendingQuotations > 5) && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-            {dashboardData.overdueBills > 0 && (
-              <MetricCard
-                title="Boletos Vencidos"
-                value={dashboardData.overdueBills}
-                icon={AlertTriangle}
-                color="red"
-                onClick={() => onNavigateToSection('bills')}
-                className="cursor-pointer hover:shadow-lg transition-shadow"
-              />
-            )}
-            {dashboardData.overduePartnerPayments > 0 && (
-              <MetricCard
-                title="Pagamentos de Sócio Vencidos"
-                value={dashboardData.overduePartnerPayments}
-                icon={Calculator}
-                color="red"
-                onClick={() => onNavigateToSection('profit-sharing')}
-                className="cursor-pointer hover:shadow-lg transition-shadow"
-              />
-            )}
-            {dashboardData.pendingQuotations > 5 && (
-              <MetricCard
-                title="Orçamentos Pendentes"
-                value={dashboardData.pendingQuotations}
-                icon={FileText}
-                color="yellow"
-                onClick={() => onNavigateToSection('quotations')}
-                className="cursor-pointer hover:shadow-lg transition-shadow"
-              />
-            )}
-          </div>
-        )}
-
-        {/* Gráficos */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-          {/* Tendência de Receitas e Despesas */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <BarChart3 className="h-5 w-5" />
-                  <span>Tendência Financeira (7 dias)</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={dashboardData.revenueHistory}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis tickFormatter={(value) => formatCompactCurrency(value)} />
-                    <Tooltip formatter={(value) => formatCurrency(value)} />
-                    <Area 
-                      type="monotone" 
-                      dataKey="receitas" 
-                      stackId="1"
-                      stroke="#10b981" 
-                      fill="#10b981" 
-                      fillOpacity={0.6} 
-                      name="Receitas"
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="despesas" 
-                      stackId="2"
-                      stroke="#ef4444" 
-                      fill="#ef4444" 
-                      fillOpacity={0.6} 
-                      name="Despesas"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Status de Orçamentos */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <PieChart className="h-5 w-5" />
-                  <span>Status dos Orçamentos</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <RechartsPieChart>
-                    <Pie
-                      data={dashboardData.quotationsTrend}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={70}
-                      innerRadius={30}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={false}
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">Dashboard Executivo</h1>
+                  <p className="text-gray-600">Visão estratégica completa da FHD Automação Industrial</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Buscar..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 w-64"
+                  />
+                </div>
+                
+                <Button
+                  variant={showFilters ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filtros
+                </Button>
+                
+                <Select value={timeRange} onValueChange={setTimeRange}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7">Últimos 7 dias</SelectItem>
+                    <SelectItem value="30">Últimos 30 dias</SelectItem>
+                    <SelectItem value="90">Últimos 90 dias</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Button 
+                  onClick={loadDashboardData}
+                  disabled={refreshing}
+                  variant="outline"
+                  size="sm"
+                >
+                  <RefreshCcw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                  Atualizar
+                </Button>
+              </div>
+            </div>
+            
+            {/* Filtros Avançados */}
+            <AnimatePresence>
+              {showFilters && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-6 pt-6 border-t border-gray-200"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Select 
+                      value={selectedFilters.status} 
+                      onValueChange={(value) => setSelectedFilters({...selectedFilters, status: value})}
                     >
-                      {dashboardData.quotationsTrend.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value, name) => [value, name]} />
-                    <Legend 
-                      verticalAlign="bottom" 
-                      height={36}
-                      iconType="circle"
-                      wrapperStyle={{ paddingTop: '20px' }}
-                    />
-                  </RechartsPieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os Status</SelectItem>
+                        <SelectItem value="active">Ativos</SelectItem>
+                        <SelectItem value="pending">Pendentes</SelectItem>
+                        <SelectItem value="completed">Concluídos</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select 
+                      value={selectedFilters.category} 
+                      onValueChange={(value) => setSelectedFilters({...selectedFilters, category: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Categoria" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Categorias</SelectItem>
+                        <SelectItem value="automation">Automação</SelectItem>
+                        <SelectItem value="hydraulic">Hidráulica</SelectItem>
+                        <SelectItem value="maintenance">Manutenção</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select 
+                      value={selectedFilters.priority} 
+                      onValueChange={(value) => setSelectedFilters({...selectedFilters, priority: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Prioridade" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Prioridades</SelectItem>
+                        <SelectItem value="high">Alta</SelectItem>
+                        <SelectItem value="medium">Média</SelectItem>
+                        <SelectItem value="low">Baixa</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
-        </div>
 
-        {/* Próximos Vencimentos */}
-        {dashboardData.upcomingDeadlines.length > 0 && (
+          {/* Abas Principais */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.1 }}
           >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Timer className="h-5 w-5" />
-                  <span>Próximos Vencimentos (7 dias)</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {dashboardData.upcomingDeadlines.map((bill, index) => (
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-5 bg-white rounded-xl p-1 shadow-lg">
+                <TabsTrigger value="overview" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Visão Geral
+                </TabsTrigger>
+                <TabsTrigger value="financial" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Financeiro
+                </TabsTrigger>
+                <TabsTrigger value="operations" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Operações
+                </TabsTrigger>
+                <TabsTrigger value="team" className="data-[state=active]:bg-orange-600 data-[state=active]:text-white">
+                  <Users className="h-4 w-4 mr-2" />
+                  Equipe
+                </TabsTrigger>
+                <TabsTrigger value="company" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
+                  <Building className="h-4 w-4 mr-2" />
+                  Empresa
+                </TabsTrigger>
+              </TabsList>
+              
+              {/* Conteúdo das Abas */}
+              <div className="mt-6">
+                {/* Aba: Visão Geral */}
+                <TabsContent value="overview" className="space-y-6">
+                  {/* Alertas Críticos */}
+                  {dashboardData.criticalAlerts.length > 0 && (
                     <motion.div
-                      key={bill.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-red-50 shadow-lg">
+                        <CardHeader>
+                          <CardTitle className="flex items-center space-x-2 text-orange-800">
+                            <Bell className="h-5 w-5" />
+                            <span>Alertas Importantes</span>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                            {dashboardData.criticalAlerts.map((alert, index) => (
+                              <AlertCard key={index} alert={alert} index={index} />
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  )}
+
+                  {/* Métricas Principais */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      <Card className="bg-gradient-to-br from-green-50 to-emerald-100 border-green-200 hover:shadow-lg transition-all duration-300">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-green-700">Receita Total</p>
+                              <p className="text-2xl font-bold text-green-900">{formatCompactCurrency(dashboardData.totalRevenue)}</p>
+                              <div className="flex items-center mt-2">
+                                <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+                                <span className="text-xs text-green-600">+12.5% este mês</span>
+                              </div>
+                            </div>
+                            <div className="p-3 bg-green-100 rounded-full">
+                              <DollarSign className="h-6 w-6 text-green-600" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 }}
+                    >
+                      <Card className="bg-gradient-to-br from-red-50 to-pink-100 border-red-200 hover:shadow-lg transition-all duration-300">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-red-700">Despesas Totais</p>
+                              <p className="text-2xl font-bold text-red-900">{formatCompactCurrency(dashboardData.totalExpenses)}</p>
+                              <div className="flex items-center mt-2">
+                                <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
+                                <span className="text-xs text-red-600">+8.2% este mês</span>
+                              </div>
+                            </div>
+                            <div className="p-3 bg-red-100 rounded-full">
+                              <CreditCard className="h-6 w-6 text-red-600" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
+                    >
+                      <Card className={`bg-gradient-to-br ${dashboardData.netProfit >= 0 ? 'from-blue-50 to-cyan-100 border-blue-200' : 'from-red-50 to-pink-100 border-red-200'} hover:shadow-lg transition-all duration-300`}>
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-blue-700">Lucro Líquido</p>
+                              <p className={`text-2xl font-bold ${dashboardData.netProfit >= 0 ? 'text-blue-900' : 'text-red-900'}`}>{formatCompactCurrency(dashboardData.netProfit)}</p>
+                              <div className="flex items-center mt-2">
+                                {dashboardData.netProfit >= 0 ? (
+                                  <TrendingUp className="h-4 w-4 text-blue-600 mr-1" />
+                                ) : (
+                                  <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
+                                )}
+                                <span className={`text-xs ${dashboardData.netProfit >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                                  {dashboardData.netProfit >= 0 ? '+15.3%' : '-5.2%'} este mês
+                                </span>
+                              </div>
+                            </div>
+                            <div className={`p-3 rounded-full ${dashboardData.netProfit >= 0 ? 'bg-blue-100' : 'bg-red-100'}`}>
+                              <Target className={`h-6 w-6 ${dashboardData.netProfit >= 0 ? 'text-blue-600' : 'text-red-600'}`} />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6 }}
+                    >
+                      <Card className={`bg-gradient-to-br ${dashboardData.profitMargin >= 20 ? 'from-emerald-50 to-green-100 border-emerald-200' : dashboardData.profitMargin >= 10 ? 'from-yellow-50 to-orange-100 border-yellow-200' : 'from-red-50 to-pink-100 border-red-200'} hover:shadow-lg transition-all duration-300`}>
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-gray-700">Margem de Lucro</p>
+                              <p className="text-2xl font-bold text-gray-900">{dashboardData.profitMargin.toFixed(1)}%</p>
+                              <div className="flex items-center mt-2">
+                                <Target className="h-4 w-4 text-gray-600 mr-1" />
+                                <span className="text-xs text-gray-600">Meta: 25%</span>
+                              </div>
+                            </div>
+                            <div className="p-3 bg-gray-100 rounded-full">
+                              <Target className="h-6 w-6 text-gray-600" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  </div>
+
+                  {/* Métricas Operacionais */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.7 }}
+                    >
+                      <Card className="bg-gradient-to-br from-blue-50 to-cyan-100 border-blue-200 hover:shadow-lg transition-all duration-300">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-blue-700">Total de Orçamentos</p>
+                              <p className="text-2xl font-bold text-blue-900">{dashboardData.totalQuotations}</p>
+                              <div className="flex items-center mt-2">
+                                <FileText className="h-4 w-4 text-blue-600 mr-1" />
+                                <span className="text-xs text-blue-600">{dashboardData.pendingQuotations} pendentes</span>
+                              </div>
+                            </div>
+                            <div className="p-3 bg-blue-100 rounded-full">
+                              <FileText className="h-6 w-6 text-blue-600" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.8 }}
+                    >
+                      <Card className="bg-gradient-to-br from-purple-50 to-violet-100 border-purple-200 hover:shadow-lg transition-all duration-300">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-purple-700">Empresas Cadastradas</p>
+                              <p className="text-2xl font-bold text-purple-900">{dashboardData.totalCompanies}</p>
+                              <div className="flex items-center mt-2">
+                                <Building className="h-4 w-4 text-purple-600 mr-1" />
+                                <span className="text-xs text-purple-600">Clientes ativos</span>
+                              </div>
+                            </div>
+                            <div className="p-3 bg-purple-100 rounded-full">
+                              <Building className="h-6 w-6 text-purple-600" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.9 }}
+                    >
+                      <Card className="bg-gradient-to-br from-yellow-50 to-orange-100 border-yellow-200 hover:shadow-lg transition-all duration-300">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-yellow-700">Boletos Pendentes</p>
+                              <p className="text-2xl font-bold text-yellow-900">{dashboardData.totalBills - dashboardData.paidBills}</p>
+                              <div className="flex items-center mt-2">
+                                <Clock className="h-4 w-4 text-yellow-600 mr-1" />
+                                <span className="text-xs text-yellow-600">{dashboardData.overdueBills} vencidos</span>
+                              </div>
+                            </div>
+                            <div className="p-3 bg-yellow-100 rounded-full">
+                              <Clock className="h-6 w-6 text-yellow-600" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 1.0 }}
+                    >
+                      <Card className="bg-gradient-to-br from-indigo-50 to-blue-100 border-indigo-200 hover:shadow-lg transition-all duration-300">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-indigo-700">Divisões de Lucro</p>
+                              <p className="text-2xl font-bold text-indigo-900">{dashboardData.totalProfitSharings}</p>
+                              <div className="flex items-center mt-2">
+                                <PiggyBank className="h-4 w-4 text-indigo-600 mr-1" />
+                                <span className="text-xs text-indigo-600">{dashboardData.pendingProfitSharing} pendentes</span>
+                              </div>
+                            </div>
+                            <div className="p-3 bg-indigo-100 rounded-full">
+                              <PiggyBank className="h-6 w-6 text-indigo-600" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  </div>
+
+                  {/* Gráficos */}
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+                    {/* Tendência de Receitas e Despesas */}
+                    <motion.div
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
-                      onClick={() => onNavigateToSection && onNavigateToSection('bills')}
+                      transition={{ delay: 1.1 }}
                     >
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{bill.company_name}</h4>
-                        <p className="text-xs sm:text-sm text-gray-600 truncate">{bill.description}</p>
-                      </div>
-                      <div className="text-right flex items-center space-x-1 sm:space-x-2 flex-shrink-0 ml-2">
-                        <div>
-                          <p className="font-semibold text-gray-900 text-xs sm:text-sm">{formatCurrency(bill.total_amount)}</p>
-                          <Badge 
-                            variant={bill.daysUntilDue <= 2 ? "destructive" : "secondary"}
-                            className="text-xs"
-                          >
-                            {bill.daysUntilDue === 0 ? 'Hoje' : 
-                             bill.daysUntilDue === 1 ? 'Amanhã' : 
-                             `${bill.daysUntilDue} dias`}
-                          </Badge>
-                        </div>
-                        <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
-                      </div>
+                      <Card className="shadow-lg">
+                        <CardHeader>
+                          <CardTitle className="flex items-center space-x-2">
+                            <BarChart3 className="h-5 w-5" />
+                            <span>Tendência Financeira (7 dias)</span>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ResponsiveContainer width="100%" height={300}>
+                            <AreaChart data={dashboardData.revenueHistory}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="date" />
+                              <YAxis tickFormatter={(value) => formatCompactCurrency(value)} />
+                              <Tooltip formatter={(value) => formatCurrency(value)} />
+                              <Area 
+                                type="monotone" 
+                                dataKey="receitas" 
+                                stackId="1"
+                                stroke="#10b981" 
+                                fill="#10b981" 
+                                fillOpacity={0.6} 
+                                name="Receitas"
+                              />
+                              <Area 
+                                type="monotone" 
+                                dataKey="despesas" 
+                                stackId="2"
+                                stroke="#ef4444" 
+                                fill="#ef4444" 
+                                fillOpacity={0.6} 
+                                name="Despesas"
+                              />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        </CardContent>
+                      </Card>
                     </motion.div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+
+                    {/* Status de Orçamentos */}
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 1.2 }}
+                    >
+                      <Card className="shadow-lg">
+                        <CardHeader>
+                          <CardTitle className="flex items-center space-x-2">
+                            <BarChart3 className="h-5 w-5" />
+                            <span>Status dos Orçamentos</span>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ResponsiveContainer width="100%" height={300}>
+                            <RechartsPieChart>
+                              <Pie
+                                data={dashboardData.quotationsTrend}
+                                cx="50%"
+                                cy="50%"
+                                outerRadius={70}
+                                innerRadius={30}
+                                fill="#8884d8"
+                                dataKey="value"
+                                label={false}
+                              >
+                                {dashboardData.quotationsTrend.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                              </Pie>
+                              <Tooltip formatter={(value, name) => [value, name]} />
+                              <Legend 
+                                verticalAlign="bottom" 
+                                height={36}
+                                iconType="circle"
+                                wrapperStyle={{ paddingTop: '20px' }}
+                              />
+                            </RechartsPieChart>
+                          </ResponsiveContainer>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  </div>
+                </TabsContent>
+
+                {/* Aba: Financeiro */}
+                <TabsContent value="financial" className="space-y-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card className="shadow-lg">
+                      <CardHeader>
+                        <CardTitle className="flex items-center space-x-2">
+                          <DollarSign className="h-5 w-5" />
+                          <span>Resumo Financeiro</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                          <span className="font-medium text-green-700">Receitas</span>
+                          <span className="font-bold text-green-900">{formatCurrency(dashboardData.totalRevenue)}</span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                          <span className="font-medium text-red-700">Despesas</span>
+                          <span className="font-bold text-red-900">{formatCurrency(dashboardData.totalExpenses)}</span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                          <span className="font-medium text-blue-700">Lucro Líquido</span>
+                          <span className={`font-bold ${dashboardData.netProfit >= 0 ? 'text-blue-900' : 'text-red-900'}`}>
+                            {formatCurrency(dashboardData.netProfit)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                          <span className="font-medium text-purple-700">Margem de Lucro</span>
+                          <span className="font-bold text-purple-900">{dashboardData.profitMargin.toFixed(1)}%</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="shadow-lg">
+                      <CardHeader>
+                        <CardTitle className="flex items-center space-x-2">
+                          <Target className="h-5 w-5" />
+                          <span>Metas Financeiras</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-sm font-medium">Receita Mensal</span>
+                            <span className="text-sm text-gray-600">75%</span>
+                          </div>
+                          <Progress value={75} className="h-2" />
+                        </div>
+                        <div>
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-sm font-medium">Margem de Lucro</span>
+                            <span className="text-sm text-gray-600">60%</span>
+                          </div>
+                          <Progress value={60} className="h-2" />
+                        </div>
+                        <div>
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-sm font-medium">Redução de Custos</span>
+                            <span className="text-sm text-gray-600">85%</span>
+                          </div>
+                          <Progress value={85} className="h-2" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+
+                {/* Aba: Operações */}
+                <TabsContent value="operations" className="space-y-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card className="shadow-lg">
+                      <CardHeader>
+                        <CardTitle className="flex items-center space-x-2">
+                          <Settings className="h-5 w-5" />
+                          <span>Performance Operacional</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {Object.entries(dashboardData.performance).map(([key, value]) => (
+                          <div key={key} className="flex justify-between items-center">
+                            <span className="text-sm font-medium capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                            <div className="flex items-center space-x-2">
+                              <Progress value={value} className="w-20 h-2" />
+                              <span className="text-sm font-bold">{value}%</span>
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+
+                    <Card className="shadow-lg">
+                      <CardHeader>
+                        <CardTitle className="flex items-center space-x-2">
+                          <Activity className="h-5 w-5" />
+                          <span>Atividades Recentes</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          {dashboardData.recentActivities.map((activity, index) => (
+                            <motion.div
+                              key={activity.id}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                            >
+                              <div className="flex items-center space-x-3">
+                                <div className={`p-2 rounded-full ${
+                                  activity.type === 'project' ? 'bg-blue-100' :
+                                  activity.type === 'maintenance' ? 'bg-green-100' :
+                                  'bg-purple-100'
+                                }`}>
+                                  <Settings className={`h-4 w-4 ${
+                                    activity.type === 'project' ? 'text-blue-600' :
+                                    activity.type === 'maintenance' ? 'text-green-600' :
+                                    'text-purple-600'
+                                  }`} />
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-sm">{activity.title}</h4>
+                                  <p className="text-xs text-gray-600">{activity.description}</p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-bold text-sm">{formatCurrency(activity.value)}</p>
+                                <Badge variant={activity.priority === 'high' ? 'destructive' : 'secondary'} className="text-xs">
+                                  {activity.priority}
+                                </Badge>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+
+                {/* Aba: Equipe */}
+                <TabsContent value="team" className="space-y-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card className="shadow-lg">
+                      <CardHeader>
+                        <CardTitle className="flex items-center space-x-2">
+                          <Users className="h-5 w-5" />
+                          <span>Equipe Atual</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {dashboardData.team.map((member, index) => (
+                            <motion.div
+                              key={member.id}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                            >
+                              <div className="flex items-center space-x-3">
+                                <Avatar>
+                                  <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <h4 className="font-semibold text-sm">{member.name}</h4>
+                                  <p className="text-xs text-gray-600">{member.role}</p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="flex items-center space-x-2">
+                                  <div className={`w-2 h-2 rounded-full ${
+                                    member.status === 'online' ? 'bg-green-500' :
+                                    member.status === 'busy' ? 'bg-yellow-500' :
+                                    'bg-gray-500'
+                                  }`} />
+                                  <span className="text-xs text-gray-600">{member.status}</span>
+                                </div>
+                                <p className="text-xs text-gray-600">{member.projects} projetos</p>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="shadow-lg">
+                      <CardHeader>
+                        <CardTitle className="flex items-center space-x-2">
+                          <Target className="h-5 w-5" />
+                          <span>Performance da Equipe</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {dashboardData.team.map((member, index) => (
+                            <div key={member.id} className="space-y-2">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm font-medium">{member.name}</span>
+                                <span className="text-sm font-bold">{member.performance}%</span>
+                              </div>
+                              <Progress value={member.performance} className="h-2" />
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+
+                {/* Aba: Empresa */}
+                <TabsContent value="company" className="space-y-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card className="shadow-lg">
+                      <CardHeader>
+                        <CardTitle className="flex items-center space-x-2">
+                          <Building className="h-5 w-5" />
+                          <span>Informações da Empresa</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-sm font-medium">Nome</span>
+                            <span className="text-sm">{dashboardData.companyInfo.name}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm font-medium">CNPJ</span>
+                            <span className="text-sm">{dashboardData.companyInfo.cnpj}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm font-medium">Endereço</span>
+                            <span className="text-sm">{dashboardData.companyInfo.address}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm font-medium">Cidade</span>
+                            <span className="text-sm">{dashboardData.companyInfo.city}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm font-medium">Telefone</span>
+                            <span className="text-sm">{dashboardData.companyInfo.phone}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm font-medium">Email</span>
+                            <span className="text-sm">{dashboardData.companyInfo.email}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm font-medium">Website</span>
+                            <span className="text-sm">{dashboardData.companyInfo.website}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm font-medium">Fundada</span>
+                            <span className="text-sm">{dashboardData.companyInfo.founded}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm font-medium">Funcionários</span>
+                            <span className="text-sm">{dashboardData.companyInfo.employees}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm font-medium">Projetos</span>
+                            <span className="text-sm">{dashboardData.companyInfo.projects}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm font-medium">Satisfação</span>
+                            <span className="text-sm">{dashboardData.companyInfo.satisfaction}/5.0</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="shadow-lg">
+                      <CardHeader>
+                        <CardTitle className="flex items-center space-x-2">
+                          <Award className="h-5 w-5" />
+                          <span>Especialidades e Certificações</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <h4 className="font-semibold mb-2">Especialidades</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {dashboardData.companyInfo.specialties.map((specialty, index) => (
+                              <Badge key={index} variant="secondary" className="text-xs">
+                                {specialty}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Certificações</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {dashboardData.companyInfo.certifications.map((cert, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {cert}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Principais Clientes</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {dashboardData.companyInfo.clients.map((client, index) => (
+                              <Badge key={index} variant="default" className="text-xs">
+                                {client}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+              </div>
+            </Tabs>
           </motion.div>
-        )}
+        </div>
       </div>
-    </div>
+      </TooltipProvider>
   )
 }
 

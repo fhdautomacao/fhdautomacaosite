@@ -1,4 +1,4 @@
-import { Settings, Wrench, Zap, Cog, Hammer, Workflow, Gauge, ArrowRight, CheckCircle } from 'lucide-react'
+import { Settings, Wrench, Zap, Cog, Hammer, Workflow, ArrowRight, CheckCircle } from 'lucide-react'
 
 const Services = () => {
   const services = [
@@ -45,7 +45,7 @@ const Services = () => {
       features: ["Instalação Profissional", "Dobras Precisas", "Normas Técnicas"]
     },
     {
-      icon: <Gauge size={40} />,
+      icon: <Settings size={40} />,
       title: "Consertos em Bombas Hidráulicas",
       description: "Efetuamos reparos em bombas hidráulicas de pistões e palhetas, restaurando sua eficiência e prolongando sua vida útil.",
       color: "orange",

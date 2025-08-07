@@ -35,6 +35,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
   },
   // Configurações específicas para produção
   define: {
@@ -42,7 +43,8 @@ export default defineConfig({
   },
   // Otimizações para melhor performance
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom']
+    include: ['react', 'react-dom', 'react-router-dom'],
+    exclude: []
   },
   // Configuração para SPA
   base: '/'

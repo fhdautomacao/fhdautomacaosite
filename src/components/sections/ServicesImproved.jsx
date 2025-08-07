@@ -1,4 +1,4 @@
-import { Settings, Wrench, Zap, Cog, Hammer, Workflow, Gauge, ArrowRight, CheckCircle } from 'lucide-react'
+import { Settings, Wrench, Zap, Cog, Hammer, Workflow, ArrowRight, CheckCircle } from 'lucide-react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
 import { useEffect, useState, useRef } from 'react'
@@ -12,7 +12,7 @@ const IconComponent = ({ iconName, size }) => {
     Cog: Cog,
     Hammer: Hammer,
     Workflow: Workflow,
-    Gauge: Gauge,
+  
     ArrowRight: ArrowRight,
     CheckCircle: CheckCircle,
   }
