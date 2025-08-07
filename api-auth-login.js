@@ -52,23 +52,13 @@ export default async function handler(req, res) {
 
     console.log('Autenticação bem-sucedida:', { userId: data.user.id })
 
-    // Buscar dados do usuário
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', data.user.id)
-      .single()
-
-    if (userError) {
-      console.error('Erro ao buscar dados do usuário:', userError)
-    }
-
+    // Usar dados do usuário autenticado
     const response = {
       user: {
         id: data.user.id,
         email: data.user.email,
-        name: userData?.name || data.user.email,
-        isAdmin: userData?.is_admin || false,
+        name: data.user.user_metadata?.name || data.user.email,
+        isAdmin: data.user.email === 'adminfhd@fhd.com' // Definir admin baseado no email
       },
       token: data.session.access_token,
       refresh_token: data.session.refresh_token,
