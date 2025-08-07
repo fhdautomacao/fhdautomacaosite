@@ -715,18 +715,17 @@ export default function BillsManager() {
              
              <div>
                <Label>Intervalo entre Parcelas (dias)</Label>
-               <Select value={formData.installment_interval} onValueChange={(value) => setFormData({...formData, installment_interval: parseInt(value)})}>
-                 <SelectTrigger>
-                   <SelectValue />
-                 </SelectTrigger>
-                 <SelectContent>
-                   <SelectItem value={30}>30 dias</SelectItem>
-                   <SelectItem value={36}>36 dias</SelectItem>
-                   <SelectItem value={48}>48 dias</SelectItem>
-                   <SelectItem value={60}>60 dias</SelectItem>
-                   <SelectItem value={90}>90 dias</SelectItem>
-                 </SelectContent>
-               </Select>
+               <Input
+                 type="number"
+                 min="1"
+                 step="1"
+                 placeholder="Ex.: 30"
+                 value={formData.installment_interval}
+                 onChange={(e) => setFormData({
+                   ...formData,
+                   installment_interval: parseInt(e.target.value || '0')
+                 })}
+               />
              </div>
              
              <div>
