@@ -35,6 +35,24 @@
       "dest": "/favicon.ico"
     },
     {
+      "src": "/(.*\\.js)",
+      "headers": {
+        "content-type": "application/javascript"
+      }
+    },
+    {
+      "src": "/(.*\\.css)",
+      "headers": {
+        "content-type": "text/css"
+      }
+    },
+    {
+      "src": "/assets/(.*)",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
