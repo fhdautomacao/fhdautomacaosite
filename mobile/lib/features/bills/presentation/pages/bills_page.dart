@@ -5,6 +5,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../providers/bills_provider.dart';
 
 class BillsPage extends ConsumerStatefulWidget {
   const BillsPage({super.key});
@@ -31,6 +32,15 @@ class _BillsPageState extends ConsumerState<BillsPage>
 
   @override
   Widget build(BuildContext context) {
+    final billsState = ref.watch(billsProvider);
+
+    // Carregar dados quando a página for montada
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (billsState.bills.isEmpty && !billsState.isLoading) {
+        ref.read(billsProvider.notifier).loadBills();
+      }
+    });
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -49,15 +59,19 @@ class _BillsPageState extends ConsumerState<BillsPage>
           indicatorColor: AppColors.primary,
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildBillsList('all'),
-          _buildBillsList('pending'),
-          _buildBillsList('overdue'),
-          _buildBillsList('paid'),
-        ],
-      ),
+      body: billsState.isLoading
+          ? _buildLoadingState(context)
+          : billsState.error != null
+              ? _buildErrorState(context, billsState.error!)
+              : TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildBillsList('all'),
+                    _buildBillsList('pending'),
+                    _buildBillsList('overdue'),
+                    _buildBillsList('paid'),
+                  ],
+                ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.pushNamed(context, AppRoutes.createBill);
@@ -68,8 +82,25 @@ class _BillsPageState extends ConsumerState<BillsPage>
   }
 
   Widget _buildBillsList(String status) {
-    // Mock data - substituir por dados reais
-    final bills = _getMockBills(status);
+    final billsState = ref.watch(billsProvider);
+    List<Map<String, dynamic>> bills;
+
+    switch (status) {
+      case 'all':
+        bills = billsState.allBills;
+        break;
+      case 'pending':
+        bills = billsState.pendingBills;
+        break;
+      case 'overdue':
+        bills = billsState.overdueBills;
+        break;
+      case 'paid':
+        bills = billsState.paidBills;
+        break;
+      default:
+        bills = billsState.allBills;
+    }
 
     if (bills.isEmpty) {
       return _buildEmptyState(status);
@@ -77,8 +108,7 @@ class _BillsPageState extends ConsumerState<BillsPage>
 
     return RefreshIndicator(
       onRefresh: () async {
-        // Implementar refresh
-        await Future.delayed(const Duration(seconds: 1));
+        await ref.read(billsProvider.notifier).refreshBills();
       },
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
@@ -312,51 +342,56 @@ class _BillsPageState extends ConsumerState<BillsPage>
     );
   }
 
-  List<Map<String, dynamic>> _getMockBills(String status) {
-    final allBills = [
-      {
-        'id': '1',
-        'company': 'Empresa ABC Ltda',
-        'description': 'Serviços de manutenção hidráulica',
-        'amount': '2.500,00',
-        'dueDate': '15/01/2025',
-        'status': 'overdue',
-      },
-      {
-        'id': '2',
-        'company': 'Indústria XYZ S.A.',
-        'description': 'Fornecimento de válvulas pneumáticas',
-        'amount': '8.750,00',
-        'dueDate': '20/01/2025',
-        'status': 'pending',
-      },
-      {
-        'id': '3',
-        'company': 'Metalúrgica DEF',
-        'description': 'Instalação de sistema hidráulico',
-        'amount': '15.200,00',
-        'dueDate': '25/01/2025',
-        'status': 'pending',
-      },
-      {
-        'id': '4',
-        'company': 'Fábrica GHI',
-        'description': 'Manutenção preventiva de equipamentos',
-        'amount': '5.800,00',
-        'dueDate': '10/01/2025',
-        'status': 'paid',
-      },
-      {
-        'id': '5',
-        'company': 'Empresa JKL',
-        'description': 'Consultoria técnica em automação',
-        'amount': '3.200,00',
-        'dueDate': '12/01/2025',
-        'status': 'overdue',
-      },
-    ];
 
-    if (status == 'all') return allBills;
-    return allBills.where((bill) => bill['status'] == status).toList();
+
+  Widget _buildLoadingState(BuildContext context) {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text('Carregando boletos...'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context, String error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            MdiIcons.alertCircle,
+            color: AppColors.error,
+            size: 48,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Erro ao carregar boletos',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            error,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              ref.read(billsProvider.notifier).loadBills();
+            },
+            child: const Text('Tentar novamente'),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -304,6 +304,73 @@ class ApiService {
     }
   }
 
+  // Quotations endpoints
+  static Future<ApiResponse<List<Map<String, dynamic>>>> getQuotations({
+    String? status,
+    int page = 1,
+    int limit = 50,
+  }) async {
+    try {
+      final response = await _dio.get('/api/quotations', queryParameters: {
+        if (status != null) 'status': status,
+        'page': page,
+        'limit': limit,
+      });
+
+      final quotations = List<Map<String, dynamic>>.from(response.data['data'] ?? []);
+      await StorageService.cacheQuotations(quotations);
+      
+      return ApiResponse.success(quotations);
+    } catch (e) {
+      final cachedQuotations = StorageService.getCachedQuotations();
+      if (cachedQuotations != null) {
+        return ApiResponse.success(cachedQuotations);
+      }
+      return ApiResponse.error(_handleError(e));
+    }
+  }
+
+  static Future<ApiResponse<Map<String, dynamic>>> getQuotationById(String quotationId) async {
+    try {
+      final response = await _dio.get('/api/quotations/$quotationId');
+      return ApiResponse.success(response.data);
+    } catch (e) {
+      return ApiResponse.error(_handleError(e));
+    }
+  }
+
+  static Future<ApiResponse<Map<String, dynamic>>> createQuotation({
+    required Map<String, dynamic> quotationData,
+  }) async {
+    try {
+      final response = await _dio.post('/api/quotations', data: quotationData);
+      return ApiResponse.success(response.data);
+    } catch (e) {
+      return ApiResponse.error(_handleError(e));
+    }
+  }
+
+  static Future<ApiResponse<Map<String, dynamic>>> updateQuotation({
+    required String quotationId,
+    required Map<String, dynamic> quotationData,
+  }) async {
+    try {
+      final response = await _dio.put('/api/quotations/$quotationId', data: quotationData);
+      return ApiResponse.success(response.data);
+    } catch (e) {
+      return ApiResponse.error(_handleError(e));
+    }
+  }
+
+  static Future<ApiResponse<void>> deleteQuotation(String quotationId) async {
+    try {
+      await _dio.delete('/api/quotations/$quotationId');
+      return ApiResponse.success(null);
+    } catch (e) {
+      return ApiResponse.error(_handleError(e));
+    }
+  }
+
   // Notification endpoints
   static Future<ApiResponse<void>> registerDeviceToken({
     required String deviceToken,

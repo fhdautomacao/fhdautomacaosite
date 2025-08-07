@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../providers/dashboard_provider.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -13,15 +14,22 @@ class DashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
+    final dashboardState = ref.watch(dashboardProvider);
     final user = authState.user;
+
+    // Carregar dados do dashboard quando a página for montada
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (dashboardState.data == null && !dashboardState.isLoading) {
+        ref.read(dashboardProvider.notifier).loadDashboardData();
+      }
+    });
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            // Implementar refresh dos dados
-            await Future.delayed(const Duration(seconds: 1));
+            await ref.read(dashboardProvider.notifier).refreshDashboard();
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -35,23 +43,33 @@ class DashboardPage extends ConsumerWidget {
                   
                   const SizedBox(height: 24),
                   
-                  // Métricas principais
-                  _buildMetricsSection(context),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Ações rápidas
-                  _buildQuickActions(context),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Atividade recente
-                  _buildRecentActivity(context),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Notificações importantes
-                  _buildImportantNotifications(context),
+                  // Loading state
+                  if (dashboardState.isLoading)
+                    _buildLoadingState(context)
+                  else if (dashboardState.error != null)
+                    _buildErrorState(context, dashboardState.error!)
+                  else
+                    Column(
+                      children: [
+                        // Métricas principais
+                        _buildMetricsSection(context, ref),
+                        
+                        const SizedBox(height: 24),
+                        
+                        // Ações rápidas
+                        _buildQuickActions(context),
+                        
+                        const SizedBox(height: 24),
+                        
+                        // Atividade recente
+                        _buildRecentActivity(context, ref),
+                        
+                        const SizedBox(height: 24),
+                        
+                        // Notificações importantes
+                        _buildImportantNotifications(context, ref),
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -115,7 +133,9 @@ class DashboardPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildMetricsSection(BuildContext context) {
+  Widget _buildMetricsSection(BuildContext context, WidgetRef ref) {
+    final dashboardNotifier = ref.read(dashboardProvider.notifier);
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -137,7 +157,7 @@ class DashboardPage extends ConsumerWidget {
               child: _buildMetricCard(
                 context: context,
                 title: 'Boletos Vencidos',
-                value: '3',
+                value: dashboardNotifier.totalOverdue.toString(),
                 icon: MdiIcons.alertCircle,
                 color: AppColors.error,
                 delay: 500.ms,
@@ -148,7 +168,7 @@ class DashboardPage extends ConsumerWidget {
               child: _buildMetricCard(
                 context: context,
                 title: 'Próximos Venc.',
-                value: '7',
+                value: dashboardNotifier.pendingCount.toString(),
                 icon: MdiIcons.clockOutline,
                 color: AppColors.warning,
                 delay: 600.ms,
@@ -165,7 +185,7 @@ class DashboardPage extends ConsumerWidget {
               child: _buildMetricCard(
                 context: context,
                 title: 'Orçamentos',
-                value: '12',
+                value: dashboardNotifier.totalQuotations.toString(),
                 icon: MdiIcons.calculatorVariant,
                 color: AppColors.info,
                 delay: 700.ms,
@@ -176,7 +196,7 @@ class DashboardPage extends ConsumerWidget {
               child: _buildMetricCard(
                 context: context,
                 title: 'Clientes',
-                value: '45',
+                value: dashboardNotifier.totalClients.toString(),
                 icon: MdiIcons.accountGroup,
                 color: AppColors.success,
                 delay: 800.ms,
@@ -338,7 +358,48 @@ class DashboardPage extends ConsumerWidget {
         .slideY(begin: 0.3, delay: delay, duration: 600.ms);
   }
 
-  Widget _buildRecentActivity(BuildContext context) {
+  Widget _buildRecentActivity(BuildContext context, WidgetRef ref) {
+    final dashboardNotifier = ref.read(dashboardProvider.notifier);
+    final recentBills = dashboardNotifier.recentBills ?? [];
+    final recentQuotations = dashboardNotifier.recentQuotations ?? [];
+    final recentClients = dashboardNotifier.recentClients ?? [];
+    
+    // Combinar todas as atividades recentes
+    final activities = <Map<String, dynamic>>[];
+    
+    // Adicionar boletos recentes
+    for (final bill in recentBills.take(2)) {
+      activities.add({
+        'title': 'Boleto criado para ${bill['company_name'] ?? 'Cliente'}',
+        'subtitle': _formatTimeAgo(bill['created_at']),
+        'icon': MdiIcons.fileDocumentOutline,
+        'color': AppColors.success,
+      });
+    }
+    
+    // Adicionar orçamentos recentes
+    for (final quotation in recentQuotations.take(2)) {
+      activities.add({
+        'title': 'Orçamento ${quotation['status'] == 'approved' ? 'aprovado' : 'criado'} - ${quotation['client_name'] ?? 'Cliente'}',
+        'subtitle': _formatTimeAgo(quotation['created_at']),
+        'icon': quotation['status'] == 'approved' ? MdiIcons.checkCircle : MdiIcons.calculatorVariant,
+        'color': quotation['status'] == 'approved' ? AppColors.primary : AppColors.info,
+      });
+    }
+    
+    // Adicionar clientes recentes
+    for (final client in recentClients.take(1)) {
+      activities.add({
+        'title': 'Novo cliente cadastrado: ${client['name'] ?? 'Cliente'}',
+        'subtitle': _formatTimeAgo(client['created_at']),
+        'icon': MdiIcons.accountPlus,
+        'color': AppColors.secondary,
+      });
+    }
+    
+    // Ordenar por data mais recente
+    activities.sort((a, b) => b['subtitle'].compareTo(a['subtitle']));
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -361,33 +422,26 @@ class DashboardPage extends ConsumerWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: AppColors.cardShadow,
           ),
-          child: Column(
-            children: [
-              _buildActivityItem(
-                context: context,
-                title: 'Boleto criado para Empresa ABC',
-                subtitle: '2 horas atrás',
-                icon: MdiIcons.fileDocumentOutline,
-                color: AppColors.success,
-              ),
-              const Divider(height: 24),
-              _buildActivityItem(
-                context: context,
-                title: 'Orçamento aprovado - Cliente XYZ',
-                subtitle: '5 horas atrás',
-                icon: MdiIcons.checkCircle,
-                color: AppColors.primary,
-              ),
-              const Divider(height: 24),
-              _buildActivityItem(
-                context: context,
-                title: 'Novo cliente cadastrado',
-                subtitle: '1 dia atrás',
-                icon: MdiIcons.accountPlus,
-                color: AppColors.secondary,
-              ),
-            ],
-          ),
+          child: activities.isEmpty
+              ? _buildEmptyActivityState(context)
+              : Column(
+                  children: activities.take(3).map((activity) {
+                    final index = activities.indexOf(activity);
+                    return Column(
+                      children: [
+                        _buildActivityItem(
+                          context: context,
+                          title: activity['title'],
+                          subtitle: activity['subtitle'],
+                          icon: activity['icon'],
+                          color: activity['color'],
+                        ),
+                        if (index < activities.length - 1 && index < 2)
+                          const Divider(height: 24),
+                      ],
+                    );
+                  }).toList(),
+                ),
         )
             .animate()
             .fadeIn(delay: 1300.ms, duration: 600.ms)
@@ -443,7 +497,39 @@ class DashboardPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildImportantNotifications(BuildContext context) {
+  Widget _buildImportantNotifications(BuildContext context, WidgetRef ref) {
+    final dashboardNotifier = ref.read(dashboardProvider.notifier);
+    final overdueBills = dashboardNotifier.overdueBills ?? [];
+    final pendingBills = dashboardNotifier.pendingBills ?? [];
+    
+    final notifications = <Map<String, dynamic>>[];
+    
+    // Adicionar alertas para boletos vencidos
+    if (overdueBills.isNotEmpty) {
+      notifications.add({
+        'title': 'Boletos Vencidos',
+        'subtitle': '${overdueBills.length} boleto(s) vencido(s)',
+        'icon': MdiIcons.alertCircle,
+        'color': AppColors.error,
+        'action': 'Ver detalhes',
+      });
+    }
+    
+    // Adicionar alertas para boletos pendentes
+    if (pendingBills.isNotEmpty) {
+      notifications.add({
+        'title': 'Boletos Pendentes',
+        'subtitle': '${pendingBills.length} boleto(s) pendente(s)',
+        'icon': MdiIcons.clockOutline,
+        'color': AppColors.warning,
+        'action': 'Ver detalhes',
+      });
+    }
+    
+    if (notifications.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -459,18 +545,19 @@ class DashboardPage extends ConsumerWidget {
         
         const SizedBox(height: 16),
         
-        Container(
+        ...notifications.map((notification) => Container(
+          margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.error.withOpacity(0.1),
+            color: notification['color'].withOpacity(0.1),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.error.withOpacity(0.2)),
+            border: Border.all(color: notification['color'].withOpacity(0.3)),
           ),
           child: Row(
             children: [
               Icon(
-                MdiIcons.alertCircle,
-                color: AppColors.error,
+                notification['icon'],
+                color: notification['color'],
                 size: 24,
               ),
               const SizedBox(width: 12),
@@ -479,33 +566,143 @@ class DashboardPage extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Boletos Vencidos',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      notification['title'],
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.error,
+                        color: AppColors.textPrimary,
                       ),
                     ),
+                    const SizedBox(height: 4),
                     Text(
-                      '3 boletos estão vencidos e precisam de atenção',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      notification['subtitle'],
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
-              Icon(
-                MdiIcons.chevronRight,
-                color: AppColors.error,
-                size: 20,
+              Text(
+                notification['action'],
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: notification['color'],
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
-        )
+        ))
             .animate()
             .fadeIn(delay: 1500.ms, duration: 600.ms)
             .slideY(begin: 0.3, delay: 1500.ms, duration: 600.ms),
       ],
     );
+  }
+
+  Widget _buildLoadingState(BuildContext context) {
+    return Column(
+      children: [
+        const SizedBox(height: 100),
+        Center(
+          child: Column(
+            children: [
+              CircularProgressIndicator(
+                color: AppColors.primary,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Carregando dados...',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context, String error) {
+    return Column(
+      children: [
+        const SizedBox(height: 100),
+        Center(
+          child: Column(
+            children: [
+              Icon(
+                MdiIcons.alertCircle,
+                color: AppColors.error,
+                size: 48,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Erro ao carregar dados',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                error,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  // Recarregar dados
+                },
+                child: const Text('Tentar novamente'),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyActivityState(BuildContext context) {
+    return Column(
+      children: [
+        Icon(
+          MdiIcons.informationOutline,
+          color: AppColors.textSecondary,
+          size: 32,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Nenhuma atividade recente',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatTimeAgo(String? dateString) {
+    if (dateString == null) return 'Data desconhecida';
+    
+    try {
+      final date = DateTime.parse(dateString);
+      final now = DateTime.now();
+      final difference = now.difference(date);
+      
+      if (difference.inDays > 0) {
+        return '${difference.inDays} dia(s) atrás';
+      } else if (difference.inHours > 0) {
+        return '${difference.inHours} hora(s) atrás';
+      } else if (difference.inMinutes > 0) {
+        return '${difference.inMinutes} minuto(s) atrás';
+      } else {
+        return 'Agora mesmo';
+      }
+    } catch (e) {
+      return 'Data desconhecida';
+    }
   }
 }
