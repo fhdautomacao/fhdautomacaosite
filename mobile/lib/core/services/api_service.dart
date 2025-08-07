@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
@@ -115,6 +116,56 @@ class ApiService {
   static Future<ApiResponse<void>> deleteBill(String billId) async {
     try {
       await _dio.delete('/api/bills/$billId');
+      return ApiResponse.success(null);
+    } catch (e) {
+      return ApiResponse.error(_handleError(e));
+    }
+  }
+
+  // Upload de comprovante de pagamento
+  static Future<ApiResponse<Map<String, dynamic>>> uploadPaymentReceipt({
+    required Map<String, dynamic> formData,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/bills/installments/upload',
+        data: FormData.fromMap(formData),
+        options: Options(
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        ),
+      );
+
+      return ApiResponse.success(response.data);
+    } catch (e) {
+      return ApiResponse.error(_handleError(e));
+    }
+  }
+
+  // Download de arquivo
+  static Future<ApiResponse<Uint8List>> downloadFile(String url) async {
+    try {
+      final response = await _dio.get(
+        url,
+        options: Options(
+          responseType: ResponseType.bytes,
+        ),
+      );
+
+      return ApiResponse.success(response.data);
+    } catch (e) {
+      return ApiResponse.error(_handleError(e));
+    }
+  }
+
+  // Deletar comprovante
+  static Future<ApiResponse<void>> deletePaymentReceipt({
+    required String billId,
+    required String installmentId,
+  }) async {
+    try {
+      await _dio.delete('/api/bills/installments/$installmentId/receipt');
       return ApiResponse.success(null);
     } catch (e) {
       return ApiResponse.error(_handleError(e));

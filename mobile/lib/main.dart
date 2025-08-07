@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-// import 'package:awesome_notifications/awesome_notifications.dart'; // Temporariamente comentado
+import 'package:awesome_notifications/awesome_notifications.dart';
 
 import 'app.dart';
-// import 'core/services/notification_service.dart'; // Temporariamente comentado
+import 'core/services/notification_service.dart';
 import 'core/services/storage_service.dart';
+import 'core/services/sync_service.dart';
 import 'core/constants/app_colors.dart';
 
 void main() async {
@@ -33,7 +34,15 @@ void main() async {
   await StorageService.initialize();
   
   // Inicializar notificações
-  // await NotificationService.initialize(); // Temporariamente comentado
+  await NotificationService.initialize();
+  
+  // Configurar notificações para inicialização
+  AwesomeNotifications().setListeners(
+    onActionReceivedMethod: NotificationService.onActionReceivedMethod,
+    onNotificationCreatedMethod: NotificationService.onNotificationCreatedMethod,
+    onNotificationDisplayedMethod: NotificationService.onNotificationDisplayedMethod,
+    onDismissActionReceivedMethod: NotificationService.onDismissActionReceivedMethod,
+  );
   
   runApp(
     const ProviderScope(

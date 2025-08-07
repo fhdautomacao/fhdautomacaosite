@@ -94,9 +94,6 @@ class NotificationService {
 
     // Solicitar permissões
     await _requestPermissions();
-
-    // Configurar listeners
-    _configureListeners();
   }
 
   static Future<void> _requestPermissions() async {
@@ -122,18 +119,9 @@ class NotificationService {
     }
   }
 
-  static void _configureListeners() {
-    // Listener para quando a notificação é exibida
-    AwesomeNotifications().setListeners(
-      onActionReceivedMethod: _onActionReceivedMethod,
-      onNotificationCreatedMethod: _onNotificationCreatedMethod,
-      onNotificationDisplayedMethod: _onNotificationDisplayedMethod,
-      onDismissActionReceivedMethod: _onDismissActionReceivedMethod,
-    );
-  }
-
+  // Métodos estáticos para listeners
   @pragma("vm:entry-point")
-  static Future<void> _onActionReceivedMethod(ReceivedAction receivedAction) async {
+  static Future<void> onActionReceivedMethod(ReceivedAction receivedAction) async {
     debugPrint('Notification action received: ${receivedAction.actionType}');
     
     // Implementar navegação baseada na ação
@@ -152,17 +140,17 @@ class NotificationService {
   }
 
   @pragma("vm:entry-point")
-  static Future<void> _onNotificationCreatedMethod(ReceivedNotification receivedNotification) async {
+  static Future<void> onNotificationCreatedMethod(ReceivedNotification receivedNotification) async {
     debugPrint('Notification created: ${receivedNotification.title}');
   }
 
   @pragma("vm:entry-point")
-  static Future<void> _onNotificationDisplayedMethod(ReceivedNotification receivedNotification) async {
+  static Future<void> onNotificationDisplayedMethod(ReceivedNotification receivedNotification) async {
     debugPrint('Notification displayed: ${receivedNotification.title}');
   }
 
   @pragma("vm:entry-point")
-  static Future<void> _onDismissActionReceivedMethod(ReceivedAction receivedAction) async {
+  static Future<void> onDismissActionReceivedMethod(ReceivedAction receivedAction) async {
     debugPrint('Notification dismissed: ${receivedAction.id}');
   }
 

@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/services/biometric_service.dart';
 import '../providers/auth_provider.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -19,12 +20,26 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _biometricAvailable = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBiometricAvailability();
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkBiometricAvailability() async {
+    final isAvailable = await BiometricService.isBiometricAvailable();
+    setState(() {
+      _biometricAvailable = isAvailable;
+    });
   }
 
   @override
@@ -62,6 +77,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                 // Botão de login
                 _buildLoginButton(authState),
+
+                // Botão de autenticação biométrica
+                if (_biometricAvailable) ...[
+                  const SizedBox(height: 16),
+                  _buildBiometricButton(authState),
+                ],
 
                 const SizedBox(height: 24),
 
@@ -231,6 +252,31 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         .fadeIn(delay: 1200.ms, duration: 600.ms);
   }
 
+  Widget _buildBiometricButton(AuthState authState) {
+    return OutlinedButton.icon(
+      onPressed: authState.isLoading ? null : _handleBiometricLogin,
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        side: const BorderSide(color: AppColors.primary),
+      ),
+      icon: const Icon(Icons.fingerprint, color: AppColors.primary),
+      label: Text(
+        'Entrar com Biometria',
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: AppColors.primary,
+        ),
+      ),
+    )
+        .animate()
+        .slideY(begin: 0.3, delay: 1300.ms, duration: 600.ms, curve: Curves.easeOut)
+        .fadeIn(delay: 1300.ms, duration: 600.ms);
+  }
+
   Widget _buildForgotPasswordLink() {
     return TextButton(
       onPressed: () {
@@ -313,6 +359,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       final password = _passwordController.text;
 
       ref.read(authProvider.notifier).login(email, password);
+    }
+  }
+
+  void _handleBiometricLogin() async {
+    final success = await ref.read(authProvider.notifier).loginWithBiometric();
+    if (!success) {
+      // Mostrar erro se a autenticação biométrica falhar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(ref.read(authProvider).error ?? 'Erro na autenticação biométrica'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 

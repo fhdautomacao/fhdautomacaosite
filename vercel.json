@@ -27,6 +27,22 @@
       "dest": "/api-test.js"
     },
     {
+      "src": "/api/bills",
+      "dest": "/api-bills.js"
+    },
+    {
+      "src": "/api/quotations",
+      "dest": "/api-quotations.js"
+    },
+    {
+      "src": "/api/clients",
+      "dest": "/api-clients.js"
+    },
+    {
+      "src": "/api/dashboard",
+      "dest": "/api-dashboard.js"
+    },
+    {
       "src": "/logo.png",
       "dest": "/logo.png"
     },

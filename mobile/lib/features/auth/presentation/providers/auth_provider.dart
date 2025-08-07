@@ -4,6 +4,8 @@ import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/api_service.dart';
+import '../../../../core/services/sync_service.dart';
+import '../../../../core/services/biometric_service.dart';
 
 // Auth state
 class AuthState {
@@ -11,12 +13,14 @@ class AuthState {
   final bool isLoading;
   final String? error;
   final bool isLoggedIn;
+  final bool isSyncing;
 
   const AuthState({
     this.user,
     this.isLoading = false,
     this.error,
     this.isLoggedIn = false,
+    this.isSyncing = false,
   });
 
   AuthState copyWith({
@@ -24,12 +28,14 @@ class AuthState {
     bool? isLoading,
     String? error,
     bool? isLoggedIn,
+    bool? isSyncing,
   }) {
     return AuthState(
       user: user ?? this.user,
       isLoading: isLoading ?? this.isLoading,
       error: error,
       isLoggedIn: isLoggedIn ?? this.isLoggedIn,
+      isSyncing: isSyncing ?? this.isSyncing,
     );
   }
 }
@@ -100,6 +106,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
           isLoggedIn: true,
         );
 
+        // Iniciar sincronização após login
+        _performPostLoginSync();
+
         return true;
       } else {
         state = state.copyWith(
@@ -128,12 +137,99 @@ class AuthNotifier extends StateNotifier<AuthState> {
           isLoggedIn: true,
         );
 
+        // Iniciar sincronização após login
+        _performPostLoginSync();
+
         return true;
       }
 
       state = state.copyWith(
         isLoading: false,
         error: 'Credenciais inválidas',
+      );
+      return false;
+    }
+  }
+
+  // Sincronização após login
+  Future<void> _performPostLoginSync() async {
+    state = state.copyWith(isSyncing: true);
+
+    try {
+      final syncResult = await SyncService.performFullSync();
+      
+      if (!syncResult.success) {
+        // Log dos erros de sincronização
+        print('Erros na sincronização: ${syncResult.errors.join(', ')}');
+      }
+    } catch (e) {
+      print('Erro na sincronização pós-login: $e');
+    } finally {
+      state = state.copyWith(isSyncing: false);
+    }
+  }
+
+  // Login com autenticação biométrica
+  Future<bool> loginWithBiometric() async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      // Verificar se a biometria está disponível
+      final isAvailable = await BiometricService.isBiometricAvailable();
+      if (!isAvailable) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Autenticação biométrica não disponível',
+        );
+        return false;
+      }
+
+      // Autenticar com biometria
+      final isAuthenticated = await BiometricService.authenticate(
+        reason: 'Autentique-se para acessar o Gestão FHD',
+      );
+
+      if (isAuthenticated) {
+        // Recuperar dados de login salvos
+        final savedEmail = StorageService.getUserEmail();
+        final savedToken = StorageService.getAuthToken();
+
+        if (savedEmail != null && savedToken != null) {
+          final user = User(
+            id: 'current_user',
+            email: savedEmail,
+            name: _getNameFromEmail(savedEmail),
+            role: _getRoleFromEmail(savedEmail),
+          );
+
+          state = state.copyWith(
+            user: user,
+            isLoading: false,
+            isLoggedIn: true,
+          );
+
+          // Iniciar sincronização
+          _performPostLoginSync();
+
+          return true;
+        } else {
+          state = state.copyWith(
+            isLoading: false,
+            error: 'Dados de login não encontrados',
+          );
+          return false;
+        }
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Autenticação biométrica falhou',
+        );
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Erro na autenticação biométrica: $e',
       );
       return false;
     }
@@ -151,6 +247,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     // Limpar dados locais
     await StorageService.clearAuth();
     await StorageService.clearCache();
+
+    // Cancelar notificações
+    await NotificationService.cancelAllNotifications();
 
     state = const AuthState();
   }

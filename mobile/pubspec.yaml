@@ -29,11 +29,27 @@ dependencies:
   hive_flutter: ^1.1.0
   
   # Notifications
-  # flutter_local_notifications: ^17.2.2 # Temporariamente comentado para resolver incompatibilidade
-  # awesome_notifications: ^0.9.3 # Temporariamente comentado para resolver incompatibilidade
+  flutter_local_notifications: ^17.2.2
+  awesome_notifications: ^0.9.3
+  
+  # Biometric Authentication
+  local_auth: ^2.1.8
+  local_auth_android: ^1.0.38
+  local_auth_ios: ^1.1.5
+  
+  # File Handling
+  file_picker: ^8.0.0+1
+  path_provider: ^2.1.2
+  path: ^1.8.3
   
   # UI Enhancements
   flutter_animate: ^4.3.0
+  
+  # Device Info
+  device_info_plus: ^9.1.2
+  
+  # Connectivity
+  connectivity_plus: ^5.0.2
 
 dev_dependencies:
   flutter_test:
@@ -46,4 +62,12 @@ flutter:
   uses-material-design: true
   
   assets:
-    - assets/images/ 
+    - assets/images/
+    - public/
+  
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700 
