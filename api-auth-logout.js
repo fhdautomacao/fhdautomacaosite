@@ -1,4 +1,4 @@
-import { supabase } from './src/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 
 export default async function handler(req, res) {
   console.log('API Logout chamada:', {
@@ -11,6 +11,17 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Criar cliente Supabase com variáveis de ambiente
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Variáveis do Supabase não encontradas')
+      return res.status(500).json({ error: 'Configuração do Supabase não encontrada' })
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
     // Fazer logout do Supabase
     const { error } = await supabase.auth.signOut()
 
