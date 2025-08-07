@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [logoError, setLogoError] = useState(false)
   const location = useLocation()
 
   const toggleMenu = () => {
@@ -152,11 +153,21 @@ const Header = () => {
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 transition={{ duration: 0.3 }}
               >
-                <img 
-                  src="/logo.png" 
-                  alt="FHD Automação Industrial Logo" 
-                  className="h-8 lg:h-10 w-auto transition-transform duration-300"
-                />
+                {!logoError ? (
+                  <img 
+                    src="/logo.png" 
+                    alt="FHD Automação Industrial Logo" 
+                    className="h-8 lg:h-10 w-auto transition-transform duration-300"
+                    onError={(e) => {
+                      console.error('Erro ao carregar logo:', e.target.src);
+                      setLogoError(true);
+                    }}
+                  />
+                ) : (
+                  <div className="h-8 lg:h-10 w-8 lg:w-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-xs">FHD</span>
+                  </div>
+                )}
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-cyan-400/20 rounded-full blur-lg"
                   animate={{ scale: [1, 1.2, 1] }}

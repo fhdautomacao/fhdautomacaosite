@@ -5,6 +5,7 @@ import { Menu, X, Home, Users, Settings, UserCheck, MessageCircle } from 'lucide
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [logoError, setLogoError] = useState(false)
   const location = useLocation()
 
   const toggleMenu = () => {
@@ -17,14 +18,24 @@ const Header = () => {
     <header className="fixed w-full z-50 bg-white shadow-lg">
       <div className="container mx-auto px-4 py-2 lg:py-3">
         <div className="flex justify-between items-center">
-          {/* Logo teste */}
+          {/* Logo */}
           <Link to="/" className="flex items-center group">
             <div className="relative mr-2 lg:mr-3">
-              <img 
-                src="/logo.png" 
-                alt="FHD Automação Industrial Logo" 
-                className="h-8 lg:h-10 w-auto transition-transform duration-300 group-hover:scale-105"
-              />
+              {!logoError ? (
+                <img 
+                  src="/logo.png" 
+                  alt="FHD Automação Industrial Logo" 
+                  className="h-8 lg:h-10 w-auto transition-transform duration-300 group-hover:scale-105"
+                  onError={(e) => {
+                    console.error('Erro ao carregar logo:', e.target.src);
+                    setLogoError(true);
+                  }}
+                />
+              ) : (
+                <div className="h-8 lg:h-10 w-8 lg:w-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-xs">FHD</span>
+                </div>
+              )}
             </div>
             <div>
               <h1 className="text-base lg:text-lg font-bold text-gray-800">

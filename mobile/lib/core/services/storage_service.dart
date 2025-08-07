@@ -71,7 +71,7 @@ class StorageService {
   static String getServerUrl() {
     return _settingsBox.get(
       _serverUrlKey, 
-      defaultValue: 'https://fhd-automacao-industrial-bq67.vercel.app'
+      defaultValue: 'https://fhdautomacaoindustrialsite.vercel.app'
     );
   }
 
