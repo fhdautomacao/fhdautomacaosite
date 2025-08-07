@@ -103,7 +103,8 @@ class DeepLinkService {
 
       // Validar tamanho
       final size = pdfFile.lengthSync();
-      if (size > UploadService._maxFileSize) {
+      const maxFileSize = 10 * 1024 * 1024; // 10MB
+      if (size > maxFileSize) {
         debugPrint('❌ Arquivo muito grande: ${size} bytes');
         return;
       }

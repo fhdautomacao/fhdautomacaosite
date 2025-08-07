@@ -591,10 +591,9 @@ class DashboardPage extends ConsumerWidget {
               ),
             ],
           ),
-        ))
-            .animate()
+        ).animate()
             .fadeIn(delay: 1500.ms, duration: 600.ms)
-            .slideY(begin: 0.3, delay: 1500.ms, duration: 600.ms),
+            .slideY(begin: 0.3, delay: 1500.ms, duration: 600.ms)),
       ],
     );
   }

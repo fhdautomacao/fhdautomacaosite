@@ -83,23 +83,24 @@ class _BillsPageState extends ConsumerState<BillsPage>
 
   Widget _buildBillsList(String status) {
     final billsState = ref.watch(billsProvider);
+    final billsNotifier = ref.read(billsProvider.notifier);
     List<Map<String, dynamic>> bills;
 
     switch (status) {
       case 'all':
-        bills = billsState.allBills;
+        bills = billsNotifier.allBills;
         break;
       case 'pending':
-        bills = billsState.pendingBills;
+        bills = billsNotifier.pendingBills;
         break;
       case 'overdue':
-        bills = billsState.overdueBills;
+        bills = billsNotifier.overdueBills;
         break;
       case 'paid':
-        bills = billsState.paidBills;
+        bills = billsNotifier.paidBills;
         break;
       default:
-        bills = billsState.allBills;
+        bills = billsNotifier.allBills;
     }
 
     if (bills.isEmpty) {

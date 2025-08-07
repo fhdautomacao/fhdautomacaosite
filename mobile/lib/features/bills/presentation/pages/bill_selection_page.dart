@@ -602,7 +602,7 @@ class _BillSelectionPageState extends ConsumerState<BillSelectionPage> {
 
   Widget _buildBottomBar() {
     if (_selectedInstallment == null) {
-      return null;
+      return const SizedBox.shrink();
     }
 
     return Container(
@@ -944,7 +944,7 @@ class _CreateBillDialogState extends State<CreateBillDialog> {
       final installments = int.parse(_installmentsController.text);
       final dueDate = DateTime.parse(_dueDateController.text.split('/').reversed.join('-'));
 
-      final response = await ApiService.createBill({
+      final response = await ApiService.createBill(billData: {
         'company_name': _companyController.text,
         'total_amount': amount,
         'installments': installments,

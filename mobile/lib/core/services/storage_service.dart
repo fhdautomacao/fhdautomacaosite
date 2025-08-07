@@ -189,21 +189,6 @@ class StorageService {
     return null;
   }
 
-  static Future<void> cacheQuotations(List<Map<String, dynamic>> quotations) async {
-    await _cacheBox.put(_quotationsCacheKey, {
-      'data': quotations,
-      'timestamp': DateTime.now().millisecondsSinceEpoch,
-    });
-  }
-
-  static List<Map<String, dynamic>>? getCachedQuotations() {
-    final cached = _cacheBox.get(_quotationsCacheKey);
-    if (cached != null && _isCacheValid(cached['timestamp'])) {
-      return List<Map<String, dynamic>>.from(cached['data']);
-    }
-    return null;
-  }
-
   // Cache validation (5 minutes)
   static bool _isCacheValid(int timestamp) {
     final now = DateTime.now().millisecondsSinceEpoch;

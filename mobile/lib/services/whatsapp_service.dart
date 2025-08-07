@@ -30,9 +30,10 @@ class WhatsAppService extends ChangeNotifier {
 
     try {
       final url = 'https://wa.me/$_whatsappNumber?text=${Uri.encodeComponent(message)}';
+      final uri = Uri.parse(url);
       
-      if (await canLaunchUrl(Uri.parse(url))) {
-        await launchUrl(Uri.parse(url));
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
         return true;
       }
       return false;
