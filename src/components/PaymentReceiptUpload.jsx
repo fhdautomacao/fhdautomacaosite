@@ -72,12 +72,6 @@ const PaymentReceiptUpload = ({
         });
       }, 200);
 
-      // Criar FormData
-      const formData = new FormData();
-      formData.append('billId', billId);
-      formData.append('installmentNumber', installment.installment_number);
-      formData.append('file', selectedFile);
-
       // Fazer upload usando a API organizada
       const result = await billsSimpleAPI.uploadReceipt(installment.id, selectedFile);
 
