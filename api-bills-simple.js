@@ -10,16 +10,21 @@ export default async function handler(req, res) {
   })
 
   try {
-    // Criar cliente Supabase
+    // Criar cliente Supabase com Service Role Key para contornar RLS
     const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
-    const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    if (!supabaseUrl || !supabaseKey) {
+    if (!supabaseUrl || !supabaseServiceKey) {
       console.error('Variáveis do Supabase não encontradas')
       return res.status(500).json({ error: 'Configuração do Supabase não encontrada' })
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    // Usar Service Role Key para contornar RLS
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        persistSession: false, // Não persistir sessão em ambiente serverless
+      },
+    })
 
     // Verificar autenticação - tentar sessão do Supabase primeiro, depois token via header
     let user = null;
@@ -132,69 +137,30 @@ async function handleUploadReceipt(req, res, supabase, user) {
           const fileName = `bill_${billId}_installment_${installmentNumber}_${timestamp}.${extension}`;
           const filePath = `payment-receipts/${billId}/${fileName}`;
 
-                     // Upload para o Supabase Storage (como na galeria)
+                     // Upload para o Supabase Storage usando Service Role Key (contorna RLS)
            console.log('📤 Tentando upload para bucket: arquivos');
            console.log('📁 Caminho do arquivo:', filePath);
            console.log('📏 Tamanho do arquivo:', fileBuffer.length, 'bytes');
            console.log('👤 Usuário autenticado:', user.id);
            
-           // Tentar upload com service role key para contornar RLS
-           let uploadSuccess = false;
-           let uploadData = null;
-           
-           // Método 1: Tentar com service role key (contorna RLS)
-           if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-             try {
-               console.log('🔄 Tentando com service role key...');
-               const serviceSupabase = createClient(
-                 process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
-                 process.env.SUPABASE_SERVICE_ROLE_KEY
-               );
-               
-               const { data, error } = await serviceSupabase.storage
-                 .from('arquivos')
-                 .upload(filePath, fileBuffer, {
-                   contentType: 'application/pdf',
-                   cacheControl: '3600',
-                   upsert: false
-                 });
-               
-               if (!error) {
-                 console.log('✅ Upload com service role bem-sucedido');
-                 uploadSuccess = true;
-                 uploadData = data;
-               } else {
-                 console.log('❌ Erro com service role:', error.message);
-               }
-             } catch (err) {
-               console.log('❌ Exceção com service role:', err.message);
-             }
-           }
-           
-           // Método 2: Tentar upload normal se service role não funcionou
-           if (!uploadSuccess) {
-             console.log('🔄 Tentando upload normal...');
-             const { data, error } = await supabase.storage
-               .from('arquivos')
-               .upload(filePath, fileBuffer, {
-                 contentType: 'application/pdf',
-                 cacheControl: '3600',
-                 upsert: false
-               });
+           // Upload direto usando Service Role Key (ignora RLS)
+           const { data, error } = await supabase.storage
+             .from('arquivos')
+             .upload(filePath, fileBuffer, {
+               contentType: 'application/pdf',
+               cacheControl: '3600',
+               upsert: false
+             });
 
-             if (error) {
-               console.error('❌ Erro no upload para Supabase:', error);
-               console.error('❌ Detalhes do erro:', JSON.stringify(error, null, 2));
-               return resolve(res.status(500).json({ 
-                 error: `Erro ao fazer upload para o storage: ${error.message}` 
-               }));
-             }
-             
-             uploadSuccess = true;
-             uploadData = data;
+           if (error) {
+             console.error('❌ Erro no upload para Supabase:', error);
+             console.error('❌ Detalhes do erro:', JSON.stringify(error, null, 2));
+             return resolve(res.status(500).json({ 
+               error: `Erro ao fazer upload para o storage: ${error.message}` 
+             }));
            }
 
-           console.log('✅ Upload para Supabase bem-sucedido:', uploadData);
+           console.log('✅ Upload para Supabase bem-sucedido:', data);
 
            // Obter URL pública
            const { data: urlData } = supabase.storage
