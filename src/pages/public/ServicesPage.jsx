@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Helmet } from 'react-helmet-async'
+import DynamicSEO from '@/components/common/DynamicSEO'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -130,18 +130,7 @@ const ServicesPage = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Nossos Serviços - FHD Automação Industrial</title>
-        <meta 
-          name="description" 
-          content="Conheça todos os serviços da FHD Automação Industrial: automação hidráulica e pneumática, projetos personalizados, manutenção especializada e muito mais." 
-        />
-        <meta 
-          name="keywords" 
-          content="serviços automação industrial, manutenção hidráulica, projetos pneumáticos, instalação tubulações, fabricação unidades hidráulicas" 
-        />
-        <link rel="canonical" href="https://fhdautomacao.com.br/servicos" />
-      </Helmet>
+      <DynamicSEO pageName="services" />
 
       <div className="min-h-screen bg-gray-50">
         {/* Hero Section */}

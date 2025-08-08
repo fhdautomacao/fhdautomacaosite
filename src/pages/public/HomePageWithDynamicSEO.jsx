@@ -7,9 +7,10 @@ import Gallery from '@/components/sections/Gallery'
 import Clients from '@/components/sections/Clients'
 import Contact from '@/components/sections/Contact'
 
-const HomePage = () => {
+const HomePageWithDynamicSEO = () => {
   return (
     <>
+      {/* Componente DynamicSEO que busca dados do banco */}
       <DynamicSEO pageName="home" />
       
       <main>
@@ -25,4 +26,4 @@ const HomePage = () => {
   )
 }
 
-export default HomePage
+export default HomePageWithDynamicSEO

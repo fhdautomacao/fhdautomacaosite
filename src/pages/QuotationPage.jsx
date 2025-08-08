@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Helmet } from 'react-helmet-async'
+import DynamicSEO from '@/components/common/DynamicSEO'
 import { motion } from 'framer-motion'
 import { 
   FileText, 
@@ -104,10 +104,7 @@ const QuotationPage = () => {
   if (success) {
     return (
       <>
-        <Helmet>
-          <title>Solicitação Enviada - FHD Automação Industrial</title>
-          <meta name="description" content="Sua solicitação de orçamento foi enviada com sucesso. Entraremos em contato em breve." />
-        </Helmet>
+        <DynamicSEO pageName="quotation" />
         
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center p-4">
           <motion.div
@@ -152,10 +149,7 @@ const QuotationPage = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Solicitar Orçamento - FHD Automação Industrial</title>
-        <meta name="description" content="Solicite seu orçamento personalizado para projetos de automação industrial, sistemas hidráulicos e pneumáticos. Resposta em até 24 horas." />
-      </Helmet>
+      <DynamicSEO pageName="quotation" />
 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
         <div className="container mx-auto px-4 py-12">

@@ -60,6 +60,7 @@ import ServicesManager from './ContentManagers/ServicesManager'
 import QuotationNotification from '@/components/QuotationNotification'
 import NotificationSettings from '@/components/NotificationSettings'
 import MobileOptimizations from '@/components/MobileOptimizations'
+import SEOManager from './SEOManager'
 
 const AdminPageNew = () => {
   const [activeSection, setActiveSection] = useState('dashboard')
@@ -392,6 +393,9 @@ const AdminPageNew = () => {
 
       case 'notifications':
         return <NotificationSettings />
+
+      case 'seo':
+        return <SEOManager />
 
       default:
         return (

@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async'
+import DynamicSEO from '@/components/common/DynamicSEO'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -36,18 +36,7 @@ const ContactPage = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Contato - FHD Automação Industrial</title>
-        <meta 
-          name="description" 
-          content="Entre em contato com a FHD Automação Industrial. Telefone: (19) 99865-2144. E-mail: comercial@fhdautomacao.com.br. Endereço em Sumaré, SP." 
-        />
-        <meta 
-          name="keywords" 
-          content="contato FHD Automação, telefone automação industrial, endereço Sumaré SP, orçamento hidráulica pneumática" 
-        />
-        <link rel="canonical" href="https://fhdautomacao.com.br/contato" />
-      </Helmet>
+      <DynamicSEO pageName="contact" />
 
       <div className="min-h-screen bg-gray-50">
         {/* Hero Section */}

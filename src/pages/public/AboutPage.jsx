@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async'
+import DynamicSEO from '@/components/common/DynamicSEO'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -58,18 +58,7 @@ const AboutPage = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Quem Somos - FHD Automação Industrial</title>
-        <meta 
-          name="description" 
-          content="Conheça a história da FHD Automação Industrial. Mais de 10 anos de experiência em soluções hidráulicas e pneumáticas, com sede em Sumaré, SP." 
-        />
-        <meta 
-          name="keywords" 
-          content="sobre FHD Automação, história empresa, automação industrial Sumaré, missão visão valores, equipe especializada" 
-        />
-        <link rel="canonical" href="https://fhdautomacao.com.br/quem-somos" />
-      </Helmet>
+      <DynamicSEO pageName="about" />
 
       <div className="min-h-screen bg-gray-50">
         {/* Hero Section */}
