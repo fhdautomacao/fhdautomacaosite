@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { checkPasswordBreach, validatePasswordStrength } from '../utils/passwordSecurity'
 
 const AuthContext = createContext()
 
@@ -120,12 +121,78 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const signUp = async (email, password, userData = {}) => {
+    try {
+      // Validar força da senha
+      const passwordValidation = validatePasswordStrength(password)
+      if (!passwordValidation.isValid) {
+        throw new Error(`Senha fraca: ${passwordValidation.errors.join(', ')}`)
+      }
+
+      // Verificar se a senha foi comprometida
+      const isBreached = await checkPasswordBreach(password)
+      if (isBreached) {
+        throw new Error('Esta senha foi comprometida em vazamentos de dados. Por favor, escolha uma senha diferente.')
+      }
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: userData
+        }
+      })
+
+      if (error) {
+        console.error('Erro no registro:', error)
+        throw error
+      }
+
+      return data
+    } catch (error) {
+      console.error('Erro ao registrar usuário:', error)
+      throw error
+    }
+  }
+
+  const updatePassword = async (newPassword) => {
+    try {
+      // Validar força da senha
+      const passwordValidation = validatePasswordStrength(newPassword)
+      if (!passwordValidation.isValid) {
+        throw new Error(`Senha fraca: ${passwordValidation.errors.join(', ')}`)
+      }
+
+      // Verificar se a senha foi comprometida
+      const isBreached = await checkPasswordBreach(newPassword)
+      if (isBreached) {
+        throw new Error('Esta senha foi comprometida em vazamentos de dados. Por favor, escolha uma senha diferente.')
+      }
+
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      })
+
+      if (error) {
+        console.error('Erro ao atualizar senha:', error)
+        throw error
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar senha:', error)
+      throw error
+    }
+  }
+
   const value = {
     user,
     loading,
     login,
     logout,
-    userPermissions
+    signUp,
+    updatePassword,
+    userPermissions,
+    validatePasswordStrength,
+    checkPasswordBreach
   }
 
   return (

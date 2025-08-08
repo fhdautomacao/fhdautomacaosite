@@ -30,7 +30,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import AdminModal from '@/components/admin/AdminModal'
+import { ModalActionButton, ModalSection, ModalGrid } from '@/components/admin/AdminModal'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { profitSharingAPI } from '@/api/profitSharing'
 import { companiesAPI } from '@/api/companies'
@@ -77,6 +78,10 @@ const ProfitSharingManager = () => {
     first_due_date: '',
     notes: ''
   })
+
+  // Estados para validação
+  const [errors, setErrors] = useState({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     loadProfitSharings()
@@ -180,21 +185,65 @@ const ProfitSharingManager = () => {
     return profit / 2
   }
 
+  // Função para validar formulário
+  const validateForm = () => {
+    const newErrors = {}
+
+    // Validação de empresa
+    if (!formData.company_id) {
+      newErrors.company_id = 'Empresa é obrigatória'
+    }
+
+    // Validação de boleto
+    if (!formData.bill_id) {
+      newErrors.bill_id = 'Boleto é obrigatório'
+    }
+
+    // Validação de valor do boleto
+    if (!formData.bill_amount || parseFloat(formData.bill_amount) <= 0) {
+      newErrors.bill_amount = 'Valor do boleto deve ser maior que zero'
+    }
+
+    // Validação de gastos (deve ser menor que o valor do boleto)
+    if (formData.expenses && parseFloat(formData.expenses) >= parseFloat(formData.bill_amount)) {
+      newErrors.expenses = 'Gastos devem ser menores que o valor do boleto'
+    }
+
+    // Validação de parcelas
+    if (!formData.installments || parseInt(formData.installments) < 1) {
+      newErrors.installments = 'Número de parcelas deve ser pelo menos 1'
+    }
+
+    // Validação de intervalo
+    if (!formData.installment_interval || parseInt(formData.installment_interval) < 1) {
+      newErrors.installment_interval = 'Intervalo deve ser pelo menos 1 dia'
+    }
+
+    // Validação de data de vencimento
+    if (!formData.first_due_date) {
+      newErrors.first_due_date = 'Data de vencimento é obrigatória'
+    } else {
+      const selectedDate = new Date(formData.first_due_date)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      if (selectedDate < today) {
+        newErrors.first_due_date = 'Data de vencimento não pode ser no passado'
+      }
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleCreateProfitSharing = async () => {
     try {
-      // Validações básicas
-      if (!formData.company_id) {
-        alert("Empresa é obrigatória.")
-        return
-      }
-      
-      if (!formData.bill_id) {
-        alert("Boleto é obrigatório.")
-        return
-      }
-      
-      if (!formData.first_due_date) {
-        alert("Data de vencimento é obrigatória.")
+      setIsSubmitting(true)
+      setErrors({})
+
+      // Validar formulário
+      if (!validateForm()) {
+        setIsSubmitting(false)
         return
       }
 
@@ -236,16 +285,59 @@ const ProfitSharingManager = () => {
       setSelectedCompany(null)
       setSelectedBill(null)
       setBills([])
+      setErrors({})
       loadProfitSharings()
       loadStatistics()
     } catch (err) {
       console.error("Erro ao criar divisão de lucro:", err)
-      alert("Erro ao criar divisão de lucro. Tente novamente.")
+      setErrors({ submit: "Erro ao criar divisão de lucro. Verifique os dados e tente novamente." })
+    } finally {
+      setIsSubmitting(false)
     }
+  }
+
+  // Estados para validação do modal de parcela
+  const [installmentErrors, setInstallmentErrors] = useState({})
+  const [isUpdatingInstallment, setIsUpdatingInstallment] = useState(false)
+
+  // Função para validar formulário de parcela
+  const validateInstallmentForm = () => {
+    const newErrors = {}
+
+    // Validação de status
+    if (!selectedInstallment.status) {
+      newErrors.status = 'Status é obrigatório'
+    }
+
+    // Validação de data de pagamento quando status é "Pago"
+    if (selectedInstallment.status === 'paid') {
+      if (!selectedInstallment.paid_date) {
+        newErrors.paid_date = 'Data do pagamento é obrigatória quando status é "Pago"'
+      } else {
+        const paidDate = new Date(selectedInstallment.paid_date)
+        const dueDate = new Date(selectedInstallment.due_date)
+        
+        if (paidDate > new Date()) {
+          newErrors.paid_date = 'Data do pagamento não pode ser no futuro'
+        }
+      }
+    }
+
+    setInstallmentErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
   const handleUpdateInstallment = async () => {
     try {
+      setIsUpdatingInstallment(true)
+      setInstallmentErrors({})
+
+      // Validar formulário
+      if (!validateInstallmentForm()) {
+        setIsUpdatingInstallment(false)
+        return
+      }
+
       await profitSharingAPI.updateInstallment(selectedInstallment.id, {
         status: selectedInstallment.status,
         paid_date: selectedInstallment.status === 'paid' ? selectedInstallment.paid_date : null,
@@ -284,10 +376,13 @@ const ProfitSharingManager = () => {
       
       setShowInstallmentModal(false)
       setSelectedInstallment(null)
+      setInstallmentErrors({})
       loadStatistics()
     } catch (err) {
       console.error("Erro ao atualizar parcela:", err)
-      alert("Erro ao atualizar parcela. Tente novamente.")
+      setInstallmentErrors({ submit: "Erro ao atualizar parcela. Verifique os dados e tente novamente." })
+    } finally {
+      setIsUpdatingInstallment(false)
     }
   }
 
@@ -643,376 +738,484 @@ const ProfitSharingManager = () => {
         </div>
       )}
 
-      {/* Create Modal */}
-      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>Nova Divisão de Lucro</DialogTitle>
-            <DialogDescription>
-              Selecione a empresa, boleto e configure os gastos para calcular a divisão de lucro.
-            </DialogDescription>
-          </DialogHeader>
+             {/* Create Modal */}
+       <AdminModal
+         open={showCreateModal}
+         onOpenChange={(open) => {
+           setShowCreateModal(open)
+           if (!open) {
+             setErrors({})
+             setFormData({
+               company_id: '',
+               bill_id: '',
+               company_name: '',
+               bill_description: '',
+               bill_amount: '',
+               expenses: '',
+               extras: '',
+               installments: 1,
+               installment_interval: 30,
+               first_due_date: '',
+               notes: ''
+             })
+             setSelectedCompany(null)
+             setSelectedBill(null)
+             setBills([])
+           }
+         }}
+         title="Nova Divisão de Lucro"
+         description="Selecione a empresa, boleto e configure os gastos para calcular a divisão de lucro"
+         type="create"
+         size="2xl"
+       >
+         <div className="space-y-6">
+                       {/* Mensagem de erro geral */}
+            {errors.submit && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-600 text-sm">{errors.submit}</p>
+              </div>
+            )}
+
+           <ModalSection title="Seleção de Empresa e Boleto">
+             <ModalGrid cols={2}>
+               <div>
+                 <Label htmlFor="company" className="text-sm font-medium text-gray-700">Empresa *</Label>
+                 <Select value={formData.company_id} onValueChange={handleCompanyChange}>
+                   <SelectTrigger className={`mt-1 ${errors.company_id ? 'border-red-500 focus:border-red-500' : ''}`}>
+                     <SelectValue placeholder="Selecione uma empresa" />
+                   </SelectTrigger>
+                   <SelectContent>
+                     {companies.map((company) => (
+                       <SelectItem key={company.id} value={company.id}>
+                         {company.name}
+                       </SelectItem>
+                     ))}
+                   </SelectContent>
+                 </Select>
+                 {errors.company_id && (
+                   <p className="text-red-600 text-xs mt-1">{errors.company_id}</p>
+                 )}
+               </div>
+               
+               <div>
+                 <Label htmlFor="bill" className="text-sm font-medium text-gray-700">Boleto *</Label>
+                 <Select 
+                   value={formData.bill_id} 
+                   onValueChange={handleBillChange}
+                   disabled={!selectedCompany}
+                 >
+                   <SelectTrigger className={`mt-1 ${errors.bill_id ? 'border-red-500 focus:border-red-500' : ''}`}>
+                     <SelectValue placeholder={selectedCompany ? "Selecione um boleto" : "Selecione uma empresa primeiro"} />
+                   </SelectTrigger>
+                   <SelectContent>
+                     {bills.map((bill) => (
+                       <SelectItem key={bill.id} value={bill.id}>
+                         {bill.description} - {formatCurrency(bill.total_amount)}
+                       </SelectItem>
+                     ))}
+                   </SelectContent>
+                 </Select>
+                 {errors.bill_id && (
+                   <p className="text-red-600 text-xs mt-1">{errors.bill_id}</p>
+                 )}
+               </div>
+             </ModalGrid>
+           </ModalSection>
           
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Empresa *</Label>
-                <Select value={formData.company_id} onValueChange={handleCompanyChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma empresa" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {companies.map((company) => (
-                      <SelectItem key={company.id} value={company.id}>
-                        {company.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label>Boleto *</Label>
-                <Select 
-                  value={formData.bill_id} 
-                  onValueChange={handleBillChange}
-                  disabled={!selectedCompany}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={selectedCompany ? "Selecione um boleto" : "Selecione uma empresa primeiro"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {bills.map((bill) => (
-                      <SelectItem key={bill.id} value={bill.id}>
-                        {bill.description} - {formatCurrency(bill.total_amount)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            {selectedBill && (
-              <>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label>Valor do Boleto</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={formData.bill_amount}
-                      onChange={(e) => setFormData({...formData, bill_amount: e.target.value})}
-                      placeholder="0.00"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label>Gastos do Serviço</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={formData.expenses}
-                      onChange={(e) => setFormData({...formData, expenses: e.target.value})}
-                      placeholder="0.00"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label>Extras (não divididos)</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={formData.extras}
-                      onChange={(e) => setFormData({...formData, extras: e.target.value})}
-                      placeholder="0.00"
-                    />
-                  </div>
-                </div>
+          {selectedBill && (
+            <>
+                             <ModalSection title="Configuração Financeira">
+                 <ModalGrid cols={3}>
+                   <div>
+                     <Label htmlFor="bill_amount" className="text-sm font-medium text-gray-700">Valor do Boleto *</Label>
+                     <Input
+                       id="bill_amount"
+                       type="number"
+                       step="0.01"
+                       value={formData.bill_amount}
+                       onChange={(e) => setFormData({...formData, bill_amount: e.target.value})}
+                       placeholder="0.00"
+                       className={`mt-1 ${errors.bill_amount ? 'border-red-500 focus:border-red-500' : ''}`}
+                     />
+                     {errors.bill_amount && (
+                       <p className="text-red-600 text-xs mt-1">{errors.bill_amount}</p>
+                     )}
+                   </div>
+                   
+                   <div>
+                     <Label htmlFor="expenses" className="text-sm font-medium text-gray-700">Gastos do Serviço</Label>
+                     <Input
+                       id="expenses"
+                       type="number"
+                       step="0.01"
+                       value={formData.expenses}
+                       onChange={(e) => setFormData({...formData, expenses: e.target.value})}
+                       placeholder="0.00"
+                       className={`mt-1 ${errors.expenses ? 'border-red-500 focus:border-red-500' : ''}`}
+                     />
+                     {errors.expenses && (
+                       <p className="text-red-600 text-xs mt-1">{errors.expenses}</p>
+                     )}
+                   </div>
+                   
+                   <div>
+                     <Label htmlFor="extras" className="text-sm font-medium text-gray-700">Extras (não divididos)</Label>
+                     <Input
+                       id="extras"
+                       type="number"
+                       step="0.01"
+                       value={formData.extras}
+                       onChange={(e) => setFormData({...formData, extras: e.target.value})}
+                       placeholder="0.00"
+                       className="mt-1"
+                     />
+                   </div>
+                 </ModalGrid>
                 
-                <Card className="bg-blue-50">
-                  <CardContent className="p-4">
-                    <h4 className="font-semibold text-lg mb-3">Cálculo da Divisão</h4>
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <span className="font-medium text-gray-600">Lucro:</span>
-                        <p className="text-lg font-bold text-green-600">
-                          {formatCurrency(calculateProfit())}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="font-medium text-gray-600">Parte do Sócio (50% + extras):</span>
-                        <p className="text-lg font-bold text-blue-600">
-                          {formatCurrency(calculatePartnerShare())}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="font-medium text-gray-600">Sua Parte (50%):</span>
-                        <p className="text-lg font-bold text-purple-600">
-                          {formatCurrency(calculateMyShare())}
-                        </p>
-                      </div>
+                {/* Cálculo da Divisão */}
+                <div className="bg-gray-50 rounded-lg p-4 mt-4">
+                  <h4 className="font-semibold text-gray-900 mb-3">Cálculo da Divisão</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <span className="text-sm font-medium text-green-700 block mb-1">Lucro</span>
+                      <p className="text-lg font-bold text-green-600">
+                        {formatCurrency(calculateProfit())}
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
-                
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label>Parcelas para Pagamento</Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={formData.installments}
-                      onChange={(e) => setFormData({...formData, installments: e.target.value})}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label>Intervalo (dias)</Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={formData.installment_interval}
-                      onChange={(e) => setFormData({...formData, installment_interval: e.target.value})}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label>Primeiro Vencimento *</Label>
-                    <Input
-                      type="date"
-                      value={formData.first_due_date}
-                      onChange={(e) => setFormData({...formData, first_due_date: e.target.value})}
-                    />
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <span className="text-sm font-medium text-blue-700 block mb-1">Parte do Sócio (50% + extras)</span>
+                      <p className="text-lg font-bold text-blue-600">
+                        {formatCurrency(calculatePartnerShare())}
+                      </p>
+                    </div>
+                    <div className="text-center p-3 bg-purple-50 rounded-lg">
+                      <span className="text-sm font-medium text-purple-700 block mb-1">Sua Parte (50%)</span>
+                      <p className="text-lg font-bold text-purple-600">
+                        {formatCurrency(calculateMyShare())}
+                      </p>
+                    </div>
                   </div>
                 </div>
+              </ModalSection>
+              
+                             <ModalSection title="Configuração de Parcelas">
+                 <ModalGrid cols={3}>
+                   <div>
+                     <Label htmlFor="installments" className="text-sm font-medium text-gray-700">Parcelas para Pagamento *</Label>
+                     <Input
+                       id="installments"
+                       type="number"
+                       min="1"
+                       value={formData.installments}
+                       onChange={(e) => setFormData({...formData, installments: e.target.value})}
+                       className={`mt-1 ${errors.installments ? 'border-red-500 focus:border-red-500' : ''}`}
+                     />
+                     {errors.installments && (
+                       <p className="text-red-600 text-xs mt-1">{errors.installments}</p>
+                     )}
+                   </div>
+                   
+                   <div>
+                     <Label htmlFor="installment_interval" className="text-sm font-medium text-gray-700">Intervalo (dias) *</Label>
+                     <Input
+                       id="installment_interval"
+                       type="number"
+                       min="1"
+                       value={formData.installment_interval}
+                       onChange={(e) => setFormData({...formData, installment_interval: e.target.value})}
+                       className={`mt-1 ${errors.installment_interval ? 'border-red-500 focus:border-red-500' : ''}`}
+                     />
+                     {errors.installment_interval && (
+                       <p className="text-red-600 text-xs mt-1">{errors.installment_interval}</p>
+                     )}
+                   </div>
+                   
+                   <div>
+                     <Label htmlFor="first_due_date" className="text-sm font-medium text-gray-700">Primeiro Vencimento *</Label>
+                     <Input
+                       id="first_due_date"
+                       type="date"
+                       value={formData.first_due_date}
+                       onChange={(e) => setFormData({...formData, first_due_date: e.target.value})}
+                       className={`mt-1 ${errors.first_due_date ? 'border-red-500 focus:border-red-500' : ''}`}
+                     />
+                     {errors.first_due_date && (
+                       <p className="text-red-600 text-xs mt-1">{errors.first_due_date}</p>
+                     )}
+                   </div>
+                 </ModalGrid>
                 
                 <div>
-                  <Label>Observações</Label>
+                  <Label htmlFor="notes" className="text-sm font-medium text-gray-700">Observações</Label>
                   <Textarea
+                    id="notes"
                     value={formData.notes}
                     onChange={(e) => setFormData({...formData, notes: e.target.value})}
                     placeholder="Observações sobre esta divisão..."
                     rows={3}
+                    className="mt-1"
                   />
                 </div>
-              </>
-            )}
-          </div>
+              </ModalSection>
+            </>
+          )}
           
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setShowCreateModal(false)}>
-              Cancelar
-            </Button>
-            <Button 
-              onClick={handleCreateProfitSharing}
-              disabled={!selectedBill || !formData.first_due_date}
-            >
-              Criar Divisão
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+                     <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+             <ModalActionButton
+               onClick={() => {
+                 setShowCreateModal(false)
+                 setErrors({})
+               }}
+               variant="outline"
+               disabled={isSubmitting}
+             >
+               Cancelar
+             </ModalActionButton>
+             <ModalActionButton
+               onClick={handleCreateProfitSharing}
+               disabled={isSubmitting || !selectedBill || !formData.first_due_date}
+               variant="success"
+               icon={isSubmitting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Calculator className="h-4 w-4" />}
+             >
+               {isSubmitting ? 'Criando...' : 'Criar Divisão'}
+             </ModalActionButton>
+           </div>
+        </div>
+      </AdminModal>
 
       {/* Details Modal */}
-      <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>Detalhes da Divisão de Lucro</DialogTitle>
-            <DialogDescription>
-              Visualize todos os detalhes e gerencie os pagamentos ao sócio.
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedProfitSharing && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+      <AdminModal
+        open={showDetailsModal}
+        onOpenChange={setShowDetailsModal}
+        title="Detalhes da Divisão de Lucro"
+        description="Visualize todos os detalhes e gerencie os pagamentos ao sócio"
+        type="view"
+        size="2xl"
+      >
+        {selectedProfitSharing && (
+          <div className="space-y-6">
+            <ModalSection title="Informações Básicas">
+              <ModalGrid cols={2}>
                 <div>
-                  <Label className="font-semibold">Empresa</Label>
-                  <p className="text-gray-900">{selectedProfitSharing.company_name}</p>
+                  <Label className="text-sm font-medium text-gray-700">Empresa</Label>
+                  <p className="text-gray-900 mt-1">{selectedProfitSharing.company_name}</p>
                 </div>
                 <div>
-                  <Label className="font-semibold">Status</Label>
-                  <Badge className={getStatusColor(selectedProfitSharing.status)}>
-                    {selectedProfitSharing.status === 'pending' ? 'Pendente' : 
-                     selectedProfitSharing.status === 'in_progress' ? 'Em Andamento' : 'Concluída'}
-                  </Badge>
+                  <Label className="text-sm font-medium text-gray-700">Status</Label>
+                  <div className="mt-1">
+                    <Badge className={getStatusColor(selectedProfitSharing.status)}>
+                      {selectedProfitSharing.status === 'pending' ? 'Pendente' : 
+                       selectedProfitSharing.status === 'in_progress' ? 'Em Andamento' : 'Concluída'}
+                    </Badge>
+                  </div>
                 </div>
                 <div className="col-span-2">
-                  <Label className="font-semibold">Descrição do Boleto</Label>
-                  <p className="text-gray-900">{selectedProfitSharing.bill_description}</p>
+                  <Label className="text-sm font-medium text-gray-700">Descrição do Boleto</Label>
+                  <p className="text-gray-900 mt-1">{selectedProfitSharing.bill_description}</p>
                 </div>
-              </div>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Cálculo Financeiro</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-4 gap-4 text-center">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Valor do Boleto</p>
-                      <p className="text-lg font-bold text-blue-600">
-                        {formatCurrency(selectedProfitSharing.bill_amount)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Gastos</p>
-                      <p className="text-lg font-bold text-red-600">
-                        {formatCurrency(selectedProfitSharing.expenses)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Lucro</p>
-                      <p className="text-lg font-bold text-green-600">
-                        {formatCurrency(selectedProfitSharing.profit)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Parte do Sócio</p>
-                      <p className="text-lg font-bold text-purple-600">
-                        {formatCurrency(selectedProfitSharing.partner_share)}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <div>
-                <h4 className="font-semibold text-lg mb-4">Parcelas para Pagamento do Sócio</h4>
-                {selectedProfitSharing.profit_sharing_installments?.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhuma parcela encontrada</h3>
-                    <p className="text-gray-600">Esta divisão ainda não possui parcelas cadastradas.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {selectedProfitSharing.profit_sharing_installments?.map((installment) => (
-                      <div key={installment.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center space-x-4">
-                          <div>
-                            <span className="font-medium">Parcela {installment.installment_number}</span>
-                            <p className="text-sm text-gray-600">
-                              Vencimento: {new Date(installment.due_date).toLocaleDateString('pt-BR')}
-                            </p>
-                            {installment.paid_date && (
-                              <p className="text-sm text-green-600">
-                                Pago em: {new Date(installment.paid_date).toLocaleDateString('pt-BR')}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <span className="font-semibold">{formatCurrency(installment.amount)}</span>
-                          </div>
-                          <Badge className={getInstallmentStatusColor(installment.status)}>
-                            {installment.status === 'paid' ? 'Pago' : 
-                             installment.status === 'pending' ? 'Pendente' : 'Vencido'}
-                          </Badge>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedInstallment(installment)
-                            setShowInstallmentModal(true)
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              
-              {selectedProfitSharing.notes && (
-                <div>
-                  <Label className="font-semibold">Observações</Label>
-                  <p className="text-gray-900 mt-1">{selectedProfitSharing.notes}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Installment Modal */}
-      <Dialog open={showInstallmentModal} onOpenChange={setShowInstallmentModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Gerenciar Parcela</DialogTitle>
-            <DialogDescription>
-              Atualize o status da parcela e adicione observações.
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedInstallment && (
-            <div className="space-y-4">
-              <div>
-                <Label className="font-semibold">Parcela {selectedInstallment.installment_number}</Label>
-                <p className="text-gray-600">
-                  Valor: {formatCurrency(selectedInstallment.amount)} - 
-                  Vencimento: {new Date(selectedInstallment.due_date).toLocaleDateString('pt-BR')}
-                </p>
-              </div>
-              
-              <div>
-                <Label>Status</Label>
-                <Select 
-                  value={selectedInstallment.status} 
-                  onValueChange={(value) => setSelectedInstallment({...selectedInstallment, status: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pendente</SelectItem>
-                    <SelectItem value="paid">Pago</SelectItem>
-                    <SelectItem value="overdue">Vencido</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {/* Data de Pagamento - aparece apenas quando status é "Pago" */}
-              {selectedInstallment.status === 'paid' && (
-                <div>
-                  <Label>Data do Pagamento</Label>
-                  <Input
-                    type="date"
-                    value={selectedInstallment.paid_date || new Date().toISOString().split('T')[0]}
-                    onChange={(e) => setSelectedInstallment({...selectedInstallment, paid_date: e.target.value})}
-                    className="w-full"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Selecione a data em que o pagamento foi realizado
+              </ModalGrid>
+            </ModalSection>
+            
+            <ModalSection title="Cálculo Financeiro">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div className="p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm font-medium text-blue-700">Valor do Boleto</p>
+                  <p className="text-lg font-bold text-blue-600 mt-1">
+                    {formatCurrency(selectedProfitSharing.bill_amount)}
                   </p>
                 </div>
-              )}
-              
-              <div>
-                <Label>Observações do Pagamento</Label>
-                <Textarea
-                  value={selectedInstallment.payment_notes || ''}
-                  onChange={(e) => setSelectedInstallment({...selectedInstallment, payment_notes: e.target.value})}
-                  placeholder="Observações sobre o pagamento..."
-                  rows={3}
-                />
+                <div className="p-3 bg-red-50 rounded-lg">
+                  <p className="text-sm font-medium text-red-700">Gastos</p>
+                  <p className="text-lg font-bold text-red-600 mt-1">
+                    {formatCurrency(selectedProfitSharing.expenses)}
+                  </p>
+                </div>
+                <div className="p-3 bg-green-50 rounded-lg">
+                  <p className="text-sm font-medium text-green-700">Lucro</p>
+                  <p className="text-lg font-bold text-green-600 mt-1">
+                    {formatCurrency(selectedProfitSharing.profit)}
+                  </p>
+                </div>
+                <div className="p-3 bg-purple-50 rounded-lg">
+                  <p className="text-sm font-medium text-purple-700">Parte do Sócio</p>
+                  <p className="text-lg font-bold text-purple-600 mt-1">
+                    {formatCurrency(selectedProfitSharing.partner_share)}
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
-          
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setShowInstallmentModal(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleUpdateInstallment}>
-              Salvar Alterações
-            </Button>
+            </ModalSection>
+            
+            <ModalSection title="Parcelas para Pagamento do Sócio">
+              {selectedProfitSharing.profit_sharing_installments?.length === 0 ? (
+                <div className="text-center py-8">
+                  <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhuma parcela encontrada</h3>
+                  <p className="text-gray-600">Esta divisão ainda não possui parcelas cadastradas.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {selectedProfitSharing.profit_sharing_installments?.map((installment) => (
+                    <div key={installment.id} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
+                      <div className="flex items-center space-x-4">
+                        <div>
+                          <span className="font-medium text-gray-900">Parcela {installment.installment_number}</span>
+                          <p className="text-sm text-gray-600">
+                            Vencimento: {new Date(installment.due_date).toLocaleDateString('pt-BR')}
+                          </p>
+                          {installment.paid_date && (
+                            <p className="text-sm text-green-600">
+                              Pago em: {new Date(installment.paid_date).toLocaleDateString('pt-BR')}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <span className="font-semibold text-gray-900">{formatCurrency(installment.amount)}</span>
+                        </div>
+                        <Badge className={getInstallmentStatusColor(installment.status)}>
+                          {installment.status === 'paid' ? 'Pago' : 
+                           installment.status === 'pending' ? 'Pendente' : 'Vencido'}
+                        </Badge>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedInstallment(installment)
+                          setShowInstallmentModal(true)
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </ModalSection>
+            
+            {selectedProfitSharing.notes && (
+              <ModalSection title="Observações">
+                <p className="text-gray-900">{selectedProfitSharing.notes}</p>
+              </ModalSection>
+            )}
           </div>
-        </DialogContent>
-      </Dialog>
-    </div>
-  )
-}
+        )}
+      </AdminModal>
 
-export default ProfitSharingManager
+             {/* Installment Modal */}
+       <AdminModal
+         open={showInstallmentModal}
+         onOpenChange={(open) => {
+           setShowInstallmentModal(open)
+           if (!open) {
+             setInstallmentErrors({})
+             setSelectedInstallment(null)
+           }
+         }}
+         title="Gerenciar Parcela"
+         description="Atualize o status da parcela e adicione observações"
+         type="edit"
+         size="2xl"
+       >
+         {selectedInstallment && (
+           <div className="space-y-6">
+                           {/* Mensagem de erro geral */}
+              {installmentErrors.submit && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-red-600 text-sm">{installmentErrors.submit}</p>
+                </div>
+              )}
+
+             <ModalSection title="Informações da Parcela">
+               <div>
+                 <Label className="text-sm font-medium text-gray-700">Parcela {selectedInstallment.installment_number}</Label>
+                 <p className="text-gray-600 mt-1">
+                   Valor: {formatCurrency(selectedInstallment.amount)} - 
+                   Vencimento: {new Date(selectedInstallment.due_date).toLocaleDateString('pt-BR')}
+                 </p>
+               </div>
+             </ModalSection>
+             
+             <ModalSection title="Status do Pagamento">
+               <div>
+                 <Label htmlFor="status" className="text-sm font-medium text-gray-700">Status *</Label>
+                 <Select 
+                   value={selectedInstallment.status} 
+                   onValueChange={(value) => setSelectedInstallment({...selectedInstallment, status: value})}
+                 >
+                   <SelectTrigger className={`mt-1 ${installmentErrors.status ? 'border-red-500 focus:border-red-500' : ''}`}>
+                     <SelectValue />
+                   </SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="pending">Pendente</SelectItem>
+                     <SelectItem value="paid">Pago</SelectItem>
+                     <SelectItem value="overdue">Vencido</SelectItem>
+                   </SelectContent>
+                 </Select>
+                 {installmentErrors.status && (
+                   <p className="text-red-600 text-xs mt-1">{installmentErrors.status}</p>
+                 )}
+               </div>
+               
+               {/* Data de Pagamento - aparece apenas quando status é "Pago" */}
+               {selectedInstallment.status === 'paid' && (
+                 <div className="mt-4">
+                   <Label htmlFor="paid_date" className="text-sm font-medium text-gray-700">Data do Pagamento *</Label>
+                   <Input
+                     id="paid_date"
+                     type="date"
+                     value={selectedInstallment.paid_date || new Date().toISOString().split('T')[0]}
+                     onChange={(e) => setSelectedInstallment({...selectedInstallment, paid_date: e.target.value})}
+                     className={`mt-1 ${installmentErrors.paid_date ? 'border-red-500 focus:border-red-500' : ''}`}
+                   />
+                   {installmentErrors.paid_date && (
+                     <p className="text-red-600 text-xs mt-1">{installmentErrors.paid_date}</p>
+                   )}
+                   <p className="text-xs text-gray-500 mt-1">
+                     Selecione a data em que o pagamento foi realizado
+                   </p>
+                 </div>
+               )}
+             </ModalSection>
+             
+             <ModalSection title="Observações">
+               <div>
+                 <Label htmlFor="payment_notes" className="text-sm font-medium text-gray-700">Observações do Pagamento</Label>
+                 <Textarea
+                   id="payment_notes"
+                   value={selectedInstallment.payment_notes || ''}
+                   onChange={(e) => setSelectedInstallment({...selectedInstallment, payment_notes: e.target.value})}
+                   placeholder="Observações sobre o pagamento..."
+                   rows={3}
+                   className="mt-1"
+                 />
+               </div>
+             </ModalSection>
+             
+             <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+               <ModalActionButton
+                 onClick={() => {
+                   setShowInstallmentModal(false)
+                   setInstallmentErrors({})
+                 }}
+                 variant="outline"
+                 disabled={isUpdatingInstallment}
+               >
+                 Cancelar
+               </ModalActionButton>
+               <ModalActionButton
+                 onClick={handleUpdateInstallment}
+                 disabled={isUpdatingInstallment}
+                 variant="primary"
+                 icon={isUpdatingInstallment ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+               >
+                 {isUpdatingInstallment ? 'Salvando...' : 'Salvar Alterações'}
+               </ModalActionButton>
+             </div>
+           </div>
+         )}
+       </AdminModal>
+      </div>
+    )
+  }
+  
+  export default ProfitSharingManager

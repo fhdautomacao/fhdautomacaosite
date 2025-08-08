@@ -1,9 +1,16 @@
 import { useState } from 'react'
-import { Phone, Mail, MapPin, Clock, Send, FileText, CheckCircle } from 'lucide-react'
+import { Phone, Mail, MapPin, Clock, Send, FileText, CheckCircle, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { contactAPI } from '../../api/contact'
+import InteractiveMap from '../InteractiveMap'
+import { useServices } from '../../hooks/useServices'
+import { useMobileDetection } from '../../hooks/useMobileDetection'
 
 const Contact = () => {
+  const { services, loading: servicesLoading } = useServices()
+  const [showAllServices, setShowAllServices] = useState(false)
+  const isMobile = useMobileDetection()
+  
   const [formData, setFormData] = useState({
     name: '',
     company: '',
@@ -63,35 +70,109 @@ const Contact = () => {
           <div className="bg-gray-50 rounded-2xl p-8">
             <h3 className="text-2xl font-bold text-gray-800 mb-6">Solicite um Orçamento</h3>
             
-            <div className="text-center space-y-6">
-              <div className="bg-blue-100 rounded-full p-6 w-20 h-20 mx-auto flex items-center justify-center">
-                <FileText className="text-blue-600" size={32} />
-              </div>
-              
-              <div>
+            <div className="space-y-8">
+              {/* Header com ícone */}
+              <div className="text-center">
+                <div className="bg-blue-100 rounded-full p-6 w-20 h-20 mx-auto flex items-center justify-center mb-4">
+                  <FileText className="text-blue-600" size={32} />
+                </div>
+                
                 <h4 className="text-xl font-semibold text-gray-800 mb-3">
                   Orçamento Personalizado
                 </h4>
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600">
                   Conte-nos sobre seu projeto e receba um orçamento personalizado em até 24 horas.
                 </p>
               </div>
               
-              <div className="space-y-4">
-                <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
-                  <CheckCircle className="text-green-500" size={16} />
-                  <span>Resposta em até 24 horas</span>
-                </div>
-                <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
-                  <CheckCircle className="text-green-500" size={16} />
-                  <span>Orçamento gratuito</span>
-                </div>
-                <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
-                  <CheckCircle className="text-green-500" size={16} />
-                  <span>Análise técnica especializada</span>
+              {/* Benefícios */}
+              <div className="bg-white rounded-xl p-6 space-y-4">
+                <h5 className="font-semibold text-gray-800 mb-4">Por que escolher a FHD?</h5>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3 text-sm text-gray-600">
+                    <CheckCircle className="text-green-500 flex-shrink-0" size={18} />
+                    <span>Resposta em até 24 horas</span>
+                  </div>
+                  <div className="flex items-center space-x-3 text-sm text-gray-600">
+                    <CheckCircle className="text-green-500 flex-shrink-0" size={18} />
+                    <span>Orçamento gratuito e sem compromisso</span>
+                  </div>
+                  <div className="flex items-center space-x-3 text-sm text-gray-600">
+                    <CheckCircle className="text-green-500 flex-shrink-0" size={18} />
+                    <span>Análise técnica especializada</span>
+                  </div>
+                  <div className="flex items-center space-x-3 text-sm text-gray-600">
+                    <CheckCircle className="text-green-500 flex-shrink-0" size={18} />
+                    <span>Mais de 10 anos de experiência</span>
+                  </div>
+                  <div className="flex items-center space-x-3 text-sm text-gray-600">
+                    <CheckCircle className="text-green-500 flex-shrink-0" size={18} />
+                    <span>Atendimento personalizado</span>
+                  </div>
+                  {!servicesLoading && services.length > 0 && (
+                    <div className="flex items-center space-x-3 text-sm text-gray-600">
+                      <CheckCircle className="text-green-500 flex-shrink-0" size={18} />
+                      <span>{services.length} serviços especializados</span>
+                    </div>
+                  )}
                 </div>
               </div>
               
+              {/* Serviços Dinâmicos */}
+              <div className="bg-white rounded-xl p-6">
+                <h5 className="font-semibold text-gray-800 mb-4">Nossos Serviços</h5>
+                {servicesLoading ? (
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    {[...Array(6)].map((_, index) => (
+                      <div key={index} className="flex items-center space-x-2 text-gray-400 animate-pulse">
+                        <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                        <div className="h-4 bg-gray-200 rounded w-20"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : services.length > 0 ? (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      {services.slice(0, showAllServices ? services.length : 6).map((service, index) => (
+                        <div key={service.id || index} className="flex items-center space-x-2 text-gray-600">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <span className="truncate">{service.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {services.length > 6 && !showAllServices && (
+                      <div className="text-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowAllServices(true)}
+                          className="text-blue-600 hover:text-blue-700 text-xs"
+                        >
+                          Ver todos os {services.length} serviços
+                        </Button>
+                      </div>
+                    )}
+                    {showAllServices && services.length > 6 && (
+                      <div className="text-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowAllServices(false)}
+                          className="text-gray-500 hover:text-gray-700 text-xs"
+                        >
+                          Ver menos
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500 text-sm py-4">
+                    Nenhum serviço disponível no momento
+                  </div>
+                )}
+              </div>
+              
+              {/* CTA Button */}
               <Button 
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold"
                 onClick={() => window.location.href = '/orcamento'}
@@ -105,16 +186,29 @@ const Contact = () => {
           {/* Contact Information */}
           <div className="space-y-8">
             <div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-6">Informações de Contato</h3>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-800">Informações de Contato</h3>
+                {isMobile && (
+                  <div className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                    Toque para abrir
+                  </div>
+                )}
+              </div>
               
               <div className="space-y-6">
                 <div className="flex items-start space-x-4">
                   <div className="bg-blue-100 p-3 rounded-lg">
                     <Phone className="text-blue-600" size={24} />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h4 className="font-semibold text-gray-800 mb-1">Telefone</h4>
-                    <p className="text-gray-600">(19) 99865-2144</p>
+                    <a 
+                      href="tel:+5519998652144" 
+                      className="text-gray-600 hover:text-blue-600 transition-colors duration-200 cursor-pointer block flex items-center space-x-2"
+                    >
+                      <span>(19) 99865-2144</span>
+                      {isMobile && <ExternalLink size={14} className="text-blue-500" />}
+                    </a>
                     <p className="text-sm text-gray-500">Atendimento de segunda a sexta</p>
                   </div>
                 </div>
@@ -123,9 +217,15 @@ const Contact = () => {
                   <div className="bg-blue-100 p-3 rounded-lg">
                     <Mail className="text-blue-600" size={24} />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h4 className="font-semibold text-gray-800 mb-1">E-mail</h4>
-                    <p className="text-gray-600">comercial@fhdautomacao.com.br</p>
+                    <a 
+                      href="mailto:comercial@fhdautomacao.com.br?subject=Contato via Site FHD Automação" 
+                      className="text-gray-600 hover:text-blue-600 transition-colors duration-200 cursor-pointer block flex items-center space-x-2"
+                    >
+                      <span>comercial@fhdautomacao.com.br</span>
+                      {isMobile && <ExternalLink size={14} className="text-blue-500" />}
+                    </a>
                     <p className="text-sm text-gray-500">Resposta em até 24 horas</p>
                   </div>
                 </div>
@@ -134,13 +234,21 @@ const Contact = () => {
                   <div className="bg-blue-100 p-3 rounded-lg">
                     <MapPin className="text-blue-600" size={24} />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h4 className="font-semibold text-gray-800 mb-1">Endereço</h4>
-                    <p className="text-gray-600">
-                      R. João Ediberti Biondo, 336<br />
-                      Jd. Res. Ravagnani<br />
-                      Sumaré - SP, 13171-446
-                    </p>
+                    <a 
+                      href="https://www.google.com/maps/search/?api=1&query=R.+João+Ediberti+Biondo,+336,+Jd.+Res.+Ravagnani,+Sumaré+-+SP,+13171-446" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-gray-600 hover:text-blue-600 transition-colors duration-200 cursor-pointer block flex items-center space-x-2"
+                    >
+                      <span>
+                        R. João Ediberti Biondo, 336<br />
+                        Jd. Res. Ravagnani<br />
+                        Sumaré - SP, 13171-446
+                      </span>
+                      {isMobile && <ExternalLink size={14} className="text-blue-500" />}
+                    </a>
                   </div>
                 </div>
 
@@ -160,14 +268,8 @@ const Contact = () => {
               </div>
             </div>
 
-            {/* Map Placeholder */}
-            <div className="bg-gray-200 rounded-2xl h-64 flex items-center justify-center">
-              <div className="text-center text-gray-500">
-                <MapPin size={48} className="mx-auto mb-4" />
-                <p className="font-semibold">Localização</p>
-                <p className="text-sm">Sumaré - SP</p>
-              </div>
-            </div>
+            {/* Interactive Map */}
+            <InteractiveMap />
 
             {/* Emergency Contact */}
             <div className="bg-red-50 border border-red-200 rounded-xl p-6">

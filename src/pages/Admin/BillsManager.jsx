@@ -1,54 +1,53 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  Plus, 
-  Search, 
-  Edit, 
-  Trash2, 
-  Eye, 
-  FileText,
-  Calendar,
-  DollarSign,
-  Download
-} from 'lucide-react'
+import { Plus, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle 
-} from '@/components/ui/dialog'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import PaymentReceiptUpload from '@/components/PaymentReceiptUpload'
 import { billsAPI } from '@/api/bills'
 import { companiesAPI } from '@/api/companies'
+import BillsStatistics from '@/components/Bills/BillsStatistics'
+import BillsFilters from '@/components/Bills/BillsFilters'
+import BillsTable from '@/components/Bills/BillsTable'
+import CreateBillModal from '@/components/Bills/CreateBillModal'
+import EditBillModal from '@/components/Bills/EditBillModal'
+import ViewBillModal from '@/components/Bills/ViewBillModal'
+import InstallmentModal from '@/components/Bills/InstallmentModal'
+
+// Utilitário: converte "R$ 1.234,56" -> 1234.56 (number)
+function parseBRLToNumber(value) {
+  if (value == null) return 0
+  const str = String(value)
+    .replace(/\s/g, '')
+    .replace(/R\$/g, '')
+    .replace(/\./g, '')
+    .replace(',', '.')
+  const n = parseFloat(str)
+  return isNaN(n) ? 0 : n
+}
 
 export default function BillsManager() {
+  // Estados principais
   const [bills, setBills] = useState([])
   const [loading, setLoading] = useState(true)
+  const [companies, setCompanies] = useState([])
+  
+  // Estados de filtros
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
   const [companyFilter, setCompanyFilter] = useState('all')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
+  
+  // Estados de modais
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [showInstallmentModal, setShowInstallmentModal] = useState(false)
+  
+  // Estados de seleção
   const [selectedBill, setSelectedBill] = useState(null)
   const [selectedInstallment, setSelectedInstallment] = useState(null)
-  const [companies, setCompanies] = useState([])
+  
+  // Estados de formulário
   const [formData, setFormData] = useState({
     company_id: '',
     company_name: '',
@@ -61,12 +60,17 @@ export default function BillsManager() {
     admin_notes: ''
   })
 
+  // Estados para redirecionamento
+  const [returnToCompanyId, setReturnToCompanyId] = useState(null)
+  const [returnBillId, setReturnBillId] = useState(null)
+
+  // Carregar dados iniciais
   useEffect(() => {
     loadBills()
     loadCompanies()
   }, [])
 
-  // Abrir um boleto específico via query param billId
+  // Abrir boleto específico via query param
   useEffect(() => {
     const openByParam = async () => {
       const params = new URLSearchParams(window.location.search)
@@ -74,9 +78,10 @@ export default function BillsManager() {
       const open = params.get('open')
       if (open && open !== 'bills') return
       if (!billId) return
+      
       const origin = params.get('origin')
       const companyId = params.get('companyId')
-      // garantir que os dados estejam carregados
+      
       try {
         if (bills.length === 0) {
           const data = await billsAPI.getAll()
@@ -93,7 +98,7 @@ export default function BillsManager() {
             setShowDetailsModal(true)
           }
         }
-        // armazenar retorno para empresa (se necessário)
+        
         if (origin === 'company' && companyId) {
           setReturnToCompanyId(companyId)
           setReturnBillId(billId)
@@ -103,9 +108,7 @@ export default function BillsManager() {
     openByParam()
   }, [bills])
 
-  // redirecionar ao fechar o modal quando há origem company
-  const [returnToCompanyId, setReturnToCompanyId] = useState(null)
-  const [returnBillId, setReturnBillId] = useState(null)
+  // Redirecionar ao fechar modal quando há origem company
   useEffect(() => {
     if (returnToCompanyId && !showDetailsModal) {
       const extra = returnBillId ? `&billId=${returnBillId}` : ''
@@ -113,6 +116,7 @@ export default function BillsManager() {
     }
   }, [showDetailsModal, returnToCompanyId])
 
+  // Funções de carregamento
   const loadBills = async () => {
     try {
       setLoading(true)
@@ -135,6 +139,7 @@ export default function BillsManager() {
     }
   }
 
+  // Funções de manipulação
   const handleCompanyChange = (companyId) => {
     const company = companies.find(c => c.id === companyId)
     setFormData({
@@ -146,12 +151,14 @@ export default function BillsManager() {
 
   const handleCreateBill = async () => {
     try {
+      const totalAmountNumber = parseBRLToNumber(formData.total_amount)
+
       // Validações
       if (!formData.company_id) {
         alert('Selecione uma empresa.')
         return
       }
-      if (!formData.total_amount || parseFloat(formData.total_amount) <= 0) {
+      if (!totalAmountNumber || totalAmountNumber <= 0) {
         alert('Informe um valor total válido.')
         return
       }
@@ -159,48 +166,49 @@ export default function BillsManager() {
         alert('Informe um número válido de parcelas.')
         return
       }
-             if (!formData.first_due_date) {
-         alert('Informe a data do primeiro vencimento.')
-         return
-       }
-       if (!formData.installment_interval || formData.installment_interval < 1) {
-         alert('Informe um intervalo válido entre parcelas.')
-         return
-       }
-       if (!formData.description) {
-         alert('Informe uma descrição para o boleto.')
-         return
-       }
+      if (!formData.first_due_date) {
+        alert('Informe a data do primeiro vencimento.')
+        return
+      }
+      if (!formData.installment_interval || formData.installment_interval < 1) {
+        alert('Informe um intervalo válido entre parcelas.')
+        return
+      }
+      if (!formData.description) {
+        alert('Informe uma descrição para o boleto.')
+        return
+      }
 
-      // Criar o boleto primeiro
-      const newBill = await billsAPI.create(formData)
+      // Criar o boleto com valor numérico
+      const payload = { ...formData, total_amount: totalAmountNumber }
+      const newBill = await billsAPI.create(payload)
       
-             // Gerar as parcelas automaticamente
-       if (newBill && formData.installments > 0 && formData.first_due_date) {
-         await billsAPI.generateInstallments(
-           newBill.id,
-           parseFloat(formData.total_amount),
-           formData.installments,
-           formData.installment_interval, // intervalo personalizado entre parcelas
-           formData.first_due_date
-         )
-       }
+      // Gerar as parcelas automaticamente
+      if (newBill && formData.installments > 0 && formData.first_due_date) {
+        await billsAPI.generateInstallments(
+          newBill.id,
+          totalAmountNumber,
+          formData.installments,
+          formData.installment_interval,
+          formData.first_due_date
+        )
+      }
       
       // Fechar modal e limpar formulário
       setShowCreateModal(false)
-             setFormData({
-         company_id: '',
-         company_name: '',
-         total_amount: '',
-         installments: 1,
-         installment_interval: 30,
-         first_due_date: '',
-         description: '',
-         type: 'receivable',
-         admin_notes: ''
-       })
+      setFormData({
+        company_id: '',
+        company_name: '',
+        total_amount: '',
+        installments: 1,
+        installment_interval: 30,
+        first_due_date: '',
+        description: '',
+        type: 'receivable',
+        admin_notes: ''
+      })
       
-      // Recarregar os dados imediatamente
+      // Recarregar os dados
       await loadBills()
     } catch (error) {
       console.error('Erro ao criar boleto:', error)
@@ -210,7 +218,8 @@ export default function BillsManager() {
 
   const handleUpdateBill = async () => {
     try {
-      await billsAPI.update(selectedBill.id, formData)
+      const totalAmountNumber = parseBRLToNumber(formData.total_amount)
+      await billsAPI.update(selectedBill.id, { ...formData, total_amount: totalAmountNumber })
       setShowEditModal(false)
       await loadBills()
     } catch (error) {
@@ -236,101 +245,55 @@ export default function BillsManager() {
       await billsAPI.updateInstallment(selectedInstallment.id, {
         status: selectedInstallment.status,
         paid_date: selectedInstallment.status === 'paid' ? selectedInstallment.paid_date : null,
-        payment_notes: selectedInstallment.payment_notes
+        payment_notes: selectedInstallment.payment_notes,
+        payment_receipt_url: selectedInstallment.payment_receipt_url || null,
+        payment_receipt_filename: selectedInstallment.payment_receipt_filename || null,
+        payment_receipt_path: selectedInstallment.payment_receipt_path || null,
+        payment_receipt_uploaded_at: selectedInstallment.payment_receipt_uploaded_at || null,
       })
-      
-      // Após atualizar a parcela, recalcular o status do boleto
       if (selectedBill?.id) {
-        try {
-          await billsAPI.recalculateBillStatus(selectedBill.id)
-        } catch (e) {
-          console.warn('Falha ao recalcular status do boleto:', e)
-        }
+        try { await billsAPI.recalculateBillStatus(selectedBill.id) } catch {}
       }
-
-      // Recarregar os dados do banco para garantir sincronização
       await loadBills()
-      
-      // Atualizar o selectedBill com os dados mais recentes
       const updatedBills = await billsAPI.getAll()
       const updatedBill = updatedBills.find(bill => bill.id === selectedBill?.id)
-      if (updatedBill) {
-        setSelectedBill(updatedBill)
-      }
-      
+      if (updatedBill) setSelectedBill(updatedBill)
       setShowInstallmentModal(false)
       setSelectedInstallment(null)
     } catch (err) {
-      console.error("Erro ao atualizar parcela:", err)
-      
-      // Tratamento específico de erros
-      let errorMessage = "Erro ao atualizar parcela. Tente novamente."
-      
-      if (err.code) {
-        switch (err.code) {
-          case '22001':
-            if (err.message.includes('payment_notes')) {
-              errorMessage = "Observações de pagamento muito longas."
-            } else {
-              errorMessage = "Campo muito longo. Verifique os dados inseridos."
-            }
-            break
-          case '23502':
-            errorMessage = "Campo obrigatório não preenchido."
-            break
-          case '23514':
-            errorMessage = "Status inválido. Use 'pending', 'paid', 'overdue' ou 'cancelled'."
-            break
-          case '22P02':
-            errorMessage = "Formato de data inválido."
-            break
-          case '42501':
-            errorMessage = "Sem permissão para atualizar parcelas. Verifique suas credenciais."
-            break
-          case '42P01':
-            errorMessage = "Erro de configuração do banco de dados. Contate o administrador."
-            break
-          case 'PGRST116':
-            errorMessage = "Parcela não encontrada ou já foi removida."
-            break
-          default:
-            if (err.message) {
-              errorMessage = `Erro: ${err.message}`
-            }
-        }
-      } else if (err.message) {
-        errorMessage = err.message
-      }
-      
-      alert(errorMessage)
+      alert('Erro ao atualizar parcela. Tente novamente.')
     }
   }
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'paid': return 'bg-green-100 text-green-800'
-      case 'pending': return 'bg-yellow-100 text-yellow-800'
-      case 'overdue': return 'bg-red-100 text-red-800'
-      case 'cancelled': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
+  // Funções de ação da tabela
+  const handleViewBill = (bill) => {
+    setSelectedBill(bill)
+    setShowDetailsModal(true)
   }
 
-  const getTypeColor = (type) => {
-    switch (type) {
-      case 'receivable': return 'bg-blue-100 text-blue-800'
-      case 'payable': return 'bg-purple-100 text-purple-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
+  const handleOpenInstallmentModal = (installment) => {
+    setSelectedInstallment(installment)
+    setShowInstallmentModal(true)
   }
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(amount)
+  const handleEditBill = (bill) => {
+    // Garantir máscara no valor para edição
+    const maskedAmount = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseFloat(bill.total_amount || 0))
+    setSelectedBill(bill)
+    setFormData({
+      company_id: bill.company_id || bill.companies?.id || '',
+      company_name: bill.company_name || bill.companies?.name || '',
+      total_amount: maskedAmount,
+      installments: bill.bill_installments?.length || 1,
+      first_due_date: bill.bill_installments?.[0]?.due_date?.split('T')[0] || '',
+      description: bill.description || '',
+      type: bill.type,
+      admin_notes: bill.admin_notes || ''
+    })
+    setShowEditModal(true)
   }
 
+  // Filtros
   const filteredBills = bills.filter(bill => {
     const matchesSearch = bill.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          bill.description?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -343,13 +306,24 @@ export default function BillsManager() {
     return matchesSearch && matchesStatus && matchesType && matchesDate && matchesCompany
   })
 
+  // Cálculos de estatísticas
   const totalReceivable = filteredBills
     .filter(bill => bill.type === 'receivable' && bill.status === 'pending')
+    .reduce((sum, bill) => sum + parseFloat(bill.total_amount || 0), 0)
+
+  const totalPayable = filteredBills
+    .filter(bill => bill.type === 'payable' && bill.status === 'pending')
     .reduce((sum, bill) => sum + parseFloat(bill.total_amount || 0), 0)
 
   const totalOverdue = filteredBills
     .filter(bill => bill.status === 'overdue')
     .reduce((sum, bill) => sum + parseFloat(bill.total_amount || 0), 0)
+
+  const openBills = filteredBills.filter(b => b.status === 'pending')
+  const openBillsAmount = openBills.reduce((s, b) => s + parseFloat(b.total_amount || 0), 0)
+
+  const paidBills = filteredBills.filter(b => b.status === 'paid')
+  const paidBillsAmount = paidBills.reduce((s, b) => s + parseFloat(b.total_amount || 0), 0)
 
   const pendingInstallments = filteredBills
     .filter(bill => bill.status === 'pending')
@@ -360,26 +334,13 @@ export default function BillsManager() {
     .flatMap(bill => bill.bill_installments || [])
     .filter(installment => installment.status === 'overdue')
 
-  // Novos totais e contagens
-  const totalPayable = filteredBills
-    .filter(bill => bill.type === 'payable' && bill.status === 'pending')
-    .reduce((sum, bill) => sum + parseFloat(bill.total_amount || 0), 0)
-
-  const openBills = filteredBills.filter(b => b.status === 'pending')
-  const openBillsAmount = openBills.reduce((s, b) => s + parseFloat(b.total_amount || 0), 0)
-
-  const paidBills = filteredBills.filter(b => b.status === 'paid')
-  const paidBillsAmount = paidBills.reduce((s, b) => s + parseFloat(b.total_amount || 0), 0)
-
-  const overdueBills = filteredBills.filter(b => b.status === 'overdue')
-  const overdueBillsAmount = overdueBills.reduce((s, b) => s + parseFloat(b.total_amount || 0), 0)
-
   const allInstallments = filteredBills.flatMap(b => b.bill_installments || [])
   const paidInstallments = allInstallments.filter(i => i.status === 'paid')
   const paidInstallmentsAmount = paidInstallments.reduce((s, i) => s + parseFloat(i.amount || 0), 0)
   const pendingInstallmentsAmount = pendingInstallments.reduce((s, i) => s + parseFloat(i.amount || 0), 0)
   const overdueInstallmentsAmount = overdueInstallments.reduce((s, i) => s + parseFloat(i.amount || 0), 0)
 
+  // Export CSV
   const handleExportCSV = () => {
     const headers = [
       'ID','Empresa','Tipo','Valor Total','Status','Parcelas','Parcelas Pagas','Parcelas Pendentes','Parcelas Vencidas','Valor Pagas','Valor Pendentes','Valor Vencidas','Criado Em','Primeiro Vencimento'
@@ -447,707 +408,88 @@ export default function BillsManager() {
         </div>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <DollarSign className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total a Receber</p>
-              <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalReceivable)}</p>
-            </div>
-          </div>
-        </div>
+      {/* Estatísticas */}
+      <BillsStatistics
+        totalReceivable={totalReceivable}
+        totalPayable={totalPayable}
+        totalOverdue={totalOverdue}
+        openBills={openBills}
+        openBillsAmount={openBillsAmount}
+        paidBills={paidBills}
+        paidBillsAmount={paidBillsAmount}
+        pendingInstallments={pendingInstallments}
+        pendingInstallmentsAmount={pendingInstallmentsAmount}
+        overdueInstallments={overdueInstallments}
+        overdueInstallmentsAmount={overdueInstallmentsAmount}
+        paidInstallments={paidInstallments}
+        paidInstallmentsAmount={paidInstallmentsAmount}
+      />
 
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <DollarSign className="h-6 w-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total a Pagar</p>
-              <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalPayable)}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <Calendar className="h-6 w-6 text-red-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Vencidos</p>
-              <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalOverdue)}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <FileText className="h-6 w-6 text-yellow-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Boletos em Aberto</p>
-              <p className="text-2xl font-bold text-gray-900">{openBills.length}</p>
-              <p className="text-xs text-gray-500">{formatCurrency(openBillsAmount)}</p>
-            </div>
-          </div>
-        </div>
+      {/* Filtros */}
+      <BillsFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        startDate={startDate}
+        setStartDate={setStartDate}
+        endDate={endDate}
+        setEndDate={setEndDate}
+        typeFilter={typeFilter}
+        setTypeFilter={setTypeFilter}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        companyFilter={companyFilter}
+        setCompanyFilter={setCompanyFilter}
+        companies={companies}
+      />
 
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <Calendar className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Boletos Pagos</p>
-              <p className="text-2xl font-bold text-gray-900">{paidBills.length}</p>
-              <p className="text-xs text-gray-500">{formatCurrency(paidBillsAmount)}</p>
-            </div>
-          </div>
-        </div>
+      {/* Tabela */}
+      <BillsTable
+        bills={filteredBills}
+        onView={handleViewBill}
+        onEdit={handleEditBill}
+        onDelete={handleDeleteBill}
+      />
 
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <FileText className="h-6 w-6 text-yellow-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Parcelas Pendentes</p>
-              <p className="text-2xl font-bold text-gray-900">{pendingInstallments.length}</p>
-              <p className="text-xs text-gray-500">{formatCurrency(pendingInstallmentsAmount)}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <Calendar className="h-6 w-6 text-red-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Parcelas Vencidas</p>
-              <p className="text-2xl font-bold text-gray-900">{overdueInstallments.length}</p>
-              <p className="text-xs text-gray-500">{formatCurrency(overdueInstallmentsAmount)}</p>
-            </div>
-          </div>
-        </div>
+      {/* Modal de Criação */}
+      <CreateBillModal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        formData={formData}
+        setFormData={setFormData}
+        companies={companies}
+        onCompanyChange={handleCompanyChange}
+        onSubmit={handleCreateBill}
+      />
 
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <DollarSign className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Parcelas Pagas</p>
-              <p className="text-2xl font-bold text-gray-900">{paidInstallments.length}</p>
-              <p className="text-xs text-gray-500">{formatCurrency(paidInstallmentsAmount)}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Modal de Edição */}
+      <EditBillModal
+        open={showEditModal}
+        onOpenChange={setShowEditModal}
+        formData={formData}
+        setFormData={setFormData}
+        companies={companies}
+        onCompanyChange={handleCompanyChange}
+        onSubmit={handleUpdateBill}
+      />
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Buscar boletos..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
-          <span className="text-gray-500">até</span>
-          <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
-        </div>
+      {/* Modal de Visualização */}
+      <ViewBillModal
+        open={showDetailsModal}
+        onOpenChange={setShowDetailsModal}
+        bill={selectedBill}
+        onEditInstallment={handleOpenInstallmentModal}
+      />
 
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="receivable">A Receber</SelectItem>
-            <SelectItem value="payable">A Pagar</SelectItem>
-          </SelectContent>
-        </Select>
-        
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="pending">Pendente</SelectItem>
-            <SelectItem value="paid">Pago</SelectItem>
-            <SelectItem value="overdue">Vencido</SelectItem>
-            <SelectItem value="cancelled">Cancelado</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={companyFilter} onValueChange={setCompanyFilter}>
-          <SelectTrigger className="w-full sm:w-56">
-            <SelectValue placeholder="Empresa" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas as Empresas</SelectItem>
-            {companies.map(c => (
-              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Bills List */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="overflow-x-auto">
-          <table className="w-full border-separate border-spacing-0">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">#</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                  Empresa
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                  Tipo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                  Valor
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                  Parcelas
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                  Pagas
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                  Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredBills.map((bill, idx) => {
-                const paidInstallments = (bill.bill_installments || []).filter(i => i.status === 'paid').length
-                return (
-                <tr key={bill.id} className="hover:bg-gray-50 border-b border-gray-100">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r border-gray-100">{idx + 1}</td>
-                  <td className="px-6 py-4 whitespace-nowrap border-r border-gray-100">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {bill.company_name}
-                      </div>
-                      {bill.description && (
-                        <div className="text-sm text-gray-500">{bill.description}</div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap border-r border-gray-100">
-                    <Badge className={getTypeColor(bill.type)}>
-                      {bill.type === 'receivable' ? 'A Receber' : 'A Pagar'}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-100">
-                    {formatCurrency(bill.total_amount)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap border-r border-gray-100">
-                    <Badge className={getStatusColor(bill.status)}>
-                      {bill.status === 'pending' ? 'Pendente' : 
-                       bill.status === 'paid' ? 'Pago' : 
-                       bill.status === 'overdue' ? 'Vencido' : 'Cancelado'}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-100">
-                    {bill.bill_installments?.length || 0} parcelas
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-100">
-                    {paidInstallments} pagas
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium border-r border-gray-100">
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedBill(bill)
-                          setShowDetailsModal(true)
-                        }}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedBill(bill)
-                          setFormData({
-                            company_id: bill.company_id || bill.companies?.id || '',
-                            company_name: bill.company_name || bill.companies?.name || '',
-                            total_amount: bill.total_amount,
-                            installments: bill.bill_installments?.length || 1,
-                            first_due_date: bill.bill_installments?.[0]?.due_date?.split('T')[0] || '',
-                            description: bill.description || '',
-                            type: bill.type,
-                            admin_notes: bill.admin_notes || ''
-                          })
-                          setShowEditModal(true)
-                        }}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteBill(bill.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              )})}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Create Modal */}
-      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Novo Boleto</DialogTitle>
-            <DialogDescription>
-              Crie um novo boleto com parcelas.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Empresa</Label>
-              <Select value={formData.company_id} onValueChange={handleCompanyChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma empresa" />
-                </SelectTrigger>
-                <SelectContent>
-                  {companies.map((company) => (
-                    <SelectItem key={company.id} value={company.id}>
-                      {company.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Label>Valor Total</Label>
-              <Input
-                type="number"
-                step="0.01"
-                value={formData.total_amount}
-                onChange={(e) => setFormData({...formData, total_amount: e.target.value})}
-              />
-            </div>
-            
-                         <div>
-               <Label>Número de Parcelas</Label>
-               <Input
-                 type="number"
-                 min="1"
-                 value={formData.installments}
-                 onChange={(e) => setFormData({...formData, installments: parseInt(e.target.value)})}
-               />
-             </div>
-             
-             <div>
-               <Label>Intervalo entre Parcelas (dias)</Label>
-               <Input
-                 type="number"
-                 min="1"
-                 step="1"
-                 placeholder="Ex.: 30"
-                 value={formData.installment_interval}
-                 onChange={(e) => setFormData({
-                   ...formData,
-                   installment_interval: parseInt(e.target.value || '0')
-                 })}
-               />
-             </div>
-             
-             <div>
-               <Label>Data do Primeiro Vencimento</Label>
-               <Input
-                 type="date"
-                 value={formData.first_due_date}
-                 onChange={(e) => setFormData({...formData, first_due_date: e.target.value})}
-               />
-             </div>
-            
-            <div>
-              <Label>Tipo</Label>
-              <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="receivable">A Receber</SelectItem>
-                  <SelectItem value="payable">A Pagar</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="col-span-2">
-              <Label>Descrição</Label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                rows={3}
-              />
-            </div>
-            
-            <div className="col-span-2">
-              <Label>Observações</Label>
-              <Textarea
-                value={formData.admin_notes}
-                onChange={(e) => setFormData({...formData, admin_notes: e.target.value})}
-                rows={2}
-              />
-            </div>
-          </div>
-          
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setShowCreateModal(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleCreateBill}>
-              Criar Boleto
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Modal */}
-      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Editar Boleto</DialogTitle>
-            <DialogDescription>
-              Edite as informações do boleto.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Empresa</Label>
-              <Select value={formData.company_id} onValueChange={handleCompanyChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma empresa" />
-                </SelectTrigger>
-                <SelectContent>
-                  {companies.map((company) => (
-                    <SelectItem key={company.id} value={company.id}>
-                      {company.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Label>Valor Total</Label>
-              <Input
-                type="number"
-                step="0.01"
-                value={formData.total_amount}
-                onChange={(e) => setFormData({...formData, total_amount: e.target.value})}
-              />
-            </div>
-            
-            <div>
-              <Label>Tipo</Label>
-              <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="receivable">A Receber</SelectItem>
-                  <SelectItem value="payable">A Pagar</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="col-span-2">
-              <Label>Descrição</Label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                rows={3}
-              />
-            </div>
-            
-            <div className="col-span-2">
-              <Label>Observações</Label>
-              <Textarea
-                value={formData.admin_notes}
-                onChange={(e) => setFormData({...formData, admin_notes: e.target.value})}
-                rows={2}
-              />
-            </div>
-          </div>
-          
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setShowEditModal(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleUpdateBill}>
-              Salvar Alterações
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Details Modal */}
-      <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>Detalhes do Boleto</DialogTitle>
-            <DialogDescription>
-              Visualize todas as informações e parcelas do boleto.
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedBill && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="font-semibold">Empresa</Label>
-                  <p className="text-gray-900">{selectedBill.company_name}</p>
-                </div>
-                <div>
-                  <Label className="font-semibold">Tipo</Label>
-                  <Badge className={getTypeColor(selectedBill.type)}>
-                    {selectedBill.type === 'receivable' ? 'A Receber' : 'A Pagar'}
-                  </Badge>
-                </div>
-                <div>
-                  <Label className="font-semibold">Valor Total</Label>
-                  <p className="text-gray-900 font-semibold">{formatCurrency(selectedBill.total_amount)}</p>
-                </div>
-                <div>
-                  <Label className="font-semibold">Status</Label>
-                  <Badge className={getStatusColor(selectedBill.status)}>
-                    {selectedBill.status === 'pending' ? 'Pendente' : 
-                     selectedBill.status === 'paid' ? 'Pago' : 
-                     selectedBill.status === 'overdue' ? 'Vencido' : 'Cancelado'}
-                  </Badge>
-                </div>
-                <div className="col-span-2">
-                  <Label className="font-semibold">Descrição</Label>
-                  <p className="text-gray-900">{selectedBill.description}</p>
-                </div>
-                {selectedBill.admin_notes && (
-                  <div className="col-span-2">
-                    <Label className="font-semibold">Observações</Label>
-                    <p className="text-gray-900">{selectedBill.admin_notes}</p>
-                  </div>
-                )}
-              </div>
-              
-              <div>
-                <h4 className="font-semibold text-lg mb-4">Parcelas</h4>
-                <div className="space-y-2">
-                  {selectedBill.bill_installments && selectedBill.bill_installments.length > 0 ? (
-                    selectedBill.bill_installments.map((installment) => (
-                      <div key={installment.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center space-x-4">
-                          <div>
-                            <span className="font-medium">Parcela {installment.installment_number}</span>
-                            <p className="text-sm text-gray-600">
-                              Vencimento: {new Date(installment.due_date).toLocaleDateString('pt-BR')}
-                            </p>
-                            {installment.paid_date && (
-                              <p className="text-sm text-green-600">
-                                Pago em: {new Date(installment.paid_date).toLocaleDateString('pt-BR')}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <span className="font-semibold">{formatCurrency(installment.amount)}</span>
-                          </div>
-                          <Badge className={getStatusColor(installment.status)}>
-                            {installment.status === 'pending' ? 'Pendente' : 
-                             installment.status === 'paid' ? 'Pago' : 
-                             installment.status === 'overdue' ? 'Vencido' : 'Cancelado'}
-                          </Badge>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedInstallment(installment)
-                            setShowInstallmentModal(true)
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-4 text-center text-gray-500 border rounded-lg">
-                      <p>Nenhuma parcela encontrada para este boleto.</p>
-                      <p className="text-sm mt-1">As parcelas são geradas automaticamente ao criar o boleto.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Installment Modal */}
-      <Dialog open={showInstallmentModal} onOpenChange={setShowInstallmentModal}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Editar Parcela</DialogTitle>
-            <DialogDescription>
-              Atualize o status e informações da parcela.
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedInstallment && (
-            <div className="space-y-6">
-              {/* Informações da parcela */}
-              <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-600">Vencimento</p>
-                    <p className="font-medium">{new Date(selectedInstallment.due_date).toLocaleDateString('pt-BR')}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-600">Valor</p>
-                    <p className="font-medium">{formatCurrency(selectedInstallment.amount)}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Badge className={getStatusColor(selectedInstallment.status)}>
-                    {selectedInstallment.status === 'pending' ? 'Pendente' : 
-                     selectedInstallment.status === 'paid' ? 'Pago' : 
-                     selectedInstallment.status === 'overdue' ? 'Vencido' : 'Cancelado'}
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Status e Observações */}
-              <div className="space-y-4">
-                <div>
-                  <Label>Status</Label>
-                  <Select 
-                    value={selectedInstallment.status} 
-                    onValueChange={(value) => setSelectedInstallment({...selectedInstallment, status: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pendente</SelectItem>
-                      <SelectItem value="paid">Pago</SelectItem>
-                      <SelectItem value="overdue">Vencido</SelectItem>
-                      <SelectItem value="cancelled">Cancelado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                {/* Data de Pagamento - aparece apenas quando status é "Pago" */}
-                {selectedInstallment.status === 'paid' && (
-                  <div>
-                    <Label>Data do Pagamento</Label>
-                    <Input
-                      type="date"
-                      value={selectedInstallment.paid_date || new Date().toISOString().split('T')[0]}
-                      onChange={(e) => setSelectedInstallment({...selectedInstallment, paid_date: e.target.value})}
-                      className="w-full"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Selecione a data em que o pagamento foi realizado
-                    </p>
-                  </div>
-                )}
-                
-                <div>
-                  <Label>Observações do Pagamento</Label>
-                  <Textarea
-                    value={selectedInstallment.payment_notes || ''}
-                    onChange={(e) => setSelectedInstallment({...selectedInstallment, payment_notes: e.target.value})}
-                    placeholder="Observações sobre o pagamento..."
-                    rows={3}
-                  />
-                </div>
-              </div>
-
-              {/* Upload de Comprovante */}
-              <PaymentReceiptUpload
-                billId={selectedBill?.id}
-                installment={selectedInstallment}
-                billData={selectedBill}
-                onUploadSuccess={(result) => {
-                  // Atualizar o estado local com as informações do comprovante
-                  setSelectedInstallment({
-                    ...selectedInstallment,
-                    payment_receipt_url: result.url,
-                    payment_receipt_filename: result.filename,
-                    status: 'paid' // Marcar como pago automaticamente
-                  })
-                  
-                  // Atualizar também o selectedBill
-                  if (selectedBill) {
-                    const updatedInstallments = selectedBill.bill_installments?.map(installment => 
-                      installment.id === selectedInstallment.id 
-                        ? { ...installment, ...selectedInstallment }
-                        : installment
-                    )
-                    
-                    setSelectedBill({
-                      ...selectedBill,
-                      bill_installments: updatedInstallments
-                    })
-                  }
-                }}
-                onUploadError={(error) => {
-                  console.error('Erro no upload:', error)
-                  alert(`Erro ao fazer upload: ${error}`)
-                }}
-              />
-            </div>
-          )}
-          
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setShowInstallmentModal(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleUpdateInstallment}>
-              Salvar Alterações
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Modal de Parcela */}
+      <InstallmentModal
+        open={showInstallmentModal}
+        onOpenChange={setShowInstallmentModal}
+        installment={selectedInstallment}
+        setInstallment={setSelectedInstallment}
+        bill={selectedBill}
+        onSubmit={handleUpdateInstallment}
+        zIndex={10040}
+      />
     </div>
   )
 } 

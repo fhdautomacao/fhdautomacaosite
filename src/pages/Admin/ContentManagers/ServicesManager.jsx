@@ -12,14 +12,16 @@ import {
   Eye,
   Settings,
   Upload,
-  MoreVertical
+  MoreVertical,
+  RefreshCw
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import AdminModal from '@/components/admin/AdminModal'
+import { ModalActionButton, ModalSection, ModalGrid } from '@/components/admin/AdminModal'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -35,6 +37,10 @@ const ServicesManager = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
 
+  // Estados para validação
+  const [errors, setErrors] = useState({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
   const { categories, loading: categoriesLoading, error: categoriesError } = useServiceCategories()
 
   const [newService, setNewService] = useState({
@@ -49,6 +55,29 @@ const ServicesManager = () => {
   })
 
   const [newFeature, setNewFeature] = useState('')
+
+  // Função para validar formulário
+  const validateForm = () => {
+    const newErrors = {}
+
+    // Validação de nome
+    if (!newService.name.trim()) {
+      newErrors.name = 'Nome do serviço é obrigatório'
+    }
+
+    // Validação de descrição
+    if (!newService.description.trim()) {
+      newErrors.description = 'Descrição é obrigatória'
+    }
+
+    // Validação de categoria
+    if (!newService.category) {
+      newErrors.category = 'Categoria é obrigatória'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   // Função para buscar serviços do banco de dados
   const fetchServices = async () => {
@@ -83,54 +112,61 @@ const ServicesManager = () => {
 
   // Função para adicionar novo serviço
   const handleAddService = async () => {
-    if (newService.name && newService.description && newService.category) {
-      try {
-        setLoading(true)
-        
-        // Calcular próximo display_order
-        const maxOrder = services.length > 0 ? Math.max(...services.map(s => s.display_order || 0)) : 0
-        
-        const serviceData = {
-          name: newService.name,
-          description: newService.description,
-          icon: newService.icon,
-          category: newService.category,
-          price: newService.price,
-          features: newService.features,
-          image_url: newService.image_url,
-          is_active: newService.isActive,
-          display_order: maxOrder + 1
-        }
+    try {
+      setIsSubmitting(true)
+      setErrors({})
 
-        const { data, error } = await supabase
-          .from('services')
-          .insert([serviceData])
-          .select()
-
-        if (error) throw error
-
-        // Atualizar lista local
-        await fetchServices()
-        
-        // Resetar formulário
-        setNewService({ 
-          name: '', 
-          description: '', 
-          icon: '🔧', 
-          category: '', 
-          price: '', 
-          features: [], 
-          isActive: true, 
-          image_url: null 
-        })
-        setIsAddModalOpen(false)
-        
-      } catch (error) {
-        console.error("Erro ao adicionar serviço:", error)
-        setError(error.message)
-      } finally {
-        setLoading(false)
+      // Validar formulário
+      if (!validateForm()) {
+        setIsSubmitting(false)
+        return
       }
+
+      // Calcular próximo display_order
+      const maxOrder = services.length > 0 ? Math.max(...services.map(s => s.display_order || 0)) : 0
+      
+      const serviceData = {
+        name: newService.name,
+        description: newService.description,
+        icon: newService.icon,
+        category: newService.category,
+        price: newService.price,
+        features: newService.features,
+        image_url: newService.image_url,
+        is_active: newService.isActive,
+        display_order: maxOrder + 1
+      }
+
+      const { data, error } = await supabase
+        .from('services')
+        .insert([serviceData])
+        .select()
+
+      if (error) throw error
+
+      // Atualizar lista local
+      await fetchServices()
+      
+      // Resetar formulário
+      setNewService({ 
+        name: '', 
+        description: '', 
+        icon: '🔧', 
+        category: '', 
+        price: '', 
+        features: [], 
+        isActive: true, 
+        image_url: null 
+      })
+      setNewFeature('')
+      setErrors({})
+      setIsAddModalOpen(false)
+      
+    } catch (error) {
+      console.error("Erro ao adicionar serviço:", error)
+      setErrors({ submit: "Erro ao adicionar serviço. Verifique os dados e tente novamente." })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -308,56 +344,89 @@ const ServicesManager = () => {
             <Eye className="h-4 w-4 mr-2" />
             Preview
           </Button>
-          <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Serviço
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Adicionar Novo Serviço</DialogTitle>
-                <DialogDescription>
-                  Preencha os dados do novo serviço
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Button 
+            className="bg-blue-600 hover:bg-blue-700"
+            onClick={() => setIsAddModalOpen(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Serviço
+          </Button>
+          <AdminModal
+            open={isAddModalOpen}
+            onOpenChange={(open) => {
+              setIsAddModalOpen(open)
+              if (!open) {
+                setErrors({})
+                setNewService({ 
+                  name: '', 
+                  description: '', 
+                  icon: '🔧', 
+                  category: '', 
+                  price: '', 
+                  features: [], 
+                  isActive: true, 
+                  image_url: null 
+                })
+                setNewFeature('')
+              }
+            }}
+            title="Adicionar Novo Serviço"
+            description="Preencha os dados do novo serviço"
+            type="create"
+            size="2xl"
+          >
+            <div className="space-y-6">
+              {/* Mensagem de erro geral */}
+              {errors.submit && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-red-600 text-sm">{errors.submit}</p>
+                </div>
+              )}
+              <ModalSection title="Informações Básicas">
+                <ModalGrid cols={2}>
                   <div>
-                    <Label htmlFor="name">Nome do Serviço</Label>
+                    <Label htmlFor="name" className="text-sm font-medium text-gray-700">Nome do Serviço *</Label>
                     <Input
                       id="name"
                       value={newService.name}
                       onChange={(e) => setNewService({ ...newService, name: e.target.value })}
                       placeholder="Nome do serviço"
+                      className={`mt-1 ${errors.name ? 'border-red-500 focus:border-red-500' : ''}`}
                     />
+                    {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                   </div>
                   <div>
-                    <Label htmlFor="icon">Ícone (Emoji)</Label>
+                    <Label htmlFor="icon" className="text-sm font-medium text-gray-700">Ícone (Emoji)</Label>
                     <Input
                       id="icon"
                       value={newService.icon}
                       onChange={(e) => setNewService({ ...newService, icon: e.target.value })}
                       placeholder="🔧"
+                      className="mt-1"
                     />
                   </div>
-                </div>
+                </ModalGrid>
+                
                 <div>
-                  <Label htmlFor="description">Descrição</Label>
+                  <Label htmlFor="description" className="text-sm font-medium text-gray-700">Descrição *</Label>
                   <Textarea
                     id="description"
                     value={newService.description}
                     onChange={(e) => setNewService({ ...newService, description: e.target.value })}
                     placeholder="Descrição detalhada do serviço"
-                    rows={3}
+                    rows={4}
+                    className={`mt-1 ${errors.description ? 'border-red-500 focus:border-red-500' : ''}`}
                   />
+                  {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              </ModalSection>
+
+              <ModalSection title="Categoria e Preço">
+                <ModalGrid cols={2}>
                   <div>
-                    <Label htmlFor="category">Categoria</Label>
+                    <Label htmlFor="category" className="text-sm font-medium text-gray-700">Categoria *</Label>
                     <Select value={newService.category} onValueChange={(value) => setNewService({ ...newService, category: value })} disabled={categoriesLoading}>
-                      <SelectTrigger>
+                      <SelectTrigger className={`mt-1 ${errors.category ? 'border-red-500 focus:border-red-500' : ''}`}>
                         <SelectValue placeholder={categoriesLoading ? "Carregando categorias..." : "Selecione uma categoria"} />
                       </SelectTrigger>
                       <SelectContent>
@@ -369,75 +438,90 @@ const ServicesManager = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                    {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
                   </div>
                   <div>
-                    <Label htmlFor="price">Preço</Label>
+                    <Label htmlFor="price" className="text-sm font-medium text-gray-700">Preço</Label>
                     <Input
                       id="price"
                       value={newService.price}
                       onChange={(e) => setNewService({ ...newService, price: e.target.value })}
                       placeholder="Ex: R$ 1.500,00 ou Sob Consulta"
+                      className="mt-1"
                     />
                   </div>
-                </div>
-                <div>
-                  <Label>Características do Serviço</Label>
-                  <div className="space-y-2">
-                    <div className="flex space-x-2">
-                      <Input
-                        value={newFeature}
-                        onChange={(e) => setNewFeature(e.target.value)}
-                        placeholder="Digite uma característica"
-                        onKeyPress={(e) => e.key === 'Enter' && addFeature()}
-                      />
-                      <Button type="button" onClick={() => addFeature()} size="sm">
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {newService.features.map((feature, index) => (
-                        <Badge key={index} variant="secondary" className="flex items-center space-x-1">
-                          <span>{feature}</span>
-                          <button
-                            onClick={() => removeFeature(index)}
-                            className="ml-1 text-red-500 hover:text-red-700"
-                          >
-                            ×
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
+                </ModalGrid>
+              </ModalSection>
+
+              <ModalSection title="Características do Serviço">
+                <div className="space-y-3">
+                  <div className="flex space-x-2">
+                    <Input
+                      value={newFeature}
+                      onChange={(e) => setNewFeature(e.target.value)}
+                      placeholder="Digite uma característica"
+                      onKeyPress={(e) => e.key === 'Enter' && addFeature()}
+                      className="flex-1"
+                    />
+                    <Button type="button" onClick={() => addFeature()} size="sm" className="bg-blue-600 hover:bg-blue-700">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {newService.features.map((feature, index) => (
+                      <Badge key={index} variant="secondary" className="flex items-center space-x-1 bg-blue-100 text-blue-800">
+                        <span>{feature}</span>
+                        <button
+                          onClick={() => removeFeature(index)}
+                          className="ml-1 text-blue-600 hover:text-blue-800"
+                        >
+                          ×
+                        </button>
+                      </Badge>
+                    ))}
                   </div>
                 </div>
+              </ModalSection>
+
+              <ModalSection title="Configurações">
                 <div>
-                  <Label htmlFor="image_url">URL da Imagem</Label>
+                  <Label htmlFor="image_url" className="text-sm font-medium text-gray-700">URL da Imagem</Label>
                   <Input
                     id="image_url"
                     value={newService.image_url || ''}
                     onChange={(e) => setNewService({ ...newService, image_url: e.target.value })}
                     placeholder="https://exemplo.com/imagem.jpg"
+                    className="mt-1"
                   />
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 mt-4">
                   <Switch
                     id="isActive"
                     checked={newService.isActive}
                     onCheckedChange={(checked) => setNewService({ ...newService, isActive: checked })}
                   />
-                  <Label htmlFor="isActive">Serviço Ativo</Label>
+                  <Label htmlFor="isActive" className="text-sm font-medium text-gray-700">Serviço Ativo</Label>
                 </div>
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
-                    Cancelar
-                  </Button>
-                  <Button onClick={handleAddService} disabled={categoriesLoading}>
-                    <Save className="h-4 w-4 mr-2" />
-                    {loading ? 'Salvando...' : 'Salvar'}
-                  </Button>
-                </div>
+              </ModalSection>
+
+              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <ModalActionButton
+                  onClick={() => setIsAddModalOpen(false)}
+                  variant="outline"
+                >
+                  Cancelar
+                </ModalActionButton>
+                <ModalActionButton
+                  onClick={handleAddService}
+                  disabled={categoriesLoading || isSubmitting}
+                  variant="success"
+                  icon={isSubmitting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                >
+                  {isSubmitting ? 'Salvando...' : 'Salvar Serviço'}
+                </ModalActionButton>
               </div>
-            </DialogContent>
-          </Dialog>
+            </div>
+          </AdminModal>
         </div>
       </div>
 
@@ -568,131 +652,153 @@ const ServicesManager = () => {
       </div>
 
       {/* Edit Modal */}
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Editar Serviço</DialogTitle>
-            <DialogDescription>
-              Modifique os dados do serviço
-            </DialogDescription>
-          </DialogHeader>
-          {selectedService && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <AdminModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        title="Editar Serviço"
+        description="Modifique os dados do serviço"
+        type="edit"
+        size="xl"
+      >
+        {selectedService && (
+          <div className="space-y-6">
+            <ModalSection title="Informações Básicas">
+              <ModalGrid cols={2}>
                 <div>
-                  <Label htmlFor="edit-name">Nome do Serviço</Label>
+                  <Label htmlFor="edit-name" className="text-sm font-medium text-gray-700">Nome do Serviço *</Label>
                   <Input
                     id="edit-name"
                     value={selectedService.name}
                     onChange={(e) => setSelectedService({ ...selectedService, name: e.target.value })}
                     placeholder="Nome do serviço"
+                    className="mt-1"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="edit-icon">Ícone (Emoji)</Label>
+                  <Label htmlFor="edit-icon" className="text-sm font-medium text-gray-700">Ícone (Emoji)</Label>
                   <Input
                     id="edit-icon"
                     value={selectedService.icon}
                     onChange={(e) => setSelectedService({ ...selectedService, icon: e.target.value })}
                     placeholder="🔧"
+                    className="mt-1"
                   />
                 </div>
-              </div>
+              </ModalGrid>
+              
               <div>
-                <Label htmlFor="edit-description">Descrição</Label>
+                <Label htmlFor="edit-description" className="text-sm font-medium text-gray-700">Descrição *</Label>
                 <Textarea
                   id="edit-description"
                   value={selectedService.description}
                   onChange={(e) => setSelectedService({ ...selectedService, description: e.target.value })}
                   placeholder="Descrição detalhada do serviço"
-                  rows={3}
+                  rows={4}
+                  className="mt-1"
                 />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            </ModalSection>
+
+            <ModalSection title="Categoria e Preço">
+              <ModalGrid cols={2}>
                 <div>
-                  <Label htmlFor="edit-category">Categoria</Label>
+                  <Label htmlFor="edit-category" className="text-sm font-medium text-gray-700">Categoria *</Label>
                   <Select value={selectedService.category} onValueChange={(value) => setSelectedService({ ...selectedService, category: value })}>
-                    <SelectTrigger>
+                    <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
-                      <SelectContent>
-                        {categories.map(category => (
-                          <SelectItem key={category.name} value={category.name}>
-                            {category.icon} {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
+                    <SelectContent>
+                      {categories.map(category => (
+                        <SelectItem key={category.name} value={category.name}>
+                          {category.icon} {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="edit-price">Preço</Label>
+                  <Label htmlFor="edit-price" className="text-sm font-medium text-gray-700">Preço</Label>
                   <Input
                     id="edit-price"
                     value={selectedService.price}
                     onChange={(e) => setSelectedService({ ...selectedService, price: e.target.value })}
                     placeholder="Ex: R$ 1.500,00 ou Sob Consulta"
+                    className="mt-1"
                   />
                 </div>
-              </div>
-              <div>
-                <Label>Características do Serviço</Label>
-                <div className="space-y-2">
-                  <div className="flex space-x-2">
-                    <Input
-                      value={newFeature}
-                      onChange={(e) => setNewFeature(e.target.value)}
-                      placeholder="Digite uma característica"
-                      onKeyPress={(e) => e.key === 'Enter' && addFeature(true)}
-                    />
-                    <Button type="button" onClick={() => addFeature(true)} size="sm">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {(selectedService.features || []).map((feature, index) => (
-                      <Badge key={index} variant="secondary" className="flex items-center space-x-1">
-                        <span>{feature}</span>
-                        <button
-                          onClick={() => removeFeature(index, true)}
-                          className="ml-1 text-red-500 hover:text-red-700"
-                        >
-                          ×
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
+              </ModalGrid>
+            </ModalSection>
+
+            <ModalSection title="Características do Serviço">
+              <div className="space-y-3">
+                <div className="flex space-x-2">
+                  <Input
+                    value={newFeature}
+                    onChange={(e) => setNewFeature(e.target.value)}
+                    placeholder="Digite uma característica"
+                    onKeyPress={(e) => e.key === 'Enter' && addFeature(true)}
+                    className="flex-1"
+                  />
+                  <Button type="button" onClick={() => addFeature(true)} size="sm" className="bg-blue-600 hover:bg-blue-700">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(selectedService.features || []).map((feature, index) => (
+                    <Badge key={index} variant="secondary" className="flex items-center space-x-1 bg-blue-100 text-blue-800">
+                      <span>{feature}</span>
+                      <button
+                        onClick={() => removeFeature(index, true)}
+                        className="ml-1 text-blue-600 hover:text-blue-800"
+                      >
+                        ×
+                      </button>
+                    </Badge>
+                  ))}
                 </div>
               </div>
+            </ModalSection>
+
+            <ModalSection title="Configurações">
               <div>
-                <Label htmlFor="edit-image_url">URL da Imagem</Label>
+                <Label htmlFor="edit-image_url" className="text-sm font-medium text-gray-700">URL da Imagem</Label>
                 <Input
                   id="edit-image_url"
                   value={selectedService.image_url || ''}
                   onChange={(e) => setSelectedService({ ...selectedService, image_url: e.target.value })}
                   placeholder="https://exemplo.com/imagem.jpg"
+                  className="mt-1"
                 />
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 mt-4">
                 <Switch
                   id="edit-isActive"
                   checked={selectedService.is_active}
                   onCheckedChange={(checked) => setSelectedService({ ...selectedService, is_active: checked })}
                 />
-                <Label htmlFor="edit-isActive">Serviço Ativo</Label>
+                <Label htmlFor="edit-isActive" className="text-sm font-medium text-gray-700">Serviço Ativo</Label>
               </div>
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleEditService} disabled={loading}>
-                  <Save className="h-4 w-4 mr-2" />
-                  {loading ? 'Salvando...' : 'Salvar'}
-                </Button>
-              </div>
+            </ModalSection>
+
+            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+              <ModalActionButton
+                onClick={() => setIsEditModalOpen(false)}
+                variant="outline"
+              >
+                Cancelar
+              </ModalActionButton>
+              <ModalActionButton
+                onClick={handleEditService}
+                disabled={loading}
+                variant="primary"
+                icon={<Save className="h-4 w-4" />}
+              >
+                {loading ? 'Salvando...' : 'Salvar Alterações'}
+              </ModalActionButton>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        )}
+      </AdminModal>
     </div>
   )
 }

@@ -187,7 +187,7 @@ const Gallery = () => {
 
         {/* Modal */}
         {selectedImage && (
-          <div className="fixed inset-0 bg-white z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="fixed inset-0 bg-white z-[9990] flex items-center justify-center p-4 animate-fade-in">
             <div className="relative max-w-6xl w-full">
               {/* Close Button */}
               <button 
@@ -265,33 +265,6 @@ const Gallery = () => {
           </div>
         </div>
       </div>
-      
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes fade-in-up {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-fade-in {
-          animation: fade-in 0.8s ease-out;
-        }
-        
-        .animate-fade-in-up {
-          animation: fade-in-up 0.8s ease-out;
-        }
-        
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      `}</style>
     </section>
   )
 }

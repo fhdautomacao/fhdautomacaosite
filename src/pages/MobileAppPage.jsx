@@ -73,7 +73,7 @@ const MobileAppPage = () => {
 
       {/* Settings Modal */}
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 hidden z-50"
+        className="fixed inset-0 bg-black bg-opacity-50 hidden z-[9990]"
         id="settings-modal"
         onClick={(e) => e.target.id === 'settings-modal' && (e.target.style.display = 'none')}
       >

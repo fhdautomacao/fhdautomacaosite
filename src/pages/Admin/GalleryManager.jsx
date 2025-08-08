@@ -18,7 +18,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import AdminModal from '@/components/admin/AdminModal'
+import { ModalActionButton, ModalSection, ModalGrid } from '@/components/admin/AdminModal'
 import { storageAPI } from '@/api/storage'
 import { galleryAPI } from '@/api/gallery'
 import { useGalleryCategories } from '@/hooks/useCategories'
@@ -169,77 +170,97 @@ const GalleryManager = () => {
           <h2 className="text-3xl font-bold text-gray-900">Gerenciar Galeria</h2>
           <p className="text-gray-600">Adicione, edite ou remova fotos da galeria</p>
         </div>
-        <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar Foto
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Adicionar Nova Foto</DialogTitle>
-              <DialogDescription>
-                Preencha os dados da nova foto para a galeria
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
+        <Button 
+          className="bg-blue-600 hover:bg-blue-700"
+          onClick={() => setIsAddModalOpen(true)}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Adicionar Foto
+        </Button>
+        <AdminModal
+          open={isAddModalOpen}
+          onOpenChange={setIsAddModalOpen}
+          title="Adicionar Nova Foto"
+          description="Preencha os dados da nova foto para a galeria"
+          type="create"
+          size="2xl"
+        >
+          <div className="space-y-6">
+            <ModalSection title="Informações da Foto">
+              <ModalGrid cols={2}>
+                <div>
+                  <Label htmlFor="title" className="text-sm font-medium text-gray-700">Título *</Label>
+                  <Input
+                    id="title"
+                    value={newPhoto.title}
+                    onChange={(e) => setNewPhoto({ ...newPhoto, title: e.target.value })}
+                    placeholder="Título da foto"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="category" className="text-sm font-medium text-gray-700">Categoria *</Label>
+                  <Select value={newPhoto.category} onValueChange={(value) => setNewPhoto({ ...newPhoto, category: value })} disabled={categoriesLoading}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder={categoriesLoading ? "Carregando categorias..." : "Selecione uma categoria"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categoriesError && <SelectItem value="" disabled>Erro ao carregar categorias</SelectItem>}
+                      {categories.map(category => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.icon} {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </ModalGrid>
+              
               <div>
-                <Label htmlFor="title">Título</Label>
-                <Input
-                  id="title"
-                  value={newPhoto.title}
-                  onChange={(e) => setNewPhoto({ ...newPhoto, title: e.target.value })}
-                  placeholder="Título da foto"
-                />
-              </div>
-              <div>
-                <Label htmlFor="description">Descrição</Label>
+                <Label htmlFor="description" className="text-sm font-medium text-gray-700">Descrição</Label>
                 <Textarea
                   id="description"
                   value={newPhoto.description}
                   onChange={(e) => setNewPhoto({ ...newPhoto, description: e.target.value })}
-                  placeholder="Descrição da foto"
-                  rows={3}
+                  placeholder="Descrição detalhada da foto"
+                  rows={4}
+                  className="mt-1"
                 />
               </div>
+            </ModalSection>
+
+            <ModalSection title="Upload da Imagem">
               <div>
-                <Label htmlFor="category">Categoria</Label>
-                <Select value={newPhoto.category} onValueChange={(value) => setNewPhoto({ ...newPhoto, category: value })} disabled={categoriesLoading}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={categoriesLoading ? "Carregando categorias..." : "Selecione uma categoria"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categoriesError && <SelectItem value="" disabled>Erro ao carregar categorias</SelectItem>}
-                    {categories.map(category => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.icon} {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="image">Arquivo da Imagem</Label>
+                <Label htmlFor="image" className="text-sm font-medium text-gray-700">Arquivo da Imagem *</Label>
                 <Input
                   id="image"
                   type="file"
                   accept="image/*"
                   onChange={(e) => setNewPhoto({ ...newPhoto, image: e.target.files[0] })}
+                  className="mt-1"
                 />
+                <p className="text-xs text-gray-500 mt-1">Formatos aceitos: JPG, PNG, GIF. Tamanho máximo: 5MB</p>
               </div>
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleAddPhoto} disabled={categoriesLoading}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Salvar
-                </Button>
-              </div>
+            </ModalSection>
+
+            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+              <ModalActionButton
+                onClick={() => setIsAddModalOpen(false)}
+                variant="outline"
+              >
+                Cancelar
+              </ModalActionButton>
+              <ModalActionButton
+                onClick={handleAddPhoto}
+                disabled={categoriesLoading}
+                variant="success"
+                icon={<Save className="h-4 w-4" />}
+              >
+                Salvar Foto
+              </ModalActionButton>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </AdminModal>
       </div>
 
       {/* Filters */}
@@ -364,66 +385,81 @@ const GalleryManager = () => {
       )}
 
       {/* Edit Modal */}
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Editar Foto</DialogTitle>
-            <DialogDescription>
-              Atualize as informações da foto
-            </DialogDescription>
-          </DialogHeader>
-          {selectedPhoto && (
-            <div className="space-y-4">
+      <AdminModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        title="Editar Foto"
+        description="Atualize as informações da foto"
+        type="edit"
+        size="2xl"
+      >
+        {selectedPhoto && (
+          <div className="space-y-6">
+            <ModalSection title="Informações da Foto">
+              <ModalGrid cols={2}>
+                <div>
+                  <Label htmlFor="edit-title" className="text-sm font-medium text-gray-700">Título *</Label>
+                  <Input
+                    id="edit-title"
+                    value={selectedPhoto.title}
+                    onChange={(e) => setSelectedPhoto({ ...selectedPhoto, title: e.target.value })}
+                    placeholder="Título da foto"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-category" className="text-sm font-medium text-gray-700">Categoria *</Label>
+                  <Select 
+                    value={selectedPhoto.category} 
+                    onValueChange={(value) => setSelectedPhoto({ ...selectedPhoto, category: value })}
+                    disabled={categoriesLoading}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder={categoriesLoading ? "Carregando categorias..." : "Selecione uma categoria"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categoriesError && <SelectItem value="" disabled>Erro ao carregar categorias</SelectItem>}
+                      {categories.map(category => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.icon} {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </ModalGrid>
+              
               <div>
-                <Label htmlFor="edit-title">Título</Label>
-                <Input
-                  id="edit-title"
-                  value={selectedPhoto.title}
-                  onChange={(e) => setSelectedPhoto({ ...selectedPhoto, title: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-description">Descrição</Label>
+                <Label htmlFor="edit-description" className="text-sm font-medium text-gray-700">Descrição</Label>
                 <Textarea
                   id="edit-description"
                   value={selectedPhoto.description}
                   onChange={(e) => setSelectedPhoto({ ...selectedPhoto, description: e.target.value })}
-                  rows={3}
+                  placeholder="Descrição detalhada da foto"
+                  rows={4}
+                  className="mt-1"
                 />
               </div>
-              <div>
-                <Label htmlFor="edit-category">Categoria</Label>
-                <Select 
-                  value={selectedPhoto.category} 
-                  onValueChange={(value) => setSelectedPhoto({ ...selectedPhoto, category: value })}
-                  disabled={categoriesLoading}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={categoriesLoading ? "Carregando categorias..." : "Selecione uma categoria"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categoriesError && <SelectItem value="" disabled>Erro ao carregar categorias</SelectItem>}
-                    {categories.map(category => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.icon} {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleEditPhoto}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Salvar Alterações
-                </Button>
-              </div>
+            </ModalSection>
+
+            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+              <ModalActionButton
+                onClick={() => setIsEditModalOpen(false)}
+                variant="outline"
+              >
+                Cancelar
+              </ModalActionButton>
+              <ModalActionButton
+                onClick={handleEditPhoto}
+                variant="primary"
+                icon={<Save className="h-4 w-4" />}
+              >
+                Salvar Alterações
+              </ModalActionButton>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        )}
+      </AdminModal>
     </div>
   )
 }

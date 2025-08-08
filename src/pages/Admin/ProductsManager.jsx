@@ -10,7 +10,8 @@ import {
   DollarSign,
   Tag,
   Info,
-  Loader2
+  Loader2,
+  RefreshCw
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -18,7 +19,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import AdminModal from '@/components/admin/AdminModal'
+import { ModalActionButton, ModalSection, ModalGrid } from '@/components/admin/AdminModal'
 import { Badge } from '@/components/ui/badge'
 import { productsAPI } from '@/api/products'
 import { useProductCategories } from '@/hooks/useCategories'
@@ -33,6 +35,10 @@ const ProductsManager = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
 
+  // Estados para validação
+  const [errors, setErrors] = useState({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
   const { categories, loading: categoriesLoading, error: categoriesError } = useProductCategories()
 
   const [newProduct, setNewProduct] = useState({
@@ -45,6 +51,29 @@ const ProductsManager = () => {
   })
 
   const [newFeature, setNewFeature] = useState("")
+
+  // Função para validar formulário
+  const validateForm = () => {
+    const newErrors = {}
+
+    // Validação de nome
+    if (!newProduct.name.trim()) {
+      newErrors.name = 'Nome do produto é obrigatório'
+    }
+
+    // Validação de categoria
+    if (!newProduct.category) {
+      newErrors.category = 'Categoria é obrigatória'
+    }
+
+    // Validação de descrição
+    if (!newProduct.description.trim()) {
+      newErrors.description = 'Descrição é obrigatória'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   // Carregar produtos do Supabase
   useEffect(() => {
@@ -72,32 +101,43 @@ const ProductsManager = () => {
   })
 
   const handleAddProduct = async () => {
-    if (newProduct.name && newProduct.category && newProduct.description) {
-      try {
-        let imageUrl = "/products/placeholder.jpg"
-        if (newProduct.image) {
-          imageUrl = await productsAPI.uploadImage(newProduct.image)
-        }
+    try {
+      setIsSubmitting(true)
+      setErrors({})
 
-        const productData = {
-          name: newProduct.name,
-          category: newProduct.category,
-          description: newProduct.description,
-          features: newProduct.features,
-          price: newProduct.price || "Sob Consulta",
-          image_url: imageUrl,
-          is_active: true,
-          display_order: products.length
-        }
-        
-        await productsAPI.create(productData)
-        await loadProducts() // Recarregar lista
-        setNewProduct({ name: "", category: "", description: "", features: [], price: "", image: null })
-        setIsAddModalOpen(false)
-      } catch (error) {
-        console.error("Erro ao adicionar produto:", error)
-        setError("Erro ao adicionar produto")
+      // Validar formulário
+      if (!validateForm()) {
+        setIsSubmitting(false)
+        return
       }
+
+      let imageUrl = "/products/placeholder.jpg"
+      if (newProduct.image) {
+        imageUrl = await productsAPI.uploadImage(newProduct.image)
+      }
+
+      const productData = {
+        name: newProduct.name,
+        category: newProduct.category,
+        description: newProduct.description,
+        features: newProduct.features,
+        price: newProduct.price || "Sob Consulta",
+        image_url: imageUrl,
+        is_active: true,
+        display_order: products.length
+      }
+      
+      await productsAPI.create(productData)
+      await loadProducts() // Recarregar lista
+      setNewProduct({ name: "", category: "", description: "", features: [], price: "", image: null })
+      setNewFeature("")
+      setErrors({})
+      setIsAddModalOpen(false)
+    } catch (error) {
+      console.error("Erro ao adicionar produto:", error)
+      setErrors({ submit: "Erro ao adicionar produto. Verifique os dados e tente novamente." })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -221,115 +261,154 @@ const ProductsManager = () => {
           <h2 className="text-3xl font-bold text-gray-900">Gerenciar Produtos</h2>
           <p className="text-gray-600">Adicione, edite ou remova produtos do catálogo</p>
         </div>
-        <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-purple-600 hover:bg-purple-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar Produto
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Adicionar Novo Produto</DialogTitle>
-              <DialogDescription>
-                Preencha os dados do novo produto
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">Nome do Produto</Label>
-                <Input
-                  id="name"
-                  value={newProduct.name}
-                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                  placeholder="Nome do produto"
-                />
+        <Button 
+          className="bg-purple-600 hover:bg-purple-700"
+          onClick={() => setIsAddModalOpen(true)}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Adicionar Produto
+        </Button>
+        <AdminModal
+          open={isAddModalOpen}
+          onOpenChange={(open) => {
+            setIsAddModalOpen(open)
+            if (!open) {
+              setErrors({})
+              setNewProduct({ name: "", category: "", description: "", features: [], price: "", image: null })
+              setNewFeature("")
+            }
+          }}
+          title="Adicionar Novo Produto"
+          description="Preencha os dados do novo produto"
+          type="create"
+          size="2xl"
+        >
+          <div className="space-y-6">
+            {/* Mensagem de erro geral */}
+            {errors.submit && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-600 text-sm">{errors.submit}</p>
               </div>
+            )}
+            <ModalSection title="Informações Básicas">
+              <ModalGrid cols={2}>
+                <div>
+                  <Label htmlFor="name" className="text-sm font-medium text-gray-700">Nome do Produto *</Label>
+                  <Input
+                    id="name"
+                    value={newProduct.name}
+                    onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                    placeholder="Nome do produto"
+                    className={`mt-1 ${errors.name ? 'border-red-500 focus:border-red-500' : ''}`}
+                  />
+                  {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                </div>
+                <div>
+                  <Label htmlFor="category" className="text-sm font-medium text-gray-700">Categoria *</Label>
+                  <Select value={newProduct.category} onValueChange={(value) => setNewProduct({ ...newProduct, category: value })} disabled={categoriesLoading}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder={categoriesLoading ? "Carregando categorias..." : "Selecione uma categoria"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categoriesError && <SelectItem value="" disabled>Erro ao carregar categorias</SelectItem>}
+                      {categories.map(category => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.icon} {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
+                </div>
+              </ModalGrid>
+              
               <div>
-                <Label htmlFor="category">Categoria</Label>
-                <Select value={newProduct.category} onValueChange={(value) => setNewProduct({ ...newProduct, category: value })} disabled={categoriesLoading}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={categoriesLoading ? "Carregando categorias..." : "Selecione uma categoria"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categoriesError && <SelectItem value="" disabled>Erro ao carregar categorias</SelectItem>}
-                    {categories.map(category => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.icon} {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="description">Descrição</Label>
+                <Label htmlFor="description" className="text-sm font-medium text-gray-700">Descrição *</Label>
                 <Textarea
                   id="description"
                   value={newProduct.description}
                   onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                  placeholder="Descrição do produto"
-                  rows={3}
+                  placeholder="Descrição detalhada do produto"
+                  rows={4}
+                  className="mt-1"
                 />
+                {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
               </div>
+              
               <div>
-                <Label htmlFor="price">Preço</Label>
+                <Label htmlFor="price" className="text-sm font-medium text-gray-700">Preço</Label>
                 <Input
                   id="price"
                   value={newProduct.price}
                   onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
                   placeholder="Ex: R$ 1.500,00 ou Sob Consulta"
+                  className="mt-1"
                 />
               </div>
-              <div>
-                <Label>Características</Label>
-                <div className="space-y-2">
-                  <div className="flex space-x-2">
-                    <Input
-                      value={newFeature}
-                      onChange={(e) => setNewFeature(e.target.value)}
-                      placeholder="Digite uma característica"
-                      onKeyPress={(e) => e.key === 'Enter' && addFeature()}
-                    />
-                    <Button type="button" onClick={() => addFeature()} size="sm">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {(newProduct.features || []).map((feature, index) => (
-                      <Badge key={index} variant="secondary" className="flex items-center space-x-1">
-                        <span>{feature}</span>
-                        <button
-                          onClick={() => removeFeature(index)}
-                          className="ml-1 text-red-500 hover:text-red-700"
-                        >
-                          ×
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
+            </ModalSection>
+
+            <ModalSection title="Características">
+              <div className="space-y-3">
+                <div className="flex space-x-2">
+                  <Input
+                    value={newFeature}
+                    onChange={(e) => setNewFeature(e.target.value)}
+                    placeholder="Digite uma característica"
+                    onKeyPress={(e) => e.key === 'Enter' && addFeature()}
+                    className="flex-1"
+                  />
+                  <Button type="button" onClick={() => addFeature()} size="sm" className="bg-blue-600 hover:bg-blue-700">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(newProduct.features || []).map((feature, index) => (
+                    <Badge key={index} variant="secondary" className="flex items-center space-x-1 bg-blue-100 text-blue-800">
+                      <span>{feature}</span>
+                      <button
+                        onClick={() => removeFeature(index)}
+                        className="ml-1 text-blue-600 hover:text-blue-800"
+                      >
+                        ×
+                      </button>
+                    </Badge>
+                  ))}
                 </div>
               </div>
+            </ModalSection>
+
+            <ModalSection title="Imagem">
               <div>
-                <Label htmlFor="image">Imagem do Produto</Label>
+                <Label htmlFor="image" className="text-sm font-medium text-gray-700">Imagem do Produto</Label>
                 <Input
                   id="image"
                   type="file"
                   accept="image/*"
                   onChange={(e) => setNewProduct({ ...newProduct, image: e.target.files[0] })}
+                  className="mt-1"
                 />
               </div>
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleAddProduct} disabled={categoriesLoading}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Salvar
-                </Button>
-              </div>
+            </ModalSection>
+
+            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+              <ModalActionButton
+                onClick={() => setIsAddModalOpen(false)}
+                variant="outline"
+              >
+                Cancelar
+              </ModalActionButton>
+              <ModalActionButton
+                onClick={handleAddProduct}
+                disabled={categoriesLoading || isSubmitting}
+                variant="success"
+                icon={<Save className="h-4 w-4" />}
+              >
+                {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                Salvar Produto
+              </ModalActionButton>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </AdminModal>
       </div>
 
       {/* Filters */}
@@ -460,101 +539,121 @@ const ProductsManager = () => {
       )}
 
       {/* Edit Product Modal */}
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Editar Produto</DialogTitle>
-            <DialogDescription>
-              Edite os dados do produto selecionado
-            </DialogDescription>
-          </DialogHeader>
-          {selectedProduct && (
-            <div className="space-y-4">
+      <AdminModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        title="Editar Produto"
+        description="Edite os dados do produto selecionado"
+        type="edit"
+        size="lg"
+      >
+        {selectedProduct && (
+          <div className="space-y-6">
+            <ModalSection title="Informações Básicas">
+              <ModalGrid cols={2}>
+                <div>
+                  <Label htmlFor="edit-name" className="text-sm font-medium text-gray-700">Nome do Produto *</Label>
+                  <Input
+                    id="edit-name"
+                    value={selectedProduct.name}
+                    onChange={(e) => setSelectedProduct({ ...selectedProduct, name: e.target.value })}
+                    placeholder="Nome do produto"
+                    className="mt-1"
+                  />
+                  {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                </div>
+                <div>
+                  <Label htmlFor="edit-category" className="text-sm font-medium text-gray-700">Categoria *</Label>
+                  <Select value={selectedProduct.category} onValueChange={(value) => setSelectedProduct({ ...selectedProduct, category: value })}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Selecione uma categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map(category => (
+                        <SelectItem key={category.name} value={category.name}>
+                          {category.icon} {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
+                </div>
+              </ModalGrid>
+              
               <div>
-                <Label htmlFor="edit-name">Nome do Produto</Label>
-                <Input
-                  id="edit-name"
-                  value={selectedProduct.name}
-                  onChange={(e) => setSelectedProduct({ ...selectedProduct, name: e.target.value })}
-                  placeholder="Nome do produto"
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-category">Categoria</Label>
-                <Select value={selectedProduct.category} onValueChange={(value) => setSelectedProduct({ ...selectedProduct, category: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(category => (
-                      <SelectItem key={category.name} value={category.name}>
-                        {category.icon} {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="edit-description">Descrição</Label>
+                <Label htmlFor="edit-description" className="text-sm font-medium text-gray-700">Descrição *</Label>
                 <Textarea
                   id="edit-description"
                   value={selectedProduct.description}
                   onChange={(e) => setSelectedProduct({ ...selectedProduct, description: e.target.value })}
-                  placeholder="Descrição do produto"
-                  rows={3}
+                  placeholder="Descrição detalhada do produto"
+                  rows={4}
+                  className="mt-1"
                 />
+                {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
               </div>
+              
               <div>
-                <Label htmlFor="edit-price">Preço</Label>
+                <Label htmlFor="edit-price" className="text-sm font-medium text-gray-700">Preço</Label>
                 <Input
                   id="edit-price"
                   value={selectedProduct.price}
                   onChange={(e) => setSelectedProduct({ ...selectedProduct, price: e.target.value })}
                   placeholder="Ex: R$ 1.500,00 ou Sob Consulta"
+                  className="mt-1"
                 />
               </div>
-              <div>
-                <Label>Características</Label>
-                <div className="space-y-2">
-                  <div className="flex space-x-2">
-                    <Input
-                      value={newFeature}
-                      onChange={(e) => setNewFeature(e.target.value)}
-                      placeholder="Digite uma característica"
-                      onKeyPress={(e) => e.key === 'Enter' && addFeature(true)}
-                    />
-                    <Button type="button" onClick={() => addFeature(true)} size="sm">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {(selectedProduct.features || []).map((feature, index) => (
-                      <Badge key={index} variant="secondary" className="flex items-center space-x-1">
-                        <span>{feature}</span>
-                        <button
-                          onClick={() => removeFeature(index, true)}
-                          className="ml-1 text-red-500 hover:text-red-700"
-                        >
-                          ×
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
+            </ModalSection>
+
+            <ModalSection title="Características">
+              <div className="space-y-3">
+                <div className="flex space-x-2">
+                  <Input
+                    value={newFeature}
+                    onChange={(e) => setNewFeature(e.target.value)}
+                    placeholder="Digite uma característica"
+                    onKeyPress={(e) => e.key === 'Enter' && addFeature(true)}
+                    className="flex-1"
+                  />
+                  <Button type="button" onClick={() => addFeature(true)} size="sm" className="bg-blue-600 hover:bg-blue-700">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(selectedProduct.features || []).map((feature, index) => (
+                    <Badge key={index} variant="secondary" className="flex items-center space-x-1 bg-blue-100 text-blue-800">
+                      <span>{feature}</span>
+                      <button
+                        onClick={() => removeFeature(index, true)}
+                        className="ml-1 text-blue-600 hover:text-blue-800"
+                      >
+                        ×
+                      </button>
+                    </Badge>
+                  ))}
                 </div>
               </div>
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleEditProduct} disabled={categoriesLoading}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Salvar Alterações
-                </Button>
-              </div>
+            </ModalSection>
+
+            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+              <ModalActionButton
+                onClick={() => setIsEditModalOpen(false)}
+                variant="outline"
+              >
+                Cancelar
+              </ModalActionButton>
+              <ModalActionButton
+                onClick={handleEditProduct}
+                disabled={categoriesLoading}
+                variant="primary"
+                icon={<Save className="h-4 w-4" />}
+              >
+                Salvar Alterações
+              </ModalActionButton>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        )}
+      </AdminModal>
     </>
   )}
 </div>

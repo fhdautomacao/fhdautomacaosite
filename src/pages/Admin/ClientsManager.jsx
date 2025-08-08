@@ -19,7 +19,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import AdminModal from '@/components/admin/AdminModal'
+import { ModalActionButton, ModalSection, ModalGrid } from '@/components/admin/AdminModal'
 import { clientsAPI } from '@/api/clients'
 
 const ClientsManager = () => {
@@ -171,66 +172,13 @@ const ClientsManager = () => {
               <h2 className="text-3xl font-bold text-gray-900">Gerenciar Clientes</h2>
               <p className="text-gray-600">Adicione, edite ou remova clientes da seção de clientes</p>
             </div>
-            <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-green-600 hover:bg-green-700">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Cliente
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Adicionar Novo Cliente</DialogTitle>
-                  <DialogDescription>
-                    Preencha os dados do novo cliente
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Nome da Empresa</Label>
-                    <Input
-                      id="name"
-                      value={newClient.name}
-                      onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
-                      placeholder="Nome da empresa"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="industry">Setor</Label>
-                    <Select value={newClient.industry} onValueChange={(value) => setNewClient({ ...newClient, industry: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione um setor" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {sectors.map(sector => (
-                          <SelectItem key={sector} value={sector}>
-                            {sector}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="logo_url">URL do Logo</Label>
-                    <Input
-                      id="logo_url"
-                      value={newClient.logo_url}
-                      onChange={(e) => setNewClient({ ...newClient, logo_url: e.target.value })}
-                      placeholder="https://exemplo.com/logo.png"
-                    />
-                  </div>
-                  <div className="flex justify-end space-x-2">
-                    <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
-                      Cancelar
-                    </Button>
-                    <Button onClick={handleAddClient}>
-                      <Save className="h-4 w-4 mr-2" />
-                      Salvar
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button 
+              className="bg-green-600 hover:bg-green-700"
+              onClick={() => setIsAddModalOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Cliente
+            </Button>
           </div>
 
           {/* Filters */}
@@ -346,33 +294,33 @@ const ClientsManager = () => {
             </Card>
           )}
 
-          {/* Edit Modal */}
-          <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-            <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Editar Cliente</DialogTitle>
-                <DialogDescription>
-                  Atualize as informações do cliente
-                </DialogDescription>
-              </DialogHeader>
-              {selectedClient && (
-                <div className="space-y-4">
+          {/* Add Modal */}
+          <AdminModal
+            open={isAddModalOpen}
+            onOpenChange={setIsAddModalOpen}
+            title="Adicionar Novo Cliente"
+            description="Preencha os dados do novo cliente"
+            type="create"
+            size="2xl"
+          >
+            <div className="space-y-6">
+              <ModalSection title="Informações do Cliente">
+                <ModalGrid cols={1}>
                   <div>
-                    <Label htmlFor="edit-name">Nome da Empresa</Label>
+                    <Label htmlFor="name" className="text-sm font-medium text-gray-700">Nome da Empresa</Label>
                     <Input
-                      id="edit-name"
-                      value={selectedClient.name}
-                      onChange={(e) => setSelectedClient({ ...selectedClient, name: e.target.value })}
+                      id="name"
+                      value={newClient.name}
+                      onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
+                      placeholder="Nome da empresa"
+                      className="mt-1"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="edit-industry">Setor</Label>
-                    <Select 
-                      value={selectedClient.industry} 
-                      onValueChange={(value) => setSelectedClient({ ...selectedClient, industry: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
+                    <Label htmlFor="industry" className="text-sm font-medium text-gray-700">Setor</Label>
+                    <Select value={newClient.industry} onValueChange={(value) => setNewClient({ ...newClient, industry: value })}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Selecione um setor" />
                       </SelectTrigger>
                       <SelectContent>
                         {sectors.map(sector => (
@@ -384,27 +332,107 @@ const ClientsManager = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="edit-logo_url">URL do Logo</Label>
+                    <Label htmlFor="logo_url" className="text-sm font-medium text-gray-700">URL do Logo</Label>
                     <Input
-                      id="edit-logo_url"
-                      value={selectedClient.logo_url || ''}
-                      onChange={(e) => setSelectedClient({ ...selectedClient, logo_url: e.target.value })}
+                      id="logo_url"
+                      value={newClient.logo_url}
+                      onChange={(e) => setNewClient({ ...newClient, logo_url: e.target.value })}
                       placeholder="https://exemplo.com/logo.png"
+                      className="mt-1"
                     />
                   </div>
-                  <div className="flex justify-end space-x-2">
-                    <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-                      Cancelar
-                    </Button>
-                    <Button onClick={handleEditClient}>
-                      <Save className="h-4 w-4 mr-2" />
-                      Salvar Alterações
-                    </Button>
-                  </div>
+                </ModalGrid>
+              </ModalSection>
+              
+              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <ModalActionButton
+                  onClick={() => setIsAddModalOpen(false)}
+                  variant="outline"
+                >
+                  Cancelar
+                </ModalActionButton>
+                <ModalActionButton
+                  onClick={handleAddClient}
+                  variant="success"
+                  icon={<Save className="h-4 w-4" />}
+                >
+                  Salvar
+                </ModalActionButton>
+              </div>
+            </div>
+          </AdminModal>
+
+          {/* Edit Modal */}
+          <AdminModal
+            open={isEditModalOpen}
+            onOpenChange={setIsEditModalOpen}
+            title="Editar Cliente"
+            description="Atualize as informações do cliente"
+            type="edit"
+            size="2xl"
+          >
+            {selectedClient && (
+              <div className="space-y-6">
+                <ModalSection title="Informações do Cliente">
+                  <ModalGrid cols={1}>
+                    <div>
+                      <Label htmlFor="edit-name" className="text-sm font-medium text-gray-700">Nome da Empresa</Label>
+                      <Input
+                        id="edit-name"
+                        value={selectedClient.name}
+                        onChange={(e) => setSelectedClient({ ...selectedClient, name: e.target.value })}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-industry" className="text-sm font-medium text-gray-700">Setor</Label>
+                      <Select 
+                        value={selectedClient.industry} 
+                        onValueChange={(value) => setSelectedClient({ ...selectedClient, industry: value })}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {sectors.map(sector => (
+                            <SelectItem key={sector} value={sector}>
+                              {sector}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-logo_url" className="text-sm font-medium text-gray-700">URL do Logo</Label>
+                      <Input
+                        id="edit-logo_url"
+                        value={selectedClient.logo_url || ''}
+                        onChange={(e) => setSelectedClient({ ...selectedClient, logo_url: e.target.value })}
+                        placeholder="https://exemplo.com/logo.png"
+                        className="mt-1"
+                      />
+                    </div>
+                  </ModalGrid>
+                </ModalSection>
+                
+                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                  <ModalActionButton
+                    onClick={() => setIsEditModalOpen(false)}
+                    variant="outline"
+                  >
+                    Cancelar
+                  </ModalActionButton>
+                  <ModalActionButton
+                    onClick={handleEditClient}
+                    variant="primary"
+                    icon={<Save className="h-4 w-4" />}
+                  >
+                    Salvar Alterações
+                  </ModalActionButton>
                 </div>
-              )}
-            </DialogContent>
-          </Dialog>
+              </div>
+            )}
+          </AdminModal>
         </>
       )}
     </div>

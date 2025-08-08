@@ -40,7 +40,8 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLab
 import { useAuth } from '@/contexts/AuthContext'
 import { useOverdueChecker } from '@/hooks/useOverdueChecker'
 import { menuPrefsAPI } from '@/api/menuPrefs'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import AdminModal from '@/components/admin/AdminModal'
+import { ModalActionButton, ModalSection, ModalGrid } from '@/components/admin/AdminModal'
 import { Switch } from '@/components/ui/switch'
 
 // Import existing managers
@@ -450,7 +451,7 @@ const AdminPageNew = () => {
             </div>
           </div>
 
-          <nav className="mt-4 px-3 flex-1 overflow-y-auto pb-4">
+          <nav className="mt-4 px-3 flex-1 pb-4">
             <div className="space-y-1">
               {navigationItems.map((item) => {
                 // Verificar permissões
@@ -590,11 +591,11 @@ const AdminPageNew = () => {
           </header>
 
           {/* Content */}
-          <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 scroll-container safe-area-inset-bottom">
+          <main className="flex-1 p-3 sm:p-4 lg:p-6 scroll-container safe-area-inset-bottom">
             <motion.div
               key={activeSection}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
               className="max-w-full"
             >
@@ -606,7 +607,7 @@ const AdminPageNew = () => {
         {/* Overlay for mobile */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            className="fixed inset-0 bg-black bg-opacity-50 z-[9990] lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -616,54 +617,59 @@ const AdminPageNew = () => {
       <QuotationNotification />
 
       {/* Dialog de Gerenciamento do Menu */}
-      <Dialog open={manageMenuOpen} onOpenChange={setManageMenuOpen}>
-        <DialogContent className="max-w-2xl top-[34%]">
-          <DialogHeader>
-            <DialogTitle>Gerenciar visibilidade do menu</DialogTitle>
-            <DialogDescription>Oculte ou mostre seções. Suas preferências ficam salvas nesta conta.</DialogDescription>
-          </DialogHeader>
-          <div className="mb-3">
-            <Input placeholder="Buscar seção..." value={manageSearch} onChange={e=>setManageSearch(e.target.value)} />
-          </div>
-          <div className="space-y-2 max-h-[60vh] overflow-auto">
-            {navigationItems.map(item => {
-              const itemMatch = !manageSearch || item.label.toLowerCase().includes(manageSearch.toLowerCase())
-              return (
-                <div key={item.id} className="border rounded-md p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="font-medium">{item.label}</div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600">{visibilityMap[item.id] === false ? 'Oculta' : 'Visível'}</span>
-                      <Switch checked={!(visibilityMap[item.id] === false)} onCheckedChange={async(checked)=>{
-                        await menuPrefsAPI.setVisibility(item.id, checked)
-                        setVisibilityMap(prev=>({ ...prev, [item.id]: checked }))
-                      }} />
+      <AdminModal
+        open={manageMenuOpen}
+        onOpenChange={setManageMenuOpen}
+        title="Gerenciar visibilidade do menu"
+        description="Oculte ou mostre seções. Suas preferências ficam salvas nesta conta."
+        type="edit"
+        size="2xl"
+      >
+        <div className="space-y-6">
+          <ModalSection title="Configurações de Visibilidade">
+            <div className="mb-3">
+              <Input placeholder="Buscar seção..." value={manageSearch} onChange={e=>setManageSearch(e.target.value)} />
+            </div>
+            <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+              {navigationItems.map(item => {
+                const itemMatch = !manageSearch || item.label.toLowerCase().includes(manageSearch.toLowerCase())
+                return (
+                  <div key={item.id} className="border rounded-md p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="font-medium">{item.label}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">{visibilityMap[item.id] === false ? 'Oculta' : 'Visível'}</span>
+                        <Switch checked={!(visibilityMap[item.id] === false)} onCheckedChange={async(checked)=>{
+                          await menuPrefsAPI.setVisibility(item.id, checked)
+                          setVisibilityMap(prev=>({ ...prev, [item.id]: checked }))
+                        }} />
+                      </div>
                     </div>
-                  </div>
-                  {item.children && itemMatch && (
-                    <div className="mt-2 space-y-1">
-                      {item.children
-                        .filter(child => !manageSearch || child.label.toLowerCase().includes(manageSearch.toLowerCase()))
-                        .map(child => (
-                          <div key={child.id} className="flex items-center justify-between pl-4">
-                            <span className="text-sm">{child.label}</span>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-600">{visibilityMap[child.id] === false ? 'Oculta' : 'Visível'}</span>
-                              <Switch checked={!(visibilityMap[child.id] === false)} onCheckedChange={async(checked)=>{
-                                await menuPrefsAPI.setVisibility(child.id, checked)
-                                setVisibilityMap(prev=>({ ...prev, [child.id]: checked }))
-                              }} />
+                    {item.children && itemMatch && (
+                      <div className="mt-2 space-y-1">
+                        {item.children
+                          .filter(child => !manageSearch || child.label.toLowerCase().includes(manageSearch.toLowerCase()))
+                          .map(child => (
+                            <div key={child.id} className="flex items-center justify-between pl-4">
+                              <span className="text-sm">{child.label}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-600">{visibilityMap[child.id] === false ? 'Oculta' : 'Visível'}</span>
+                                <Switch checked={!(visibilityMap[child.id] === false)} onCheckedChange={async(checked)=>{
+                                  await menuPrefsAPI.setVisibility(child.id, checked)
+                                  setVisibilityMap(prev=>({ ...prev, [child.id]: checked }))
+                                }} />
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </DialogContent>
-      </Dialog>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </ModalSection>
+        </div>
+      </AdminModal>
     </>
   )
 }

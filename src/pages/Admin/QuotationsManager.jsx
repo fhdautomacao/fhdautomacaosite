@@ -30,7 +30,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import AdminModal from '@/components/admin/AdminModal'
+import { ModalActionButton, ModalSection, ModalGrid } from '@/components/admin/AdminModal'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { quotationsAPI } from '@/api/quotations'
@@ -219,11 +220,11 @@ const QuotationsManager = () => {
     const additionalInfoLength = quotation.additional_info?.length || 0
     const totalTextLength = descriptionLength + additionalInfoLength
     
-    // Definir tamanho baseado na quantidade de texto - sendo mais generoso
-    if (totalTextLength > 800) return "max-w-7xl w-[90vw]" // Muito texto - quase tela cheia
-    if (totalTextLength > 400) return "max-w-6xl w-[80vw]"  // Texto médio
-    if (totalTextLength > 150) return "max-w-5xl w-[70vw]"  // Texto pequeno
-    return "max-w-4xl w-[60vw]" // Padrão - já maior que antes
+    // Definir tamanho baseado na quantidade de texto - sem interferir no posicionamento
+    if (totalTextLength > 800) return "max-w-7xl" // Muito texto
+    if (totalTextLength > 400) return "max-w-6xl" // Texto médio
+    if (totalTextLength > 150) return "max-w-5xl" // Texto pequeno
+    return "max-w-4xl" // Padrão
   }
 
     return (
@@ -480,72 +481,93 @@ const QuotationsManager = () => {
       )}
 
       {/* View Modal */}
-      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
-        <DialogContent className={`${getModalSize(selectedQuotation)} max-h-[95vh] min-h-[60vh] overflow-y-auto`}>
-          <DialogHeader>
-            <DialogTitle>Detalhes do Orçamento</DialogTitle>
-            <DialogDescription>
-              Informações completas da solicitação
-            </DialogDescription>
-          </DialogHeader>
+      <AdminModal
+        open={isViewModalOpen}
+        onOpenChange={setIsViewModalOpen}
+        title="Detalhes do Orçamento"
+        description="Informações completas da solicitação"
+        type="view"
+        size="2xl"
+      >
+          
           {selectedQuotation && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               {/* Informações Pessoais */}
-              <div>
-                <h3 className="text-lg font-semibold mb-3 flex items-center">
-                  <User className="mr-2" size={20} />
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                <h3 className="text-xl font-bold mb-4 flex items-center text-blue-900">
+                  <div className="bg-blue-600 p-2 rounded-lg mr-3">
+                    <User className="text-white" size={20} />
+                  </div>
                   Informações Pessoais
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Nome</p>
-                    <p className="text-gray-900">{selectedQuotation.name}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-blue-700 uppercase tracking-wide">Nome</p>
+                    <p className="text-lg font-medium text-gray-900 bg-white px-3 py-2 rounded-lg shadow-sm">
+                      {selectedQuotation.name}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Email</p>
-                    <p className="text-gray-900">{selectedQuotation.email}</p>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-blue-700 uppercase tracking-wide">Email</p>
+                    <p className="text-lg font-medium text-gray-900 bg-white px-3 py-2 rounded-lg shadow-sm">
+                      {selectedQuotation.email}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Telefone</p>
-                    <p className="text-gray-900">{selectedQuotation.phone || 'Não informado'}</p>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-blue-700 uppercase tracking-wide">Telefone</p>
+                    <p className="text-lg font-medium text-gray-900 bg-white px-3 py-2 rounded-lg shadow-sm">
+                      {selectedQuotation.phone || 'Não informado'}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Empresa</p>
-                    <p className="text-gray-900">{selectedQuotation.company || 'Não informado'}</p>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-blue-700 uppercase tracking-wide">Empresa</p>
+                    <p className="text-lg font-medium text-gray-900 bg-white px-3 py-2 rounded-lg shadow-sm">
+                      {selectedQuotation.company || 'Não informado'}
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* Detalhes do Projeto */}
-              <div>
-                <h3 className="text-lg font-semibold mb-3 flex items-center">
-                  <FileText className="mr-2" size={20} />
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
+                <h3 className="text-xl font-bold mb-4 flex items-center text-green-900">
+                  <div className="bg-green-600 p-2 rounded-lg mr-3">
+                    <FileText className="text-white" size={20} />
+                  </div>
                   Detalhes do Projeto
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Tipo de Projeto</p>
-                    <p className="text-gray-900">{getProjectTypeLabel(selectedQuotation.project_type)}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-green-700 uppercase tracking-wide">Tipo de Projeto</p>
+                    <p className="text-lg font-medium text-gray-900 bg-white px-3 py-2 rounded-lg shadow-sm">
+                      {getProjectTypeLabel(selectedQuotation.project_type)}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Faixa de Orçamento</p>
-                    <p className="text-gray-900">{getBudgetRangeLabel(selectedQuotation.budget_range)}</p>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-green-700 uppercase tracking-wide">Faixa de Orçamento</p>
+                    <p className="text-lg font-medium text-gray-900 bg-white px-3 py-2 rounded-lg shadow-sm">
+                      {getBudgetRangeLabel(selectedQuotation.budget_range)}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Urgência</p>
-                    <p className="text-gray-900">{getUrgencyLabel(selectedQuotation.urgency)}</p>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-green-700 uppercase tracking-wide">Urgência</p>
+                    <p className="text-lg font-medium text-gray-900 bg-white px-3 py-2 rounded-lg shadow-sm">
+                      {getUrgencyLabel(selectedQuotation.urgency)}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Forma de Contato</p>
-                    <p className="text-gray-900">{selectedQuotation.preferred_contact}</p>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-green-700 uppercase tracking-wide">Forma de Contato</p>
+                    <p className="text-lg font-medium text-gray-900 bg-white px-3 py-2 rounded-lg shadow-sm">
+                      {selectedQuotation.preferred_contact}
+                    </p>
                   </div>
                 </div>
                 
                 <div className="space-y-4 w-full">
                   <div className="w-full">
-                    <p className="text-sm font-medium text-gray-500 mb-2">Descrição do Projeto</p>
-                    <div className="bg-gray-50 p-4 rounded-lg border w-full overflow-hidden">
-                      <p className="text-gray-900 whitespace-pre-wrap break-words break-all leading-relaxed text-sm">
+                    <p className="text-sm font-semibold text-green-700 uppercase tracking-wide mb-3">Descrição do Projeto</p>
+                    <div className="bg-white p-6 rounded-lg shadow-sm border border-green-200 w-full overflow-hidden">
+                      <p className="text-gray-900 whitespace-pre-wrap break-words leading-relaxed text-base">
                         {selectedQuotation.description}
                       </p>
                     </div>
@@ -553,9 +575,9 @@ const QuotationsManager = () => {
                   
                   {selectedQuotation.additional_info && (
                     <div className="w-full">
-                      <p className="text-sm font-medium text-gray-500 mb-2">Informações Adicionais</p>
-                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 w-full overflow-hidden">
-                        <p className="text-gray-900 whitespace-pre-wrap break-words break-all leading-relaxed text-sm">
+                      <p className="text-sm font-semibold text-green-700 uppercase tracking-wide mb-3">Informações Adicionais</p>
+                      <div className="bg-white p-6 rounded-lg shadow-sm border border-green-200 w-full overflow-hidden">
+                        <p className="text-gray-900 whitespace-pre-wrap break-words leading-relaxed text-base">
                           {selectedQuotation.additional_info}
                         </p>
                       </div>
@@ -565,28 +587,38 @@ const QuotationsManager = () => {
               </div>
 
               {/* Status e Notas */}
-              <div>
-                <h3 className="text-lg font-semibold mb-3 flex items-center">
-                  <AlertCircle className="mr-2" size={20} />
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-100">
+                <h3 className="text-xl font-bold mb-4 flex items-center text-purple-900">
+                  <div className="bg-purple-600 p-2 rounded-lg mr-3">
+                    <AlertCircle className="text-white" size={20} />
+                  </div>
                   Status e Notas
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Status Atual</p>
-                    <Badge className={`${getStatusColor(selectedQuotation.status)}`}>
-                      {getStatusLabel(selectedQuotation.status)}
-                    </Badge>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-purple-700 uppercase tracking-wide">Status Atual</p>
+                    <div className="bg-white px-3 py-2 rounded-lg shadow-sm">
+                      <Badge className={`${getStatusColor(selectedQuotation.status)} text-sm font-medium`}>
+                        {getStatusLabel(selectedQuotation.status)}
+                      </Badge>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Data de Criação</p>
-                    <p className="text-gray-900">{formatDate(selectedQuotation.created_at)}</p>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-purple-700 uppercase tracking-wide">Data de Criação</p>
+                    <p className="text-lg font-medium text-gray-900 bg-white px-3 py-2 rounded-lg shadow-sm">
+                      {formatDate(selectedQuotation.created_at)}
+                    </p>
                   </div>
                 </div>
                 
                 {selectedQuotation.admin_notes && (
                   <div>
-                    <p className="text-sm font-medium text-gray-500 mb-2">Notas Administrativas</p>
-                    <p className="text-gray-900 whitespace-pre-wrap">{selectedQuotation.admin_notes}</p>
+                    <p className="text-sm font-semibold text-purple-700 uppercase tracking-wide mb-3">Notas Administrativas</p>
+                    <div className="bg-white p-6 rounded-lg shadow-sm border border-purple-200">
+                      <p className="text-gray-900 whitespace-pre-wrap leading-relaxed text-base">
+                        {selectedQuotation.admin_notes}
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -631,63 +663,72 @@ const QuotationsManager = () => {
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </AdminModal>
 
       {/* Edit Modal */}
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Editar Orçamento</DialogTitle>
-            <DialogDescription>
-              Atualize o status e adicione notas administrativas
-            </DialogDescription>
-          </DialogHeader>
-          {selectedQuotation && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="status">Status</Label>
-                <Select 
-                  value={selectedQuotation.status} 
-                  onValueChange={(value) => setSelectedQuotation({ ...selectedQuotation, status: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pendente</SelectItem>
-                    <SelectItem value="in_review">Em Análise</SelectItem>
-                    <SelectItem value="approved">Aprovado</SelectItem>
-                    <SelectItem value="rejected">Rejeitado</SelectItem>
-                    <SelectItem value="completed">Concluído</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="admin_notes">Notas Administrativas</Label>
-                <Textarea
-                  id="admin_notes"
-                  value={selectedQuotation.admin_notes || ''}
-                  onChange={(e) => setSelectedQuotation({ ...selectedQuotation, admin_notes: e.target.value })}
-                  placeholder="Adicione notas sobre o orçamento..."
-                  rows={4}
-                />
-              </div>
-              
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleUpdateQuotation}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Salvar
-                </Button>
-              </div>
+      <AdminModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        title="Editar Orçamento"
+        description="Atualize o status e adicione notas administrativas"
+        type="edit"
+        size="2xl"
+      >
+        {selectedQuotation && (
+          <div className="space-y-6">
+            <ModalSection title="Configurações">
+              <ModalGrid cols={1}>
+                <div>
+                  <Label htmlFor="status" className="text-sm font-medium text-gray-700">Status</Label>
+                  <Select 
+                    value={selectedQuotation.status} 
+                    onValueChange={(value) => setSelectedQuotation({ ...selectedQuotation, status: value })}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pendente</SelectItem>
+                      <SelectItem value="in_review">Em Análise</SelectItem>
+                      <SelectItem value="approved">Aprovado</SelectItem>
+                      <SelectItem value="rejected">Rejeitado</SelectItem>
+                      <SelectItem value="completed">Concluído</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="admin_notes" className="text-sm font-medium text-gray-700">Notas Administrativas</Label>
+                  <Textarea
+                    id="admin_notes"
+                    value={selectedQuotation.admin_notes || ''}
+                    onChange={(e) => setSelectedQuotation({ ...selectedQuotation, admin_notes: e.target.value })}
+                    placeholder="Adicione notas sobre o orçamento..."
+                    rows={4}
+                    className="mt-1"
+                  />
+                </div>
+              </ModalGrid>
+            </ModalSection>
+            
+            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+              <ModalActionButton
+                onClick={() => setIsEditModalOpen(false)}
+                variant="outline"
+              >
+                Cancelar
+              </ModalActionButton>
+              <ModalActionButton
+                onClick={handleUpdateQuotation}
+                variant="primary"
+                icon={<Save className="h-4 w-4" />}
+              >
+                Salvar
+              </ModalActionButton>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        )}
+      </AdminModal>
     </div>
   )
 }

@@ -1,6 +1,9 @@
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin, ArrowRight, Heart } from 'lucide-react'
 
 const Footer = () => {
+  const [logoError, setLogoError] = useState(false)
   return (
     <footer className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white relative overflow-hidden">
       {/* Background Elements */}
@@ -14,19 +17,28 @@ const Footer = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Company Info */}
           <div className="lg:col-span-2">
-            <div className="flex items-center mb-8">
-              <div className="mr-4">
+            <Link to="/" className="flex items-center mb-8 group">
+              <div className="mr-4 relative z-20">
                 <img 
-                  src="/logo.png" 
+                  src="/logo.png"
                   alt="FHD Automação Industrial Logo" 
-                  className="h-12 w-auto filter brightness-0 invert"
+                  className="h-12 w-auto transition-all duration-300 group-hover:scale-105 rounded-lg"
+                  style={{ 
+                    position: 'relative',
+                    zIndex: 20
+                  }}
+                  onLoad={() => console.log('Logo carregada com sucesso no Footer')}
+                  onError={(e) => {
+                    console.error('Erro ao carregar logo no Footer:', e.target.src)
+                    setLogoError(true)
+                  }}
                 />
               </div>
               <div>
-                <h3 className="text-2xl font-bold">FHD Automação Industrial</h3>
-                <p className="text-blue-200 text-sm">Excelência em Automação</p>
+                <h3 className="text-2xl font-bold group-hover:text-blue-200 transition-colors duration-300">FHD Automação Industrial</h3>
+                <p className="text-blue-200 text-sm group-hover:text-blue-300 transition-colors duration-300">Excelência em Automação</p>
               </div>
-            </div>
+            </Link>
             <p className="text-blue-100 mb-8 leading-relaxed text-lg">
               Especialistas em <span className="font-semibold text-white">automação hidráulica e pneumática</span>, oferecendo soluções inovadoras 
               e confiáveis para a indústria. Mais de uma década de experiência atendendo empresas 

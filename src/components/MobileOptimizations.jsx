@@ -35,12 +35,10 @@ const MobileOptimizations = () => {
         border-radius: 0.375rem;
       }
       
-      /* Melhorar performance de animações */
-      * {
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
+      /* Melhorar performance de animações (opt-in) */
+      /* IMPORTANTE: não aplicar transform globalmente para não quebrar position: fixed/portals */
+      .gpu-accel {
+        will-change: transform;
       }
       
       /* Otimizar sidebar para mobile */

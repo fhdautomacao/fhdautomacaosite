@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Users, Star, TrendingUp, Award, ArrowRight, Quote } from 'lucide-react'
+import { Users, TrendingUp, Award, ArrowRight } from 'lucide-react'
 import { clientsAPI } from '../../api/clients'
 
 const Clients = () => {
-  const [currentTestimonial, setCurrentTestimonial] = useState(0)
   const [clients, setClients] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -40,40 +39,7 @@ const Clients = () => {
     { name: "Energia L", logo: "⚡", sector: "Energia" }
   ]
 
-  const testimonials = [
-    {
-      name: "João Silva",
-      company: "Metalúrgica ABC",
-      position: "Gerente de Manutenção",
-      text: "A FHD Automação transformou nossos processos. A eficiência aumentou 40% após a implementação das soluções hidráulicas.",
-      rating: 5,
-      avatar: "👨‍💼"
-    },
-    {
-      name: "Maria Santos",
-      company: "Indústria XYZ",
-      position: "Diretora de Operações",
-      text: "Profissionais extremamente competentes. O suporte técnico é excepcional e sempre disponível quando precisamos.",
-      rating: 5,
-      avatar: "👩‍💼"
-    },
-    {
-      name: "Carlos Oliveira",
-      company: "Automobilística DEF",
-      position: "Engenheiro Chefe",
-      text: "Parceria de longa data. A qualidade dos serviços e a confiabilidade dos equipamentos são incomparáveis.",
-      rating: 5,
-      avatar: "👨‍🔧"
-    },
-    {
-      name: "Ana Costa",
-      company: "Petroquímica GHI",
-      position: "Coordenadora de Projetos",
-      text: "Sempre entregam no prazo e com qualidade excepcional. Recomendo para qualquer empresa que busca excelência.",
-      rating: 5,
-      avatar: "👩‍🔬"
-    }
-  ]
+
 
   const stats = [
     { 
@@ -97,18 +63,12 @@ const Clients = () => {
     { 
       number: "100%", 
       label: "Satisfação dos Clientes", 
-      icon: <Star size={32} />,
+      icon: <Users size={32} />,
       color: "from-yellow-500 to-yellow-600"
     }
   ]
 
-  // Auto-rotate testimonials
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
-    }, 5000)
-    return () => clearInterval(interval)
-  }, [testimonials.length])
+
 
   return (
     <section id="clientes" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 relative overflow-hidden">
@@ -185,68 +145,7 @@ const Clients = () => {
           </div>
         </div>
 
-        {/* Testimonials Carousel */}
-        <div className="mb-20 animate-fade-in-up">
-          <h3 className="text-3xl font-bold text-gray-800 text-center mb-12">
-            O que nossos clientes dizem
-          </h3>
-          
-          <div className="relative max-w-4xl mx-auto">
-            <div className="bg-white rounded-3xl shadow-2xl p-12 relative overflow-hidden">
-              {/* Background Quote */}
-              <div className="absolute top-8 left-8 text-blue-100 opacity-50">
-                <Quote size={80} />
-              </div>
-              
-              {/* Testimonial Content */}
-              <div className="relative z-10 text-center">
-                <div className="text-6xl mb-6">
-                  {testimonials[currentTestimonial].avatar}
-                </div>
-                
-                {/* Rating */}
-                <div className="flex justify-center mb-6">
-                  {[...Array(testimonials[currentTestimonial].rating)].map((_, i) => (
-                    <Star key={i} className="text-yellow-400 fill-current" size={24} />
-                  ))}
-                </div>
-                
-                {/* Testimonial Text */}
-                <p className="text-xl text-gray-600 mb-8 leading-relaxed italic max-w-3xl mx-auto">
-                  "{testimonials[currentTestimonial].text}"
-                </p>
-                
-                {/* Author Info */}
-                <div className="border-t border-gray-200 pt-6">
-                  <div className="text-xl font-bold text-gray-800 mb-1">
-                    {testimonials[currentTestimonial].name}
-                  </div>
-                  <div className="text-gray-600 mb-1">
-                    {testimonials[currentTestimonial].position}
-                  </div>
-                  <div className="text-blue-600 font-semibold">
-                    {testimonials[currentTestimonial].company}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Testimonial Indicators */}
-            <div className="flex justify-center mt-8 space-x-3">
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentTestimonial(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    index === currentTestimonial 
-                      ? 'bg-blue-600 w-8' 
-                      : 'bg-gray-300 hover:bg-gray-400'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
+
 
         {/* CTA */}
         <div className="text-center animate-fade-in-up">
@@ -280,26 +179,6 @@ const Clients = () => {
           </div>
         </div>
       </div>
-      
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes fade-in-up {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-fade-in {
-          animation: fade-in 0.8s ease-out;
-        }
-        
-        .animate-fade-in-up {
-          animation: fade-in-up 0.8s ease-out;
-        }
-      `}</style>
     </section>
   )
 }
