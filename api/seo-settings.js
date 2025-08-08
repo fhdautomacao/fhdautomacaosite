@@ -16,9 +16,11 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 async function handleGet(req, res) {
   try {
     const { page_name } = req.query
+    console.log('🔍 [API] Buscando configuração para page_name:', page_name)
 
     if (page_name) {
       // Buscar configuração específica por página
+      console.log('🔍 [API] Buscando configuração específica...')
       const { data, error } = await supabase
         .from('seo_settings')
         .select('*')
@@ -27,51 +29,60 @@ async function handleGet(req, res) {
         .single()
 
       if (error) {
-        console.error('❌ Erro ao buscar configuração:', error)
+        console.error('❌ [API] Erro ao buscar configuração:', error)
+        console.error('🔍 [API] Detalhes do erro:', error.message)
         return res.status(500).json({ 
           success: false, 
-          error: 'Erro ao buscar configuração de SEO' 
+          error: 'Erro ao buscar configuração de SEO',
+          details: error.message
         })
       }
 
       if (!data) {
+        console.warn('⚠️ [API] Configuração não encontrada para:', page_name)
         return res.status(404).json({ 
           success: false, 
           error: 'Configuração não encontrada' 
         })
       }
 
-      console.log('✅ Configuração encontrada para:', page_name)
+      console.log('✅ [API] Configuração encontrada para:', page_name)
+      console.log('🔍 [API] Dados retornados:', JSON.stringify(data, null, 2))
       return res.status(200).json({ 
         success: true, 
         data 
       })
     } else {
       // Buscar todas as configurações
+      console.log('🔍 [API] Buscando todas as configurações...')
       const { data, error } = await supabase
         .from('seo_settings')
         .select('*')
         .order('page_name')
 
       if (error) {
-        console.error('❌ Erro ao buscar configurações:', error)
+        console.error('❌ [API] Erro ao buscar configurações:', error)
+        console.error('🔍 [API] Detalhes do erro:', error.message)
         return res.status(500).json({ 
           success: false, 
-          error: 'Erro ao buscar configurações de SEO' 
+          error: 'Erro ao buscar configurações de SEO',
+          details: error.message
         })
       }
 
-      console.log('✅ Configurações carregadas:', data?.length || 0)
+      console.log('✅ [API] Configurações carregadas:', data?.length || 0)
       return res.status(200).json({ 
         success: true, 
         data: data || [] 
       })
     }
   } catch (error) {
-    console.error('❌ Erro interno:', error)
+    console.error('❌ [API] Erro interno:', error)
+    console.error('🔍 [API] Stack trace:', error.stack)
     return res.status(500).json({ 
       success: false, 
-      error: 'Erro interno do servidor' 
+      error: 'Erro interno do servidor',
+      details: error.message
     })
   }
 }
@@ -199,6 +210,10 @@ async function handleDelete(req, res) {
 
 // Handler principal
 export default async function handler(req, res) {
+  console.log('🚀 [API] Requisição recebida:', req.method, req.url)
+  console.log('🔍 [API] Query params:', req.query)
+  console.log('🔍 [API] Headers:', req.headers)
+  
   // Configurar CORS
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
@@ -206,32 +221,41 @@ export default async function handler(req, res) {
 
   // Responder a requisições OPTIONS (preflight)
   if (req.method === 'OPTIONS') {
+    console.log('✅ [API] Respondendo a OPTIONS')
     return res.status(200).end()
   }
 
   try {
     const { method } = req
+    console.log('🔍 [API] Método:', method)
 
     switch (method) {
       case 'GET':
+        console.log('📥 [API] Executando GET')
         return await handleGet(req, res)
       case 'POST':
+        console.log('📥 [API] Executando POST')
         return await handlePost(req, res)
       case 'PUT':
+        console.log('📥 [API] Executando PUT')
         return await handlePut(req, res)
       case 'DELETE':
+        console.log('📥 [API] Executando DELETE')
         return await handleDelete(req, res)
       default:
+        console.error('❌ [API] Método não permitido:', method)
         return res.status(405).json({ 
           success: false, 
           error: 'Método não permitido' 
         })
     }
   } catch (error) {
-    console.error('❌ Erro geral:', error)
+    console.error('❌ [API] Erro geral:', error)
+    console.error('🔍 [API] Stack trace:', error.stack)
     return res.status(500).json({ 
       success: false, 
-      error: 'Erro interno do servidor' 
+      error: 'Erro interno do servidor',
+      details: error.message
     })
   }
 }

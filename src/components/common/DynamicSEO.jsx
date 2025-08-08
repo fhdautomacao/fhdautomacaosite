@@ -83,6 +83,18 @@ const DynamicSEO = ({ pageName, fallbackData = {} }) => {
         const contentType = response.headers.get('content-type')
         if (!contentType || !contentType.includes('application/json')) {
           console.warn('⚠️ [DynamicSEO] API retornou dados não-JSON, usando fallback')
+          console.error('🔍 [DynamicSEO] Content-Type recebido:', contentType)
+          console.error('🔍 [DynamicSEO] Status da resposta:', response.status)
+          console.error('🔍 [DynamicSEO] URL da API:', `/api/seo-settings?page_name=${pageName}`)
+          
+          // Tentar ler o corpo da resposta para debug
+          try {
+            const responseText = await response.text()
+            console.error('🔍 [DynamicSEO] Corpo da resposta:', responseText.substring(0, 500))
+          } catch (e) {
+            console.error('🔍 [DynamicSEO] Não foi possível ler o corpo da resposta')
+          }
+          
           setSeoData(getFallbackData(pageName))
           return
         }
@@ -99,6 +111,9 @@ const DynamicSEO = ({ pageName, fallbackData = {} }) => {
         }
       } catch (error) {
         console.error('❌ [DynamicSEO] Erro ao carregar dados de SEO:', error)
+        console.error('🔍 [DynamicSEO] Tipo do erro:', error.name)
+        console.error('🔍 [DynamicSEO] Mensagem do erro:', error.message)
+        console.error('🔍 [DynamicSEO] Stack trace:', error.stack)
         console.log('🔄 [DynamicSEO] Usando dados de fallback devido ao erro')
         setSeoData(getFallbackData(pageName))
       } finally {
