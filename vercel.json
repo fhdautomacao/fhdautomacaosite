@@ -11,6 +11,10 @@
     {
       "src": "server-apis/api-*.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/*.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -49,6 +53,10 @@
     {
       "src": "/api/dashboard",
       "dest": "/server-apis/api-dashboard.js"
+    },
+    {
+      "src": "/api/seo-settings",
+      "dest": "/api/seo-settings.js"
     },
     {
       "src": "/logo.png",
