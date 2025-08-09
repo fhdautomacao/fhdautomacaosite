@@ -64,7 +64,7 @@ const HomePage = () => {
         <ServicesSection servicesData={services} serviceCategories={serviceCategories} />
         <Products productsData={products} productCategories={productCategories} />
         <Gallery galleryItemsData={galleryItems} galleryCategories={galleryCategories} />
-        <Clients clientsData={clients} />
+        <Clients clientsData={clients} enableTyping={false} />
         <Contact servicesData={services} />
       </main>
     </>

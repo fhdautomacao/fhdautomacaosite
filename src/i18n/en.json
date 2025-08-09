@@ -1,0 +1,239 @@
+{
+  "common": {
+    "language": "Language",
+    "portuguese": "Portuguese",
+    "english": "English",
+    "spanish": "Spanish",
+    "all": "All",
+    "scrollMobile": "Swipe down",
+    "scrollDesktop": "Scroll down"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "services": "Services",
+    "clients": "Clients",
+    "contact": "Contact",
+    "quote": "Request Quote"
+  },
+  "hero": {
+    "title": "Our Highlights",
+    "exp": "Experience",
+    "fairPrice": "Fair Price",
+    "quality": "Quality",
+    "support": "Support",
+    "clientSatisfaction": "Client Satisfaction",
+    "badge": "Leaders in Industrial Automation",
+    "ctaQuote": "Request Free Quote",
+    "viewGallery": "View Gallery",
+    "heading": {
+      "automation": "Automation",
+      "hydraulics": "Hydraulics",
+      "and": "and",
+      "pneumatics": "Pneumatics"
+    },
+    "subtitle": "We transform industrial challenges into efficient solutions with over 10 years of experience and cutting-edge technology.",
+    "benefits": [
+      "Custom and tailored projects",
+      "24/7 specialized technical support",
+      "Cutting-edge technology and constant innovation"
+    ],
+    "stats": {
+      "costReduction": "Cost Reduction",
+      "catalogProducts": "Products in Catalog",
+      "sectorsServed": "Sectors Served"
+    }
+  },
+  "about": {
+    "badge": "Discover Our Story",
+    "title": "About Us",
+    "welcome": "Welcome to FHD Industrial Automation, your trusted partner in hydraulic and pneumatic automation solutions.",
+    "p1": "Since our foundation in the city of Sumaré, São Paulo state, we have been passionately dedicated to providing high-quality services and innovative solutions for the most challenging industrial needs.",
+    "p2": "With a team of experienced and dedicated specialists, FHD Industrial Automation stands out as a leader in the sector, offering a wide range of specialized services to meet the constantly evolving market demands.",
+    "stats": {
+      "exp": "Years of Experience",
+      "projects": "Projects Completed",
+      "satisfaction": "Satisfaction"
+    },
+    "card": {
+      "title": "Industrial Automation",
+      "desc": "Experts in hydraulic and pneumatic solutions to optimize your industrial processes with cutting-edge technology and proven results.",
+      "features": [
+        "Advanced Technology",
+        "Specialized Team",
+        "Certified Quality",
+        "Personalized Service"
+      ]
+    },
+    "mission": {
+      "title": "Mission",
+      "content": "We drive industrial progress with excellence in hydraulic and pneumatic automation. We provide innovative and reliable solutions, exceeding expectations and building strong relationships based on trust, integrity, and quality."
+    },
+    "vision": {
+      "title": "Vision",
+      "content": "We seek global leadership in industrial automation, promoting efficiency, sustainability, and innovation. With strategic partnerships and investments in technology, we are the first choice for excellence in hydraulic and pneumatic automation solutions."
+    },
+    "values": {
+      "title": "Values",
+      "content": "We strive for service excellence and customer satisfaction. Innovation drives our progress; we act with integrity and transparency. Passionate about our work, we exceed expectations with exceptional results."
+    }
+  },
+  "services": {
+    "title": "Our Services",
+    "loading": "Loading services...",
+    "empty": "No services found.",
+    "retry": "Try again",
+    "learnMore": "Learn More",
+    "price": {
+      "consultation": "On request",
+      "fromPrefix": "From",
+      "perMeter": "per linear meter"
+    },
+    "items": {
+      "automacao-hidraulica": {
+        "name": "Hydraulic Automation",
+        "description": "Development and implementation of hydraulic systems for industrial automation.",
+        "features": {
+          "0": "Custom Project",
+          "1": "Full Installation",
+          "2": "Technical Support"
+        }
+      },
+      "automacao-pneumatica": {
+        "name": "Pneumatic Automation",
+        "description": "Pneumatic automation solutions for precise and efficient control.",
+        "features": {
+          "0": "Precise Control",
+          "1": "Low Consumption",
+          "2": "Simple Maintenance"
+        }
+      },
+      "projetos-hidraulicos": {
+        "name": "Hydraulic Projects",
+        "description": "Development of customized hydraulic projects to meet the specific needs of each client.",
+        "features": {
+          "0": "3D Design",
+          "1": "Technical Documentation",
+          "2": "Follow-up"
+        }
+      },
+      "manutencao-de-cilindros": {
+        "name": "Cylinder Maintenance",
+        "description": "Specialized preventive and corrective maintenance services for hydraulic and pneumatic cylinders.",
+        "features": {
+          "0": "Complete Diagnosis",
+          "1": "Original Parts",
+          "2": "Extended Warranty"
+        }
+      },
+      "fabricacao-de-unidades": {
+        "name": "Hydraulic Units Fabrication",
+        "description": "Custom fabrication of hydraulic units for specific industrial applications.",
+        "features": {
+          "0": "Custom-Made",
+          "1": "Rigorous Testing",
+          "2": "Certification"
+        }
+      },
+      "consertos-de-bombas": {
+        "name": "Pump Repairs",
+        "description": "Specialized repair of hydraulic pumps of various types and brands.",
+        "features": {
+          "0": "Free Diagnostics",
+          "1": "No-Obligation Quote",
+          "2": "Warranty"
+        }
+      },
+      "instalacao-de-tubulacoes": {
+        "name": "Piping Installation",
+        "description": "Professional installation of hydraulic and pneumatic piping systems.",
+        "features": {
+          "0": "Design Included",
+          "1": "Quality Materials",
+          "2": "Pressure Testing"
+        }
+      },
+      "venda-de-pecas": {
+        "name": "Parts Sales",
+        "description": "We sell parts directly from authorized dealers, at great prices for you!",
+        "features": {
+          "0": "Sales",
+          "1": "Cylinders & Pumps",
+          "2": "Valves and Seals"
+        }
+      }
+    }
+  },
+  "products": {
+    "loading": "Loading products...",
+    "badge": "Complete Product Line",
+    "title": "Our Products",
+    "subtitle": "We offer a complete line of high-quality hydraulic and pneumatic products to meet diverse industrial needs with cutting-edge technology.",
+    "searchPlaceholder": "Search products...",
+    "filterByCategory": "Filter by category:",
+    "resultCount": "Showing {shown} of {total} products",
+    "inCategory": "in category",
+    "forTerm": "for",
+    "consult": "Consult",
+    "emptyTitle": "No products found",
+    "emptySubtitle": "Try adjusting the filters or search term to find what you need.",
+    "clearFilters": "Clear Filters",
+    "ctaTitle": "Didn't find what you were looking for?",
+    "ctaSubtitle": "We have a wide range of products and customized solutions. Contact us to find the ideal solution for your needs.",
+    "consultSpecialist": "Consult a Specialist",
+    "fullCatalog": "Full Catalog"
+  },
+  "gallery": {
+    "loading": "Loading gallery...",
+    "badge": "Our Work",
+    "title": "Photo Gallery",
+    "subtitle": "Discover some of our completed work and projects. Each image represents our dedication to excellence in industrial automation.",
+    "filterByCategory": "Filter by category",
+    "photo": "photo",
+    "photos": "photos",
+    "emptyTitle": "No photos found",
+    "emptySubtitle": "There are no photos in the selected category. Try selecting another category.",
+    "viewAll": "View All Photos",
+    "ctaTitle": "Want to see your project here?",
+    "ctaSubtitle": "Contact us and discover how we can turn your needs into efficient industrial automation solutions.",
+    "startProject": "Start Project",
+    "seeMore": "See More Projects"
+  },
+  "clients": {
+    "badge": "Satisfied Clients",
+    "title": "Our Clients",
+    "subtitle": "We are proud to serve companies from various industrial sectors, always committed to delivering excellent solutions.",
+    "gridTitle": "Companies that trust our work",
+    "stats": {
+      "clients": "Clients Served",
+      "projects": "Projects Completed",
+      "years": "Years of Experience",
+      "satisfaction": "Customer Satisfaction"
+    },
+    "ctaTitle": "Join our satisfied clients",
+    "ctaSubtitle": "Discover how we can help your company reach new levels of efficiency with our hydraulic and pneumatic automation solutions.",
+    "requestProposal": "Request Proposal",
+    "seeCases": "See Case Studies"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "We are ready to meet your industrial automation needs. Get in touch and find out how we can help your company.",
+    "requestQuoteCardTitle": "Request a Quote",
+    "whyFhd": "Why choose FHD?",
+    "benefits": {
+      "response24h": "Response within 24 hours",
+      "freeQuote": "Free quote with no obligation",
+      "techAnalysis": "Specialized technical analysis",
+      "experience": "Over 10 years of experience",
+      "personalized": "Personalized service"
+    },
+    "ourServices": "Our Services",
+    "noServices": "No services available at the moment",
+    "viewAllPrefix": "View all ",
+    "viewAllSuffix": " services",
+    "viewLess": "View less",
+    "cta": "Request Quote"
+  }
+}
+
+

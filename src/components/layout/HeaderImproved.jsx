@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Home, Users, Settings, UserCheck, MessageCircle, ChevronDown } from 'lucide-react'
+import { Menu, X, Home, Users, Settings, UserCheck, MessageCircle, ChevronDown, Globe } from 'lucide-react'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
+import { useI18n } from '@/i18n/index.jsx'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const Header = () => {
+  const { t } = useI18n()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isLangOpen, setIsLangOpen] = useState(false)
   const [logoError, setLogoError] = useState(false)
   const location = useLocation()
 
@@ -27,14 +31,15 @@ const Header = () => {
   // Close mobile menu when route changes
   useEffect(() => {
     setIsMenuOpen(false)
+    setIsLangOpen(false)
   }, [location])
 
   const navItems = [
-    { path: '/', label: 'Início', icon: Home, color: 'green' },
-    { path: '/quem-somos', label: 'Quem Somos', icon: Users, color: 'blue' },
-    { path: '/servicos', label: 'Serviços', icon: Settings, color: 'orange' },
-    { path: '/clientes', label: 'Clientes', icon: UserCheck, color: 'yellow' },
-    { path: '/contato', label: 'Contato', icon: MessageCircle, color: 'purple' }
+    { path: '/', label: t('nav.home','Início'), icon: Home, color: 'green' },
+    { path: '/quem-somos', label: t('nav.about','Quem Somos'), icon: Users, color: 'blue' },
+    { path: '/servicos', label: t('nav.services','Serviços'), icon: Settings, color: 'orange' },
+    { path: '/clientes', label: t('nav.clients','Clientes'), icon: UserCheck, color: 'yellow' },
+    { path: '/contato', label: t('nav.contact','Contato'), icon: MessageCircle, color: 'purple' }
   ]
 
   const headerVariants = {
@@ -240,11 +245,35 @@ const Header = () => {
 
           {/* CTA Button - Desktop */}
           <motion.div 
-            className="hidden lg:block"
+            className="hidden lg:flex items-center gap-3"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.8, duration: 0.5 }}
           >
+            {/* Desktop Language Menu */}
+            <div className="relative">
+              <button
+                aria-label="Selecionar idioma"
+                className="p-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors shadow-sm"
+                onClick={() => setIsLangOpen((v) => !v)}
+              >
+                <Globe size={18} />
+              </button>
+              <AnimatePresence>
+                {isLangOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl p-2 z-50 w-[220px]"
+                  >
+                    <LanguageSwitcher variant="header" onSelected={() => setIsLangOpen(false)} />
+                    <div className="text-[11px] text-gray-400 px-2 pt-1">ESC para fechar</div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             <Link to="/orcamento">
               <motion.div
                 whileHover={{ scale: 1.05, boxShadow: "0 10px 25px rgba(59, 130, 246, 0.3)" }}
@@ -256,7 +285,7 @@ const Header = () => {
                     animate={{ x: [0, 2, 0] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
-                    Solicitar Orçamento
+                    {t('nav.quote','Solicitar Orçamento')}
                   </motion.span>
                 </Button>
               </motion.div>
@@ -337,6 +366,10 @@ const Header = () => {
                 <div className="pointer-events-none absolute -bottom-24 -left-10 w-72 h-72 rounded-full bg-gradient-to-br from-violet-500/15 to-fuchsia-400/15 blur-2xl" />
 
                 <div className="relative flex flex-col space-y-2 px-3 mt-2">
+                  {/* Language switcher inside mobile menu */}
+                  <div className="px-1 pb-2">
+                    <LanguageSwitcher variant="menu" />
+                  </div>
                   {navItems.map((item, index) => (
                     <motion.div
                       key={item.path}

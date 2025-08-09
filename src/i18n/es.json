@@ -1,0 +1,239 @@
+{
+  "common": {
+    "language": "Idioma",
+    "portuguese": "Portugués",
+    "english": "Inglés",
+    "spanish": "Español",
+    "all": "Todos",
+    "scrollMobile": "Desliza hacia abajo",
+    "scrollDesktop": "Desplázate hacia abajo"
+  },
+  "nav": {
+    "home": "Inicio",
+    "about": "Quiénes Somos",
+    "services": "Servicios",
+    "clients": "Clientes",
+    "contact": "Contacto",
+    "quote": "Solicitar Presupuesto"
+  },
+  "hero": {
+    "title": "Nuestros Diferenciales",
+    "exp": "Experiencia",
+    "fairPrice": "Precio Justo",
+    "quality": "Calidad",
+    "support": "Atención",
+    "clientSatisfaction": "Satisfacción del Cliente",
+    "badge": "Líderes en Automatización Industrial",
+    "ctaQuote": "Solicitar Presupuesto Gratuito",
+    "viewGallery": "Ver Galería",
+    "heading": {
+      "automation": "Automatización",
+      "hydraulics": "Hidráulica",
+      "and": "y",
+      "pneumatics": "Neumática"
+    },
+    "subtitle": "Transformamos los desafíos industriales en soluciones eficientes con más de 10 años de experiencia y tecnología de punta.",
+    "benefits": [
+      "Proyectos personalizados y a medida",
+      "Soporte técnico especializado 24/7",
+      "Tecnología de punta e innovación constante"
+    ],
+    "stats": {
+      "costReduction": "Reducción de Costos",
+      "catalogProducts": "Productos en el Catálogo",
+      "sectorsServed": "Sectores Atendidos"
+    }
+  },
+  "about": {
+    "badge": "Conozca Nuestra Historia",
+    "title": "Quiénes Somos",
+    "welcome": "Bienvenido a FHD Automatización Industrial, su socio de confianza en soluciones de automatización hidráulica y neumática.",
+    "p1": "Desde nuestra fundación en la ciudad de Sumaré, estado de São Paulo, nos dedicamos apasionadamente a ofrecer servicios de alta calidad y soluciones innovadoras para las necesidades industriales más desafiantes.",
+    "p2": "Con un equipo de especialistas experimentados y dedicados, FHD Automatización Industrial se destaca como líder en el sector, ofreciendo una amplia gama de servicios especializados para atender las demandas en constante evolución del mercado.",
+    "stats": {
+      "exp": "Años de Experiencia",
+      "projects": "Proyectos Realizados",
+      "satisfaction": "Satisfacción"
+    },
+    "card": {
+      "title": "Automatización Industrial",
+      "desc": "Especialistas en soluciones hidráulicas y neumáticas para optimizar sus procesos industriales con tecnología de punta y resultados comprobados.",
+      "features": [
+        "Tecnología Avanzada",
+        "Equipo Especializado",
+        "Calidad Certificada",
+        "Atención Personalizada"
+      ]
+    },
+    "mission": {
+      "title": "Misión",
+      "content": "Impulsamos el progreso industrial con excelencia en automatización hidráulica y neumática. Proporcionamos soluciones innovadoras y confiables, superando expectativas y construyendo relaciones sólidas basadas en confianza, integridad y calidad."
+    },
+    "vision": {
+      "title": "Visión",
+      "content": "Buscamos el liderazgo global en automatización industrial, promoviendo la eficiencia, la sostenibilidad y la innovación. Con alianzas estratégicas e inversiones en tecnología, somos la primera opción para soluciones de automatización hidráulica y neumática de excelencia."
+    },
+    "values": {
+      "title": "Valores",
+      "content": "Buscamos la excelencia en los servicios y la satisfacción del cliente. La innovación impulsa nuestro progreso; actuamos con integridad y transparencia. Apasionados por nuestro trabajo, superamos las expectativas con resultados excepcionales."
+    }
+  },
+  "services": {
+    "title": "Nuestros Servicios",
+    "loading": "Cargando servicios...",
+    "empty": "No se encontraron servicios.",
+    "retry": "Intentar de nuevo",
+    "learnMore": "Saber más",
+    "price": {
+      "consultation": "A consultar",
+      "fromPrefix": "Desde",
+      "perMeter": "por metro lineal"
+    },
+    "items": {
+      "automacao-hidraulica": {
+        "name": "Automatización Hidráulica",
+        "description": "Desarrollo e implementación de sistemas hidráulicos para automatización industrial.",
+        "features": {
+          "0": "Proyecto Personalizado",
+          "1": "Instalación Completa",
+          "2": "Soporte Técnico"
+        }
+      },
+      "automacao-pneumatica": {
+        "name": "Automatización Neumática",
+        "description": "Soluciones neumáticas para control preciso y eficiente.",
+        "features": {
+          "0": "Control Preciso",
+          "1": "Bajo Consumo",
+          "2": "Mantenimiento Simple"
+        }
+      },
+      "projetos-hidraulicos": {
+        "name": "Proyectos Hidráulicos",
+        "description": "Elaboración de proyectos hidráulicos personalizados para atender necesidades específicas de cada cliente.",
+        "features": {
+          "0": "Diseño 3D",
+          "1": "Documentación Técnica",
+          "2": "Acompañamiento"
+        }
+      },
+      "manutencao-de-cilindros": {
+        "name": "Mantenimiento de Cilindros",
+        "description": "Servicios especializados de mantenimiento preventivo y correctivo en cilindros hidráulicos y neumáticos.",
+        "features": {
+          "0": "Diagnóstico Completo",
+          "1": "Piezas Originales",
+          "2": "Garantía Extendida"
+        }
+      },
+      "fabricacao-de-unidades": {
+        "name": "Fabricación de Unidades",
+        "description": "Fabricación a medida de unidades hidráulicas para aplicaciones industriales específicas.",
+        "features": {
+          "0": "A Medida",
+          "1": "Pruebas Rigurosas",
+          "2": "Certificación"
+        }
+      },
+      "consertos-de-bombas": {
+        "name": "Reparación de Bombas",
+        "description": "Reparación especializada de bombas hidráulicas de diversos tipos y marcas.",
+        "features": {
+          "0": "Diagnóstico Gratuito",
+          "1": "Presupuesto Sin Compromiso",
+          "2": "Garantía"
+        }
+      },
+      "instalacao-de-tubulacoes": {
+        "name": "Instalación de Tuberías",
+        "description": "Instalación profesional de sistemas de tuberías hidráulicas y neumáticas.",
+        "features": {
+          "0": "Proyecto Incluido",
+          "1": "Materiales de Calidad",
+          "2": "Prueba de Presión"
+        }
+      },
+      "venda-de-pecas": {
+        "name": "Venta de Piezas",
+        "description": "¡Vendemos piezas directamente de los autorizados, con un excelente precio para ti!",
+        "features": {
+          "0": "venta",
+          "1": "cilindros y bombas",
+          "2": "válvulas y anillos"
+        }
+      }
+    }
+  },
+  "products": {
+    "loading": "Cargando productos...",
+    "badge": "Línea Completa de Productos",
+    "title": "Nuestros Productos",
+    "subtitle": "Ofrecemos una línea completa de productos hidráulicos y neumáticos de alta calidad para satisfacer diversas necesidades industriales con tecnología de punta.",
+    "searchPlaceholder": "Buscar productos...",
+    "filterByCategory": "Filtrar por categoría:",
+    "resultCount": "Mostrando {shown} de {total} productos",
+    "inCategory": "en la categoría",
+    "forTerm": "para",
+    "consult": "Consultar",
+    "emptyTitle": "No se encontraron productos",
+    "emptySubtitle": "Intenta ajustar los filtros o el término de búsqueda para encontrar lo que necesitas.",
+    "clearFilters": "Limpiar Filtros",
+    "ctaTitle": "¿No encontraste lo que buscabas?",
+    "ctaSubtitle": "Tenemos una amplia gama de productos y soluciones personalizadas. Contáctanos para encontrar la solución ideal para tu necesidad.",
+    "consultSpecialist": "Consultar con un Especialista",
+    "fullCatalog": "Catálogo Completo"
+  },
+  "gallery": {
+    "loading": "Cargando galería...",
+    "badge": "Nuestros Trabajos",
+    "title": "Galería de Fotos",
+    "subtitle": "Conozca algunos de nuestros trabajos y proyectos realizados. Cada imagen representa nuestra dedicación a la excelencia en automatización industrial.",
+    "filterByCategory": "Filtrar por categoría",
+    "photo": "foto",
+    "photos": "fotos",
+    "emptyTitle": "No se encontraron fotos",
+    "emptySubtitle": "No hay fotos en la categoría seleccionada. Intenta seleccionar otra categoría.",
+    "viewAll": "Ver Todas las Fotos",
+    "ctaTitle": "¿Quieres ver tu proyecto aquí?",
+    "ctaSubtitle": "Ponte en contacto con nosotros y descubre cómo podemos transformar tus necesidades en soluciones eficientes de automatización industrial.",
+    "startProject": "Iniciar Proyecto",
+    "seeMore": "Ver Más Proyectos"
+  },
+  "clients": {
+    "badge": "Clientes Satisfechos",
+    "title": "Nuestros Clientes",
+    "subtitle": "Estamos orgullosos de servir a empresas de varios sectores industriales, siempre comprometidos con ofrecer soluciones de excelencia.",
+    "gridTitle": "Empresas que confían en nuestro trabajo",
+    "stats": {
+      "clients": "Clientes Atendidos",
+      "projects": "Proyectos Realizados",
+      "years": "Años de Experiencia",
+      "satisfaction": "Satisfacción del Cliente"
+    },
+    "ctaTitle": "Únete a nuestros clientes satisfechos",
+    "ctaSubtitle": "Descubre cómo podemos ayudar a tu empresa a alcanzar nuevos niveles de eficiencia con nuestras soluciones de automatización hidráulica y neumática.",
+    "requestProposal": "Solicitar Propuesta",
+    "seeCases": "Conocer Casos"
+  },
+  "contact": {
+    "title": "Contáctenos",
+    "subtitle": "Estamos listos para atender sus necesidades de automatización industrial. Póngase en contacto y descubra cómo podemos ayudar a su empresa.",
+    "requestQuoteCardTitle": "Solicitar un Presupuesto",
+    "whyFhd": "¿Por qué elegir FHD?",
+    "benefits": {
+      "response24h": "Respuesta en 24 horas",
+      "freeQuote": "Presupuesto gratuito y sin compromiso",
+      "techAnalysis": "Análisis técnico especializado",
+      "experience": "Más de 10 años de experiencia",
+      "personalized": "Atención personalizada"
+    },
+    "ourServices": "Nuestros Servicios",
+    "noServices": "Ningún servicio disponible en este momento",
+    "viewAllPrefix": "Ver todos los ",
+    "viewAllSuffix": " servicios",
+    "viewLess": "Ver menos",
+    "cta": "Solicitar Presupuesto"
+  }
+}
+
+

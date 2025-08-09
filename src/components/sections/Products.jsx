@@ -2,10 +2,13 @@ import { useState, useEffect } from 'react'
 import { Search, Filter, Package, ArrowRight, CheckCircle, X } from 'lucide-react'
 import { productsAPI } from '../../api/products'
 import { useProductCategories } from '../../hooks/useCategories'
+import { useI18n } from '@/i18n/index.jsx'
 
 const Products = ({ productsData = null, productCategories = null }) => {
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("Todos")
+  const { t } = useI18n()
+  const ALL_KEY = '__ALL__'
+  const [selectedCategory, setSelectedCategory] = useState(ALL_KEY)
   const [products, setProducts] = useState(productsData || [])
   const [loadingProducts, setLoadingProducts] = useState(!productsData)
   const { categories: fetchedCategoriesHook, loading: loadingCategoriesHook, error: categoriesErrorHook } = useProductCategories({ initialData: productCategories, enabled: !productCategories })
@@ -32,13 +35,13 @@ const Products = ({ productsData = null, productCategories = null }) => {
   // Obter apenas as categorias que realmente existem nos produtos
   const usedCategoryIds = [...new Set(products.map(prod => prod.category))]
   const usedCategories = fetchedCategories.filter(cat => usedCategoryIds.includes(cat.id))
-  const allCategories = ["Todos", ...usedCategories.map(cat => cat.name)]
+  const allCategories = [{ id: ALL_KEY, label: t('common.all','Todos') }, ...usedCategories.map(cat => ({ id: cat.name, label: cat.name }))]
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.features.some(feature => feature.toLowerCase().includes(searchTerm.toLowerCase()))
-    const matchesCategory = selectedCategory === "Todos" || 
+    const matchesCategory = selectedCategory === ALL_KEY || 
                             (fetchedCategories.find(cat => cat.id === product.category)?.name === selectedCategory)
     return matchesSearch && matchesCategory
   })
@@ -57,7 +60,7 @@ const Products = ({ productsData = null, productCategories = null }) => {
   }
 
   if (loadingProducts || loadingCategories) {
-    return <div className="text-center py-20">Carregando produtos...</div>
+    return <div className="text-center py-20">{t('products.loading','Carregando produtos...')}</div>
   }
 
   if (categoriesError) {
@@ -77,14 +80,13 @@ const Products = ({ productsData = null, productCategories = null }) => {
         <div className="text-center mb-16 animate-fade-in">
           <div className="inline-flex items-center bg-blue-100 text-blue-800 px-6 py-2 rounded-full mb-6">
             <Package className="mr-2" size={20} />
-            <span className="font-semibold">Linha Completa de Produtos</span>
+            <span className="font-semibold">{t('products.badge','Linha Completa de Produtos')}</span>
           </div>
           <h2 className="text-5xl font-bold text-gray-800 mb-6 bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-            Nossos Produtos
+            {t('products.title','Nossos Produtos')}
           </h2>
           <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-            Oferecemos uma <span className="font-bold text-blue-600">linha completa</span> de produtos hidráulicos e pneumáticos de alta qualidade 
-            para atender às mais diversas necessidades industriais com <span className="font-semibold text-blue-600">tecnologia de ponta</span>.
+            {t('products.subtitle','Oferecemos uma linha completa de produtos hidráulicos e pneumáticos de alta qualidade para atender às mais diversas necessidades industriais com tecnologia de ponta.')}
           </p>
         </div>
 
@@ -96,7 +98,7 @@ const Products = ({ productsData = null, productCategories = null }) => {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="text"
-                placeholder="Buscar produtos..."
+                placeholder={t('products.searchPlaceholder','Buscar produtos...')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-sm md:text-base"
@@ -113,19 +115,19 @@ const Products = ({ productsData = null, productCategories = null }) => {
 
             {/* Filter Categories */}
             <div className="mt-6 pt-6 border-t border-gray-200 animate-fade-in">
-              <h4 className="text-sm font-semibold text-gray-700 mb-4">Filtrar por categoria:</h4>
+              <h4 className="text-sm font-semibold text-gray-700 mb-4">{t('products.filterByCategory','Filtrar por categoria:')}</h4>
               <div className="grid grid-cols-2 md:flex md:flex-wrap gap-2 md:gap-3">
-                {allCategories.map((categoryName, index) => (
+                {allCategories.map((category, index) => (
                   <button
                     key={index}
-                    onClick={() => setSelectedCategory(categoryName)}
+                    onClick={() => setSelectedCategory(category.id)}
                     className={`px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-semibold transition-all duration-300 ${
-                      selectedCategory === categoryName
+                      selectedCategory === category.id
                         ? "bg-blue-600 text-white shadow-lg"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
-                    {categoryName}
+                    {category.label}
                   </button>
                 ))}
               </div>
@@ -136,12 +138,12 @@ const Products = ({ productsData = null, productCategories = null }) => {
         {/* Results Counter */}
         <div className="mb-8 animate-fade-in">
           <p className="text-gray-600">
-            Mostrando <span className="font-semibold text-blue-600">{filteredProducts.length}</span> de {products.length} produtos
-            {selectedCategory !== 'Todos' && (
-              <span> na categoria <span className="font-semibold text-blue-600">"{selectedCategory}"</span></span>
+            {t('products.resultCount', 'Mostrando {shown} de {total} produtos', { shown: filteredProducts.length, total: products.length })}
+            {selectedCategory !== ALL_KEY && (
+              <span> {t('products.inCategory','na categoria')} <span className="font-semibold text-blue-600">"{selectedCategory}"</span></span>
             )}
             {searchTerm && (
-              <span> para <span className="font-semibold text-blue-600">"{searchTerm}"</span></span>
+              <span> {t('products.forTerm','para')} <span className="font-semibold text-blue-600">"{searchTerm}"</span></span>
             )}
           </p>
         </div>
@@ -202,7 +204,7 @@ const Products = ({ productsData = null, productCategories = null }) => {
                     className="group/btn flex items-center space-x-1 text-blue-600 hover:text-blue-700 font-semibold text-sm transition-colors duration-300"
                     onClick={() => window.location.href = '/orcamento'}
                   >
-                    <span>Consultar</span>
+                    <span>{t('products.consult','Consultar')}</span>
                     <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform duration-300" />
                   </button>
                 </div>
@@ -215,18 +217,18 @@ const Products = ({ productsData = null, productCategories = null }) => {
         {filteredProducts.length === 0 && (
           <div className="text-center py-16 animate-fade-in">
             <div className="text-6xl mb-6">🔍</div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-4">Nenhum produto encontrado</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-4">{t('products.emptyTitle','Nenhum produto encontrado')}</h3>
             <p className="text-gray-600 mb-6">
-              Tente ajustar os filtros ou termo de busca para encontrar o que procura.
+              {t('products.emptySubtitle','Tente ajustar os filtros ou termo de busca para encontrar o que procura.')}
             </p>
             <button
               onClick={() => {
                 setSearchTerm('')
-                setSelectedCategory('Todos')
+                setSelectedCategory(ALL_KEY)
               }}
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors duration-300"
             >
-              Limpar Filtros
+              {t('products.clearFilters','Limpar Filtros')}
             </button>
           </div>
         )}
@@ -239,12 +241,11 @@ const Products = ({ productsData = null, productCategories = null }) => {
             </div>
             
             <h3 className="text-3xl font-bold text-gray-800 mb-6">
-              Não encontrou o que procura?
+              {t('products.ctaTitle','Não encontrou o que procura?')}
             </h3>
             
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Temos uma <span className="font-semibold text-blue-600">ampla gama de produtos</span> e soluções personalizadas. 
-              Entre em contato conosco para encontrar a <span className="font-semibold text-blue-600">solução ideal</span> para sua necessidade.
+              {t('products.ctaSubtitle','Temos uma ampla gama de produtos e soluções personalizadas. Entre em contato conosco para encontrar a solução ideal para sua necessidade.')}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -252,11 +253,11 @@ const Products = ({ productsData = null, productCategories = null }) => {
                 className="group bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
                 onClick={() => window.location.href = '/orcamento'}
               >
-                <span>Consultar Especialista</span>
+                <span>{t('products.consultSpecialist','Consultar Especialista')}</span>
                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform duration-300" />
               </button>
               <button className="group border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2">
-                <span>Catálogo Completo</span>
+                <span>{t('products.fullCatalog','Catálogo Completo')}</span>
                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform duration-300" />
               </button>
             </div>

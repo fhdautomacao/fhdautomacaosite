@@ -80,7 +80,7 @@ const Hero = () => {
                 <div className="bg-green-500/20 p-2 rounded-lg group-hover:bg-green-500/30 transition-colors flex-shrink-0">
                   <CheckCircle className="text-green-400" size={18} />
                 </div>
-                <span className="text-blue-100 text-sm md:text-base">Suporte técnico especializado 24/7</span>
+                <span className="text-blue-100 text-sm md:text-base">Suporte técnico especializado</span>
               </div>
               <div className="flex items-center space-x-3 md:space-x-4 group">
                 <div className="bg-green-500/20 p-2 rounded-lg group-hover:bg-green-500/30 transition-colors flex-shrink-0">

@@ -1,0 +1,165 @@
+{
+  "common": {
+    "language": "Idioma",
+    "portuguese": "Português",
+    "english": "Inglês",
+    "spanish": "Espanhol",
+    "all": "Todos",
+    "scrollMobile": "Arraste para baixo",
+    "scrollDesktop": "Role para baixo"
+  },
+  "nav": {
+    "home": "Início",
+    "about": "Quem Somos",
+    "services": "Serviços",
+    "clients": "Clientes",
+    "contact": "Contato",
+    "quote": "Solicitar Orçamento"
+  },
+  "hero": {
+    "title": "Nossos Diferenciais",
+    "exp": "Experiência",
+    "fairPrice": "Preço Justo",
+    "quality": "Qualidade",
+    "support": "Atendimento",
+    "clientSatisfaction": "Satisfação do Cliente",
+    "badge": "Líderes em Automação Industrial",
+    "ctaQuote": "Solicitar Orçamento Gratuito",
+    "viewGallery": "Ver Galeria",
+    "heading": {
+      "automation": "Automação",
+      "hydraulics": "Hidráulica",
+      "and": "e",
+      "pneumatics": "Pneumática"
+    },
+    "subtitle": "Transformamos desafios industriais em soluções eficientes com mais de 10 anos de experiência e tecnologia de ponta.",
+    "benefits": [
+      "Projetos personalizados e sob medida",
+      "Suporte técnico especializado 24/7",
+      "Tecnologia de ponta e inovação constante"
+    ],
+    "stats": {
+      "costReduction": "Redução de Custos",
+      "catalogProducts": "Produtos no Catálogo",
+      "sectorsServed": "Setores Atendidos"
+    }
+  },
+  "about": {
+    "badge": "Conheça Nossa História",
+    "title": "Quem Somos",
+    "welcome": "Bem-vindo à FHD Automação Industrial, sua parceira confiável em soluções de automação hidráulica e pneumática.",
+    "p1": "Desde a nossa fundação na cidade de Sumaré, estado de São Paulo, temos nos dedicado apaixonadamente ao fornecimento de serviços de alta qualidade e soluções inovadoras para as necessidades industriais mais desafiadoras.",
+    "p2": "Com uma equipe de especialistas experientes e dedicados, a FHD Automação Industrial se destaca como líder no setor, oferecendo uma ampla gama de serviços especializados para atender às demandas em constante evolução do mercado.",
+    "stats": {
+      "exp": "Anos de Experiência",
+      "projects": "Projetos Realizados",
+      "satisfaction": "Satisfação"
+    },
+    "card": {
+      "title": "Automação Industrial",
+      "desc": "Especialistas em soluções hidráulicas e pneumáticas para otimizar seus processos industriais com tecnologia de ponta e resultados comprovados.",
+      "features": [
+        "Tecnologia Avançada",
+        "Equipe Especializada",
+        "Qualidade Certificada",
+        "Atendimento Personalizado"
+      ]
+    },
+    "mission": {
+      "title": "Missão",
+      "content": "Impulsionamos o progresso industrial com excelência em automação hidráulica e pneumática. Fornecemos soluções inovadoras e confiáveis, superando expectativas e construindo relacionamentos sólidos baseados em confiança, integridade e qualidade."
+    },
+    "vision": {
+      "title": "Visão",
+      "content": "Buscamos liderança global em automação industrial, promovendo eficiência, sustentabilidade e inovação. Com parcerias estratégicas e investimentos em tecnologia, somos a primeira escolha para soluções de automação hidráulica e pneumática de excelência."
+    },
+    "values": {
+      "title": "Valores",
+      "content": "Buscamos excelência em serviços e satisfação do cliente. Inovações impulsionam nosso progresso, agimos com integridade e transparência. Apaixonados pelo trabalho, superamos expectativas com resultados excepcionais."
+    }
+  },
+  "services": {
+    "title": "Nossos Serviços",
+    "loading": "Carregando serviços...",
+    "empty": "Nenhum serviço encontrado.",
+    "retry": "Tentar novamente",
+    "learnMore": "Saiba Mais",
+    "price": {
+      "consultation": "Sob Consulta",
+      "fromPrefix": "A partir de",
+      "perMeter": "por metro linear"
+    }
+  },
+  "products": {
+    "loading": "Carregando produtos...",
+    "badge": "Linha Completa de Produtos",
+    "title": "Nossos Produtos",
+    "subtitle": "Oferecemos uma linha completa de produtos hidráulicos e pneumáticos de alta qualidade para atender às mais diversas necessidades industriais com tecnologia de ponta.",
+    "searchPlaceholder": "Buscar produtos...",
+    "filterByCategory": "Filtrar por categoria:",
+    "resultCount": "Mostrando {shown} de {total} produtos",
+    "inCategory": "na categoria",
+    "forTerm": "para",
+    "consult": "Consultar",
+    "emptyTitle": "Nenhum produto encontrado",
+    "emptySubtitle": "Tente ajustar os filtros ou termo de busca para encontrar o que procura.",
+    "clearFilters": "Limpar Filtros",
+    "ctaTitle": "Não encontrou o que procura?",
+    "ctaSubtitle": "Temos uma ampla gama de produtos e soluções personalizadas. Entre em contato conosco para encontrar a solução ideal para sua necessidade.",
+    "consultSpecialist": "Consultar Especialista",
+    "fullCatalog": "Catálogo Completo"
+  },
+  "gallery": {
+    "loading": "Carregando galeria...",
+    "badge": "Nossos Trabalhos",
+    "title": "Galeria de Fotos",
+    "subtitle": "Conheça alguns dos nossos trabalhos e projetos realizados. Cada imagem representa nossa dedicação à excelência em automação industrial.",
+    "filterByCategory": "Filtrar por categoria",
+    "photo": "foto",
+    "photos": "fotos",
+    "emptyTitle": "Nenhuma foto encontrada",
+    "emptySubtitle": "Não há fotos na categoria selecionada. Tente selecionar outra categoria.",
+    "viewAll": "Ver Todas as Fotos",
+    "ctaTitle": "Quer ver seu projeto aqui?",
+    "ctaSubtitle": "Entre em contato conosco e descubra como podemos transformar suas necessidades em soluções eficientes de automação industrial.",
+    "startProject": "Iniciar Projeto",
+    "seeMore": "Ver Mais Projetos"
+  },
+  "clients": {
+    "badge": "Clientes Satisfeitos",
+    "title": "Nossos Clientes",
+    "subtitle": "Temos o orgulho de atender empresas de diversos segmentos industriais, sempre com o compromisso de entregar soluções de excelência.",
+    "gridTitle": "Empresas que confiam em nosso trabalho",
+    "stats": {
+      "clients": "Clientes Atendidos",
+      "projects": "Projetos Realizados",
+      "years": "Anos de Experiência",
+      "satisfaction": "Satisfação dos Clientes"
+    },
+    "ctaTitle": "Junte-se aos nossos clientes satisfeitos",
+    "ctaSubtitle": "Descubra como podemos ajudar sua empresa a alcançar novos patamares de eficiência com nossas soluções em automação hidráulica e pneumática.",
+    "requestProposal": "Solicitar Proposta",
+    "seeCases": "Conhecer Cases"
+  },
+  "contact": {
+    "title": "Entre em Contato",
+    "subtitle": "Estamos prontos para atender suas necessidades em automação industrial. Entre em contato conosco e descubra como podemos ajudar sua empresa.",
+    "requestQuoteCardTitle": "Solicite um Orçamento",
+    "whyFhd": "Por que escolher a FHD?",
+    "benefits": {
+      "response24h": "Resposta em até 24 horas",
+      "freeQuote": "Orçamento gratuito e sem compromisso",
+      "techAnalysis": "Análise técnica especializada",
+      "experience": "Mais de 10 anos de experiência",
+      "personalized": "Atendimento personalizado"
+    },
+    "ourServices": "Nossos Serviços",
+    "noServices": "Nenhum serviço disponível no momento",
+    "viewAllPrefix": "Ver todos os ",
+    "viewAllSuffix": " serviços",
+    "viewLess": "Ver menos",
+    "cta": "Solicitar Orçamento"
+  }
+}
+
+

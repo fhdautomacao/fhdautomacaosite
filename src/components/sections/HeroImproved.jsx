@@ -2,12 +2,14 @@ import { Button } from '@/components/ui/button'
 import { ArrowRight, CheckCircle, Play, Award, Users, Wrench, Hand } from 'lucide-react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useI18n } from '@/i18n/index.jsx'
 import { tileGradients, buildLinearGradientRGBA } from '@/lib/gradients'
 import { useCountAnimation } from '@/hooks/useScrollAnimation'
 import { useRef, useEffect, useState } from 'react'
 
 const Hero = () => {
   const containerRef = useRef(null)
+  const { t } = useI18n()
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end start"]
@@ -261,7 +263,7 @@ const Hero = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5, duration: 0.8 }}
                 >
-                  Automação{' '}
+                  {t('hero.heading.automation','Automação')}{' '}
                 </motion.span>
                 <motion.span 
                   initial={{ opacity: 0, y: 20 }}
@@ -269,14 +271,14 @@ const Hero = () => {
                   transition={{ delay: 0.7, duration: 0.8 }}
                   className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent"
                 >
-                  Hidráulica
+                  {t('hero.heading.hydraulics','Hidráulica')}
                 </motion.span>{' '}
                 <motion.span
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.9, duration: 0.8 }}
                 >
-                  e{' '}
+                  {t('hero.heading.and','e')}{' '}
                 </motion.span>
                 <motion.span 
                   initial={{ opacity: 0, y: 20 }}
@@ -284,16 +286,14 @@ const Hero = () => {
                   transition={{ delay: 1.1, duration: 0.8 }}
                   className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent"
                 >
-                  Pneumática
+                  {t('hero.heading.pneumatics','Pneumática')}
                 </motion.span>
               </h1>
               <motion.p 
                 variants={itemVariants}
                 className="text-lg md:text-xl lg:text-2xl text-blue-100 leading-relaxed max-w-2xl"
               >
-                Transformamos desafios industriais em soluções eficientes com mais de{' '}
-                <span className="text-yellow-400 font-bold">10 anos</span> de experiência 
-                e tecnologia de ponta.
+                {t('hero.subtitle','Transformamos desafios industriais em soluções eficientes com mais de 10 anos de experiência e tecnologia de ponta.')}
               </motion.p>
             </motion.div>
 
@@ -338,7 +338,7 @@ const Hero = () => {
             <motion.div variants={itemVariants} className="space-y-3 md:space-y-4">
               {[
                 "Projetos personalizados e sob medida",
-                "Suporte técnico especializado 24/7",
+                "Suporte técnico especializado",
                 "Tecnologia de ponta e inovação constante"
               ].map((benefit, index) => (
                 <motion.div 
@@ -425,7 +425,7 @@ const Hero = () => {
               {/* Industrial Equipment Visualization */}
               <div className="space-y-4 md:space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg md:text-xl lg:text-2xl font-semibold md:font-bold text-slate-700 md:text-white">Nossos Diferenciais</h3>
+                  <h3 className="text-lg md:text-xl lg:text-2xl font-semibold md:font-bold text-slate-700 md:text-white">{t('hero.title','Nossos Diferenciais')}</h3>
                   <motion.div 
                     animate={pulseAnimation}
                     className="bg-green-500 w-3 h-3 rounded-full"
@@ -460,7 +460,9 @@ const Hero = () => {
                       >
                         <item.icon className={`text-slate-800 drop-shadow mb-2 ${desktopIconColorByColor[item.color] || ''}`} size={20} />
                       </motion.div>
-                      <div className="text-slate-700 md:text-white font-medium md:font-semibold text-xs md:text-sm">{item.title}</div>
+                      <div className="text-slate-700 md:text-white font-medium md:font-semibold text-xs md:text-sm">{
+                        item.title
+                      }</div>
                       <div className="text-slate-700 md:text-white/80 text-xs">{item.subtitle}</div>
                     </motion.div>
                   ))}
@@ -478,7 +480,7 @@ const Hero = () => {
                   }
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-slate-800 md:text-white font-semibold text-xs md:text-sm">Satisfação do Cliente</span>
+                    <span className="text-slate-800 md:text-white font-semibold text-xs md:text-sm">{t('hero.clientSatisfaction','Satisfação do Cliente')}</span>
                     <span className="text-slate-800 md:text-green-400 font-bold text-sm md:text-base">100%</span>
                   </div>
                   <div className="w-full rounded-full h-2 bg-black/20 md:bg-gray-700">
@@ -527,7 +529,7 @@ const Hero = () => {
         className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
       >
         <div className="flex flex-col items-center space-y-2 text-white/60">
-          <span className="text-sm">{isMobile ? 'Arraste para baixo' : 'Role para baixo'}</span>
+          <span className="text-sm">{isMobile ? t('common.scrollMobile') : t('common.scrollDesktop')}</span>
           {isMobile ? (
             <motion.div
               animate={{ y: [0, 10, 0] }}

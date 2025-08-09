@@ -174,7 +174,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-blue-700 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-blue-200 text-sm mb-4 md:mb-0 flex items-center">
-            © 2024 FHD Automação Industrial. Feito com 
+            © 2025 FHD Automação Industrial. Feito com 
             <Heart className="mx-2 text-red-400" size={16} fill="currentColor" />
             para a indústria brasileira.
           </p>

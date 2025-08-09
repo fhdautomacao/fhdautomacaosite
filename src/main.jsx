@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import { I18nProvider } from './i18n/index.jsx'
 import { initializeSecurity } from './lib/securityConfig'
 
 // Suprimir warning específico do Framer Motion sobre scroll container
@@ -21,10 +22,14 @@ const isDev = import.meta.env.DEV
 
 createRoot(document.getElementById('root')).render(
   isDev ? (
-    <App />
+    <I18nProvider>
+      <App />
+    </I18nProvider>
   ) : (
     <StrictMode>
-      <App />
+      <I18nProvider>
+        <App />
+      </I18nProvider>
     </StrictMode>
   ),
 )

@@ -16,7 +16,7 @@ import LoginPage from '@/pages/Admin/LoginPage.jsx'
 import ProtectedRoute from '@/components/common/ProtectedRoute'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ModalProvider } from '@/components/ModalProvider'
-import TesteFramework from '@/pages/TesteFramework'
+// import TesteFramework from '@/pages/TesteFramework'
 
 function App() {
   return (
@@ -49,7 +49,7 @@ function AppContent() {
         <Route path="/orcamento" element={<QuotationPage />} />
         <Route path="/termos-de-uso" element={<TermosDeUso />} />
         <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />
-        <Route path="/teste" element={<TesteFramework />} />
+        {/* <Route path="/teste" element={<TesteFramework />} /> */}
         <Route
           path="/admin-fhd"
           element={

@@ -2,9 +2,11 @@ import { Target, Eye, Heart, Award, Users, Zap } from 'lucide-react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useScrollAnimation, useCountAnimation } from '@/hooks/useScrollAnimation'
 import { useRef } from 'react'
+import { useI18n } from '@/i18n/index.jsx'
 
 const About = () => {
   const sectionRef = useRef(null)
+  const { t } = useI18n()
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"]
@@ -131,19 +133,19 @@ const About = () => {
             >
               <Award className="mr-2" size={20} />
             </motion.div>
-            <span className="font-semibold">Conheça Nossa História</span>
+            <span className="font-semibold">{t('about.badge','Conheça Nossa História')}</span>
           </motion.div>
           <motion.h2 
             variants={itemVariants}
             className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-6 bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"
           >
-            Quem Somos
+            {t('about.title','Quem Somos')}
           </motion.h2>
           <motion.p 
             variants={itemVariants}
             className="text-lg md:text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed"
           >
-            Bem-vindo à <span className="font-bold text-blue-600">FHD Automação Industrial</span>, sua parceira confiável em soluções de automação hidráulica e pneumática.
+            {t('about.welcome','Bem-vindo à FHD Automação Industrial, sua parceira confiável em soluções de automação hidráulica e pneumática.')}
           </motion.p>
         </motion.div>
 
@@ -163,9 +165,7 @@ const About = () => {
                 transition={{ delay: 0.2, duration: 0.8 }}
                 className="text-base md:text-lg text-gray-700 leading-relaxed"
               >
-                Desde a nossa fundação na cidade de <span className="font-semibold text-blue-600">Sumaré, estado de São Paulo</span>, temos nos dedicado apaixonadamente 
-                ao fornecimento de serviços de alta qualidade e soluções inovadoras para as necessidades industriais 
-                mais desafiadoras.
+                {t('about.p1','Desde a nossa fundação na cidade de Sumaré, estado de São Paulo, temos nos dedicado apaixonadamente ao fornecimento de serviços de alta qualidade e soluções inovadoras para as necessidades industriais mais desafiadoras.')}
               </motion.p>
               <motion.p 
                 initial={{ opacity: 0, y: 20 }}
@@ -173,9 +173,7 @@ const About = () => {
                 transition={{ delay: 0.4, duration: 0.8 }}
                 className="text-base md:text-lg text-gray-700 leading-relaxed"
               >
-                Com uma equipe de especialistas experientes e dedicados, a FHD Automação Industrial se destaca como 
-                líder no setor, oferecendo uma ampla gama de serviços especializados para atender às demandas em 
-                constante evolução do mercado.
+                {t('about.p2','Com uma equipe de especialistas experientes e dedicados, a FHD Automação Industrial se destaca como líder no setor, oferecendo uma ampla gama de serviços especializados para atender às demandas em constante evolução do mercado.')}
               </motion.p>
             </div>
             
@@ -195,7 +193,7 @@ const About = () => {
                 >
                   {experienceCount}+
                 </motion.div>
-                <div className="text-xs md:text-sm text-gray-600">Anos de Experiência</div>
+                <div className="text-xs md:text-sm text-gray-600">{t('about.stats.exp','Anos de Experiência')}</div>
               </motion.div>
               <motion.div 
                 ref={projectsRef}
@@ -211,7 +209,7 @@ const About = () => {
                 >
                   {projectsCount}+
                 </motion.div>
-                <div className="text-xs md:text-sm text-gray-600">Projetos Realizados</div>
+                <div className="text-xs md:text-sm text-gray-600">{t('about.stats.projects','Projetos Realizados')}</div>
               </motion.div>
               <motion.div 
                 ref={satisfactionRef}
@@ -227,7 +225,7 @@ const About = () => {
                 >
                   {satisfactionCount}%
                 </motion.div>
-                <div className="text-xs md:text-sm text-gray-600">Satisfação</div>
+                <div className="text-xs md:text-sm text-gray-600">{t('about.stats.satisfaction','Satisfação')}</div>
               </motion.div>
             </div>
           </motion.div>
@@ -257,7 +255,7 @@ const About = () => {
                   transition={{ delay: 0.3, duration: 0.8 }}
                   className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-6 bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"
                 >
-                  Automação Industrial
+                  {t('about.card.title','Automação Industrial')}
                 </motion.h3>
                 <motion.p 
                   initial={{ opacity: 0, y: 20 }}
@@ -265,18 +263,16 @@ const About = () => {
                   transition={{ delay: 0.5, duration: 0.8 }}
                   className="text-gray-600 text-base md:text-lg leading-relaxed mb-6 md:mb-8"
                 >
-                  Especialistas em soluções hidráulicas e pneumáticas para otimizar seus processos industriais com 
-                  <span className="font-semibold text-blue-600"> tecnologia de ponta</span> e 
-                  <span className="font-semibold text-green-600"> resultados comprovados</span>.
+                  {t('about.card.desc','Especialistas em soluções hidráulicas e pneumáticas para otimizar seus processos industriais com tecnologia de ponta e resultados comprovados.')}
                 </motion.p>
                 
                 {/* Features */}
                 <div className="grid grid-cols-2 gap-3 md:gap-4">
                   {[
-                    { icon: Zap, text: "Tecnologia Avançada", color: "yellow" },
-                    { icon: Users, text: "Equipe Especializada", color: "blue" },
-                    { icon: Award, text: "Qualidade Certificada", color: "green" },
-                    { icon: Heart, text: "Atendimento Personalizado", color: "red" }
+                    { icon: Zap, text: t('about.card.features.0','Tecnologia Avançada'), color: "yellow" },
+                    { icon: Users, text: t('about.card.features.1','Equipe Especializada'), color: "blue" },
+                    { icon: Award, text: t('about.card.features.2','Qualidade Certificada'), color: "green" },
+                    { icon: Heart, text: t('about.card.features.3','Atendimento Personalizado'), color: "red" }
                   ].map((feature, index) => (
                     <motion.div 
                       key={index}
@@ -309,25 +305,25 @@ const About = () => {
           animate={valuesVisible ? "visible" : "hidden"}
           className="grid md:grid-cols-3 gap-6 md:gap-8"
         >
-          {[
+              {[
             {
               icon: Target,
-              title: "Missão",
-              content: "Impulsionamos o progresso industrial com excelência em automação hidráulica e pneumática. Fornecemos soluções inovadoras e confiáveis, superando expectativas e construindo relacionamentos sólidos baseados em confiança, integridade e qualidade.",
+              title: t('about.mission.title','Missão'),
+              content: t('about.mission.content','Impulsionamos o progresso industrial com excelência em automação hidráulica e pneumática. Fornecemos soluções inovadoras e confiáveis, superando expectativas e construindo relacionamentos sólidos baseados em confiança, integridade e qualidade.'),
               color: "blue",
               gradient: "from-blue-100 to-blue-200"
             },
             {
               icon: Eye,
-              title: "Visão",
-              content: "Buscamos liderança global em automação industrial, promovendo eficiência, sustentabilidade e inovação. Com parcerias estratégicas e investimentos em tecnologia, somos a primeira escolha para soluções de automação hidráulica e pneumática de excelência.",
+              title: t('about.vision.title','Visão'),
+              content: t('about.vision.content','Buscamos liderança global em automação industrial, promovendo eficiência, sustentabilidade e inovação. Com parcerias estratégicas e investimentos em tecnologia, somos a primeira escolha para soluções de automação hidráulica e pneumática de excelência.'),
               color: "yellow",
               gradient: "from-yellow-100 to-yellow-200"
             },
             {
               icon: Heart,
-              title: "Valores",
-              content: "Buscamos excelência em serviços e satisfação do cliente. Inovações impulsionam nosso progresso, agimos com integridade e transparência. Apaixonados pelo trabalho, superamos expectativas com resultados excepcionais.",
+              title: t('about.values.title','Valores'),
+              content: t('about.values.content','Buscamos excelência em serviços e satisfação do cliente. Inovações impulsionam nosso progresso, agimos com integridade e transparência. Apaixonados pelo trabalho, superamos expectativas com resultados excepcionais.'),
               color: "green",
               gradient: "from-green-100 to-green-200"
             }

@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useServiceCategories } from '@/hooks/useCategories'
+import { autoTranslateService } from '@/lib/translate'
 
 const ServicesManager = () => {
   const [services, setServices] = useState([])
@@ -50,11 +51,17 @@ const ServicesManager = () => {
     category: '',
     price: '',
     features: [],
+    translations: {
+      en: { name: '', description: '', features: [] },
+      es: { name: '', description: '', features: [] }
+    },
     isActive: true,
     image_url: null
   })
 
   const [newFeature, setNewFeature] = useState('')
+  const [newFeatureEn, setNewFeatureEn] = useState('')
+  const [newFeatureEs, setNewFeatureEs] = useState('')
 
   // Função para validar formulário
   const validateForm = () => {
@@ -125,6 +132,18 @@ const ServicesManager = () => {
       // Calcular próximo display_order
       const maxOrder = services.length > 0 ? Math.max(...services.map(s => s.display_order || 0)) : 0
       
+      // auto-translate if no manual translations were provided
+      const hasManualTranslations = (
+        (newService.translations?.en?.name || newService.translations?.en?.description || (newService.translations?.en?.features||[]).length) ||
+        (newService.translations?.es?.name || newService.translations?.es?.description || (newService.translations?.es?.features||[]).length)
+      )
+
+      const autoTranslations = hasManualTranslations ? {} : await autoTranslateService({
+        name: newService.name,
+        description: newService.description,
+        features: newService.features
+      })
+
       const serviceData = {
         name: newService.name,
         description: newService.description,
@@ -132,6 +151,7 @@ const ServicesManager = () => {
         category: newService.category,
         price: newService.price,
         features: newService.features,
+        translations: hasManualTranslations ? newService.translations : autoTranslations,
         image_url: newService.image_url,
         is_active: newService.isActive,
         display_order: maxOrder + 1
@@ -154,7 +174,11 @@ const ServicesManager = () => {
         icon: '🔧', 
         category: '', 
         price: '', 
-        features: [], 
+        features: [],
+        translations: {
+          en: { name: '', description: '', features: [] },
+          es: { name: '', description: '', features: [] }
+        },
         isActive: true, 
         image_url: null 
       })
@@ -176,6 +200,17 @@ const ServicesManager = () => {
       try {
         setLoading(true)
         
+        const hasManualTranslationsEdit = (
+          (selectedService.translations?.en?.name || selectedService.translations?.en?.description || (selectedService.translations?.en?.features||[]).length) ||
+          (selectedService.translations?.es?.name || selectedService.translations?.es?.description || (selectedService.translations?.es?.features||[]).length)
+        )
+
+        const autoTranslationsEdit = hasManualTranslationsEdit ? {} : await autoTranslateService({
+          name: selectedService.name,
+          description: selectedService.description,
+          features: selectedService.features
+        })
+
         const serviceData = {
           name: selectedService.name,
           description: selectedService.description,
@@ -183,6 +218,7 @@ const ServicesManager = () => {
           category: selectedService.category,
           price: selectedService.price,
           features: selectedService.features,
+          translations: hasManualTranslationsEdit ? selectedService.translations : autoTranslationsEdit,
           image_url: selectedService.image_url,
           is_active: selectedService.is_active,
           display_order: selectedService.display_order,
@@ -283,6 +319,38 @@ const ServicesManager = () => {
     }
   }
 
+  const addFeatureTranslated = (lang, isEdit = false) => {
+    const value = lang === 'en' ? newFeatureEn.trim() : newFeatureEs.trim()
+    if (!value) return
+    if (isEdit && selectedService) {
+      const current = selectedService.translations?.[lang]?.features || []
+      setSelectedService({
+        ...selectedService,
+        translations: {
+          ...selectedService.translations,
+          [lang]: {
+            ...(selectedService.translations?.[lang] || {}),
+            features: [...current, value]
+          }
+        }
+      })
+    } else {
+      const current = newService.translations?.[lang]?.features || []
+      setNewService({
+        ...newService,
+        translations: {
+          ...newService.translations,
+          [lang]: {
+            ...(newService.translations?.[lang] || {}),
+            features: [...current, value]
+          }
+        }
+      })
+    }
+    if (lang === 'en') setNewFeatureEn('')
+    if (lang === 'es') setNewFeatureEs('')
+  }
+
   const removeFeature = (index, isEdit = false) => {
     if (isEdit && selectedService) {
       setSelectedService({
@@ -293,6 +361,36 @@ const ServicesManager = () => {
       setNewService({
         ...newService,
         features: newService.features.filter((_, i) => i !== index)
+      })
+    }
+  }
+
+  const removeFeatureTranslated = (lang, index, isEdit = false) => {
+    if (isEdit && selectedService) {
+      const current = selectedService.translations?.[lang]?.features || []
+      const updated = current.filter((_, i) => i !== index)
+      setSelectedService({
+        ...selectedService,
+        translations: {
+          ...selectedService.translations,
+          [lang]: {
+            ...(selectedService.translations?.[lang] || {}),
+            features: updated
+          }
+        }
+      })
+    } else {
+      const current = newService.translations?.[lang]?.features || []
+      const updated = current.filter((_, i) => i !== index)
+      setNewService({
+        ...newService,
+        translations: {
+          ...newService.translations,
+          [lang]: {
+            ...(newService.translations?.[lang] || {}),
+            features: updated
+          }
+        }
       })
     }
   }
@@ -408,7 +506,7 @@ const ServicesManager = () => {
                 </ModalGrid>
                 
                 <div>
-                  <Label htmlFor="description" className="text-sm font-medium text-gray-700">Descrição *</Label>
+          <Label htmlFor="description" className="text-sm font-medium text-gray-700">Descrição *</Label>
                   <Textarea
                     id="description"
                     value={newService.description}
@@ -418,6 +516,73 @@ const ServicesManager = () => {
                     className={`mt-1 ${errors.description ? 'border-red-500 focus:border-red-500' : ''}`}
                   />
                   {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
+                </div>
+              </ModalSection>
+
+              {/* Traduções opcionais */}
+              <ModalSection title="Traduções (opcional)">
+                <ModalGrid cols={2}>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Nome (EN)</Label>
+                    <Input value={newService.translations.en.name}
+                      onChange={(e)=>setNewService({...newService, translations:{...newService.translations, en:{...newService.translations.en, name:e.target.value}}})}
+                      placeholder="English name" className="mt-1" />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Nombre (ES)</Label>
+                    <Input value={newService.translations.es.name}
+                      onChange={(e)=>setNewService({...newService, translations:{...newService.translations, es:{...newService.translations.es, name:e.target.value}}})}
+                      placeholder="Nombre en español" className="mt-1" />
+                  </div>
+                </ModalGrid>
+                <div className="mt-4">
+                  <Label className="text-sm font-medium text-gray-700">Descrição (EN)</Label>
+                  <Textarea rows={3} value={newService.translations.en.description}
+                    onChange={(e)=>setNewService({...newService, translations:{...newService.translations, en:{...newService.translations.en, description:e.target.value}}})}
+                    placeholder="English description" className="mt-1" />
+                </div>
+                <div className="mt-4">
+                  <Label className="text-sm font-medium text-gray-700">Descripción (ES)</Label>
+                  <Textarea rows={3} value={newService.translations.es.description}
+                    onChange={(e)=>setNewService({...newService, translations:{...newService.translations, es:{...newService.translations.es, description:e.target.value}}})}
+                    placeholder="Descripción en español" className="mt-1" />
+                </div>
+
+                {/* Features traduzidas */}
+                <div className="mt-6">
+                  <Label className="text-sm font-medium text-gray-700">Features (EN)</Label>
+                  <div className="flex gap-2 mt-1">
+                    <Input value={newFeatureEn} onChange={(e)=>setNewFeatureEn(e.target.value)} placeholder="Add feature (EN)" />
+                    <Button type="button" size="sm" onClick={()=>addFeatureTranslated('en')} className="bg-blue-600 hover:bg-blue-700">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {(newService.translations.en.features || []).map((feature, index) => (
+                      <Badge key={`en-${index}`} variant="secondary" className="flex items-center space-x-1 bg-blue-100 text-blue-800">
+                        <span>{feature}</span>
+                        <button onClick={()=>removeFeatureTranslated('en', index)} className="ml-1 text-blue-600 hover:text-blue-800">×</button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <Label className="text-sm font-medium text-gray-700">Features (ES)</Label>
+                  <div className="flex gap-2 mt-1">
+                    <Input value={newFeatureEs} onChange={(e)=>setNewFeatureEs(e.target.value)} placeholder="Agregar feature (ES)" />
+                    <Button type="button" size="sm" onClick={()=>addFeatureTranslated('es')} className="bg-blue-600 hover:bg-blue-700">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {(newService.translations.es.features || []).map((feature, index) => (
+                      <Badge key={`es-${index}`} variant="secondary" className="flex items-center space-x-1 bg-blue-100 text-blue-800">
+                        <span>{feature}</span>
+                        <button onClick={()=>removeFeatureTranslated('es', index)} className="ml-1 text-blue-600 hover:text-blue-800">×</button>
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               </ModalSection>
 
@@ -777,6 +942,73 @@ const ServicesManager = () => {
                   onCheckedChange={(checked) => setSelectedService({ ...selectedService, is_active: checked })}
                 />
                 <Label htmlFor="edit-isActive" className="text-sm font-medium text-gray-700">Serviço Ativo</Label>
+              </div>
+            </ModalSection>
+
+            {/* Traduções (editar) */}
+            <ModalSection title="Traduções (opcional)">
+              <ModalGrid cols={2}>
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Nome (EN)</Label>
+                  <Input value={selectedService.translations?.en?.name || ''}
+                    onChange={(e)=>setSelectedService({...selectedService, translations:{...selectedService.translations, en:{...(selectedService.translations?.en||{}), name:e.target.value}}})}
+                    placeholder="English name" className="mt-1" />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Nombre (ES)</Label>
+                  <Input value={selectedService.translations?.es?.name || ''}
+                    onChange={(e)=>setSelectedService({...selectedService, translations:{...selectedService.translations, es:{...(selectedService.translations?.es||{}), name:e.target.value}}})}
+                    placeholder="Nombre en español" className="mt-1" />
+                </div>
+              </ModalGrid>
+              <div className="mt-4">
+                <Label className="text-sm font-medium text-gray-700">Descrição (EN)</Label>
+                <Textarea rows={3} value={selectedService.translations?.en?.description || ''}
+                  onChange={(e)=>setSelectedService({...selectedService, translations:{...selectedService.translations, en:{...(selectedService.translations?.en||{}), description:e.target.value}}})}
+                  placeholder="English description" className="mt-1" />
+              </div>
+              <div className="mt-4">
+                <Label className="text-sm font-medium text-gray-700">Descripción (ES)</Label>
+                <Textarea rows={3} value={selectedService.translations?.es?.description || ''}
+                  onChange={(e)=>setSelectedService({...selectedService, translations:{...selectedService.translations, es:{...(selectedService.translations?.es||{}), description:e.target.value}}})}
+                  placeholder="Descripción en español" className="mt-1" />
+              </div>
+
+              {/* Features traduzidas (editar) */}
+              <div className="mt-6">
+                <Label className="text-sm font-medium text-gray-700">Features (EN)</Label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {(selectedService.translations?.en?.features || []).map((feature, index) => (
+                    <Badge key={`edit-en-${index}`} variant="secondary" className="flex items-center space-x-1 bg-blue-100 text-blue-800">
+                      <span>{feature}</span>
+                      <button onClick={()=>removeFeatureTranslated('en', index, true)} className="ml-1 text-blue-600 hover:text-blue-800">×</button>
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <Input value={newFeatureEn} onChange={(e)=>setNewFeatureEn(e.target.value)} placeholder="Add feature (EN)" />
+                  <Button type="button" size="sm" onClick={()=>addFeatureTranslated('en', true)} className="bg-blue-600 hover:bg-blue-700">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <Label className="text-sm font-medium text-gray-700">Features (ES)</Label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {(selectedService.translations?.es?.features || []).map((feature, index) => (
+                    <Badge key={`edit-es-${index}`} variant="secondary" className="flex items-center space-x-1 bg-blue-100 text-blue-800">
+                      <span>{feature}</span>
+                      <button onClick={()=>removeFeatureTranslated('es', index, true)} className="ml-1 text-blue-600 hover:text-blue-800">×</button>
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <Input value={newFeatureEs} onChange={(e)=>setNewFeatureEs(e.target.value)} placeholder="Agregar feature (ES)" />
+                  <Button type="button" size="sm" onClick={()=>addFeatureTranslated('es', true)} className="bg-blue-600 hover:bg-blue-700">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </ModalSection>
 

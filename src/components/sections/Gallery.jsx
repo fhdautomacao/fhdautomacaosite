@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, X, Camera, Filter, ArrowRight } from 'lucide-react'
 import { galleryAPI } from '../../api/gallery'
 import { useGalleryCategories } from '../../hooks/useCategories'
+import { useI18n } from '@/i18n/index.jsx'
 
 const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
+  const { t } = useI18n()
   const [selectedImage, setSelectedImage] = useState(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedCategory, setSelectedCategory] = useState('Todos')
@@ -33,9 +35,10 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
   // Obter apenas as categorias que realmente existem nas imagens
   const usedCategoryIds = [...new Set(images.map(img => img.category))]
   const usedCategories = fetchedCategories.filter(cat => usedCategoryIds.includes(cat.id))
-  const allCategories = ['Todos', ...usedCategories.map(cat => cat.name)]
+  const ALL_KEY = '__ALL__'
+  const allCategories = [{ id: ALL_KEY, label: t('common.all','Todos') }, ...usedCategories.map(cat => ({ id: cat.name, label: cat.name }))]
 
-  const filteredImages = selectedCategory === 'Todos' 
+  const filteredImages = selectedCategory === ALL_KEY 
     ? images 
     : images.filter(img => {
         const categoryObject = fetchedCategories.find(cat => cat.id === img.category)
@@ -78,7 +81,7 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
   }
 
   if (loadingImages || loadingCategories) {
-    return <div className="text-center py-20">Carregando galeria...</div>
+    return <div className="text-center py-20">{t('gallery.loading','Carregando galeria...')}</div>
   }
 
   if (categoriesError) {
@@ -98,14 +101,13 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
         <div className="text-center mb-16 animate-fade-in">
           <div className="inline-flex items-center bg-blue-100 text-blue-800 px-6 py-2 rounded-full mb-6">
             <Camera className="mr-2" size={20} />
-            <span className="font-semibold">Nossos Trabalhos</span>
+            <span className="font-semibold">{t('gallery.badge','Nossos Trabalhos')}</span>
           </div>
           <h2 className="text-5xl font-bold text-gray-800 mb-6 bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-            Galeria de Fotos
+            {t('gallery.title','Galeria de Fotos')}
           </h2>
           <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-            Conheça alguns dos nossos <span className="font-bold text-blue-600">trabalhos e projetos realizados</span>. 
-            Cada imagem representa nossa dedicação à <span className="font-semibold text-blue-600">excelência em automação industrial</span>.
+            {t('gallery.subtitle','Conheça alguns dos nossos trabalhos e projetos realizados. Cada imagem representa nossa dedicação à excelência em automação industrial.')}
           </p>
         </div>
 
@@ -115,25 +117,25 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-gray-800 flex items-center">
                 <Filter className="mr-2 text-blue-600" size={20} />
-                Filtrar por categoria
+                {t('gallery.filterByCategory','Filtrar por categoria')}
               </h3>
               <span className="text-sm text-gray-600">
-                {filteredImages.length} {filteredImages.length === 1 ? 'foto' : 'fotos'}
+                {filteredImages.length} {filteredImages.length === 1 ? t('gallery.photo','foto') : t('gallery.photos','fotos')}
               </span>
             </div>
             
             <div className="flex flex-wrap gap-3">
-              {allCategories.map((categoryName, index) => (
+              {allCategories.map((category, index) => (
                 <button
                   key={index}
-                  onClick={() => setSelectedCategory(categoryName)}
+                  onClick={() => setSelectedCategory(category.id)}
                   className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-105 ${
-                    selectedCategory === categoryName
+                    selectedCategory === category.id
                       ? 'bg-blue-600 text-white shadow-lg'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  {categoryName}
+                  {category.label}
                 </button>
               ))}
             </div>
@@ -176,15 +178,15 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
         {filteredImages.length === 0 && (
           <div className="text-center py-16 animate-fade-in">
             <div className="text-6xl mb-6">📷</div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-4">Nenhuma foto encontrada</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-4">{t('gallery.emptyTitle','Nenhuma foto encontrada')}</h3>
             <p className="text-gray-600 mb-6">
-              Não há fotos na categoria selecionada. Tente selecionar outra categoria.
+              {t('gallery.emptySubtitle','Não há fotos na categoria selecionada. Tente selecionar outra categoria.')}
             </p>
             <button
-              onClick={() => setSelectedCategory('Todos')}
+              onClick={() => setSelectedCategory(ALL_KEY)}
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors duration-300"
             >
-              Ver Todas as Fotos
+              {t('gallery.viewAll','Ver Todas as Fotos')}
             </button>
           </div>
         )}
@@ -248,21 +250,20 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
             </div>
             
             <h3 className="text-3xl font-bold text-gray-800 mb-6">
-              Quer ver seu projeto aqui?
+              {t('gallery.ctaTitle','Quer ver seu projeto aqui?')}
             </h3>
             
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Entre em contato conosco e descubra como podemos transformar suas necessidades 
-              em <span className="font-semibold text-blue-600">soluções eficientes</span> de automação industrial.
+              {t('gallery.ctaSubtitle','Entre em contato conosco e descubra como podemos transformar suas necessidades em soluções eficientes de automação industrial.')}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button className="group bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2">
-                <span>Iniciar Projeto</span>
+                <span>{t('gallery.startProject','Iniciar Projeto')}</span>
                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform duration-300" />
               </button>
               <button className="group border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2">
-                <span>Ver Mais Projetos</span>
+                <span>{t('gallery.seeMore','Ver Mais Projetos')}</span>
                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform duration-300" />
               </button>
             </div>

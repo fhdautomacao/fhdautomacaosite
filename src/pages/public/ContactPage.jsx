@@ -5,8 +5,12 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Phone, Mail, MapPin, Clock, Send, FileText, CheckCircle } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 const ContactPage = () => {
+  const [isVisible, setIsVisible] = useState(false)
+  const [typedText, setTypedText] = useState('')
+  const fullText = 'Entre em Contato'
   const contactInfo = [
     {
       icon: <Phone className="h-6 w-6 text-blue-600" />,
@@ -34,19 +38,41 @@ const ContactPage = () => {
     }
   ]
 
+  useEffect(() => {
+    setIsVisible(true)
+    let index = 0
+    const timer = setInterval(() => {
+      if (index < fullText.length) {
+        setTypedText(fullText.slice(0, index + 1))
+        index++
+      } else {
+        clearInterval(timer)
+      }
+    }, 100)
+    return () => clearInterval(timer)
+  }, [])
+
   return (
     <>
       <DynamicSEO pageName="contact" />
 
       <div className="min-h-screen bg-gray-50">
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-blue-900 to-blue-700 text-white py-20">
-          <div className="container mx-auto px-4">
+        <section className="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 text-white py-20 overflow-hidden animate-gradient">
+          <div className="absolute inset-0 bg-black opacity-10"></div>
+          {/* Floating elements, apenas decorativos */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-16 left-10 w-4 h-4 bg-blue-400 rounded-full animate-float opacity-30"></div>
+            <div className="absolute top-8 right-24 w-6 h-6 bg-yellow-400 rounded-full animate-float opacity-20" style={{animationDelay: '2s'}}></div>
+            <div className="absolute bottom-16 left-24 w-3 h-3 bg-blue-500 rounded-full animate-float opacity-25" style={{animationDelay: '4s'}}></div>
+            <div className="absolute bottom-8 right-12 w-5 h-5 bg-yellow-300 rounded-full animate-float opacity-30" style={{animationDelay: '1s'}}></div>
+          </div>
+          <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-4xl md:text-6xl font-bold mb-6">
-                Entre em Contato
+              <h1 className={`text-4xl md:text-6xl font-bold mb-6 typing-cursor ${isVisible ? 'animate-slide-in-left' : 'opacity-0'}`}>
+                {typedText}
               </h1>
-              <p className="text-xl md:text-2xl text-blue-100">
+              <p className={`text-xl md:text-2xl text-blue-100 ${isVisible ? 'animate-slide-in-right' : 'opacity-0'}`} style={{animationDelay: '1.5s'}}>
                 Estamos prontos para atender suas necessidades em automação industrial
               </p>
             </div>
@@ -169,7 +195,7 @@ const ContactPage = () => {
                   </CardHeader>
                   <CardContent>
                     <p className="text-blue-800 mb-4">
-                      Para situações urgentes, oferecemos atendimento 24/7 para nossos clientes.
+                      Para situações urgentes, oferecemos atendimento personalizado.
                     </p>
                     <Button className="w-full bg-blue-600 hover:bg-blue-700">
                       <Phone className="mr-2 h-5 w-5" />

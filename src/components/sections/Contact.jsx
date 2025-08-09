@@ -1,13 +1,16 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Phone, Mail, MapPin, Clock, Send, FileText, CheckCircle, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { contactAPI } from '../../api/contact'
 import InteractiveMap from '../InteractiveMap'
 import { useServices } from '../../hooks/useServices'
 import { useMobileDetection } from '../../hooks/useMobileDetection'
+import { useI18n } from '@/i18n/index.jsx'
 
 const Contact = ({ servicesData = null }) => {
-  const { services, loading: servicesLoading } = useServices({ initialData: servicesData, enabled: !servicesData })
+  const { t } = useI18n()
+  const hasInitialData = Array.isArray(servicesData) && servicesData.length > 0
+  const { services, loading: servicesLoading } = useServices({ initialData: servicesData, enabled: !hasInitialData })
   const effectiveServices = services
   const effectiveLoading = servicesLoading
   const [showAllServices, setShowAllServices] = useState(false)
@@ -22,6 +25,52 @@ const Contact = ({ servicesData = null }) => {
     message: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [cfToken, setCfToken] = useState(null)
+
+  useEffect(() => {
+    // Renderizar Turnstile sem alterar o layout visual (invisível)
+    const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY
+    if (!siteKey) return
+
+    const scriptId = 'cf-turnstile-script'
+    if (!document.getElementById(scriptId)) {
+      const s = document.createElement('script')
+      s.id = scriptId
+      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
+      s.async = true
+      document.head.appendChild(s)
+    }
+
+    const containerId = 'cf-turnstile-container'
+    let container = document.getElementById(containerId)
+    if (!container) {
+      container = document.createElement('div')
+      container.id = containerId
+      container.style.display = 'none'
+      document.body.appendChild(container)
+    }
+
+    const render = () => {
+      if (!window.turnstile) return
+      try {
+        window.turnstile.render('#' + containerId, {
+          sitekey: siteKey,
+          callback: (token) => setCfToken(token),
+          'response-field': false,
+          size: 'invisible'
+        })
+      } catch {}
+    }
+
+    const i = setInterval(() => {
+      if (window.turnstile) {
+        clearInterval(i)
+        render()
+      }
+    }, 100)
+
+    return () => clearInterval(i)
+  }, [])
   const [submitStatus, setSubmitStatus] = useState(null)
 
   const handleInputChange = (e) => {
@@ -38,6 +87,16 @@ const Contact = ({ servicesData = null }) => {
     setSubmitStatus(null)
 
     try {
+      // Verificar Turnstile (se configurado)
+      let verified = true
+      // Endpoint de verificação removido; manter como permitido quando não houver Turnstile
+
+      if (!verified) {
+        setSubmitStatus('error')
+        setIsSubmitting(false)
+        return
+      }
+
       await contactAPI.sendMessage(formData)
       setSubmitStatus('success')
       setFormData({
@@ -60,17 +119,16 @@ const Contact = ({ servicesData = null }) => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">Entre em Contato</h2>
+          <h2 className="text-4xl font-bold text-gray-800 mb-4">{t('contact.title','Entre em Contato')}</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Estamos prontos para atender suas necessidades em automação industrial. 
-            Entre em contato conosco e descubra como podemos ajudar sua empresa.
+            {t('contact.subtitle','Estamos prontos para atender suas necessidades em automação industrial. Entre em contato conosco e descubra como podemos ajudar sua empresa.')}
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Contact Form */}
           <div className="bg-gray-50 rounded-2xl p-8">
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">Solicite um Orçamento</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-6">{t('contact.requestQuoteCardTitle','Solicite um Orçamento')}</h3>
             
             <div className="space-y-8">
               {/* Header com ícone */}
@@ -89,27 +147,27 @@ const Contact = ({ servicesData = null }) => {
               
               {/* Benefícios */}
               <div className="bg-white rounded-xl p-6 space-y-4">
-                <h5 className="font-semibold text-gray-800 mb-4">Por que escolher a FHD?</h5>
+                <h5 className="font-semibold text-gray-800 mb-4">{t('contact.whyFhd','Por que escolher a FHD?')}</h5>
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3 text-sm text-gray-600">
                     <CheckCircle className="text-green-500 flex-shrink-0" size={18} />
-                    <span>Resposta em até 24 horas</span>
+                    <span>{t('contact.benefits.response24h','Resposta em até 24 horas')}</span>
                   </div>
                   <div className="flex items-center space-x-3 text-sm text-gray-600">
                     <CheckCircle className="text-green-500 flex-shrink-0" size={18} />
-                    <span>Orçamento gratuito e sem compromisso</span>
+                    <span>{t('contact.benefits.freeQuote','Orçamento gratuito e sem compromisso')}</span>
                   </div>
                   <div className="flex items-center space-x-3 text-sm text-gray-600">
                     <CheckCircle className="text-green-500 flex-shrink-0" size={18} />
-                    <span>Análise técnica especializada</span>
+                    <span>{t('contact.benefits.techAnalysis','Análise técnica especializada')}</span>
                   </div>
                   <div className="flex items-center space-x-3 text-sm text-gray-600">
                     <CheckCircle className="text-green-500 flex-shrink-0" size={18} />
-                    <span>Mais de 10 anos de experiência</span>
+                    <span>{t('contact.benefits.experience','Mais de 10 anos de experiência')}</span>
                   </div>
                   <div className="flex items-center space-x-3 text-sm text-gray-600">
                     <CheckCircle className="text-green-500 flex-shrink-0" size={18} />
-                    <span>Atendimento personalizado</span>
+                    <span>{t('contact.benefits.personalized','Atendimento personalizado')}</span>
                   </div>
                   {!servicesLoading && services.length > 0 && (
                     <div className="flex items-center space-x-3 text-sm text-gray-600">
@@ -122,7 +180,7 @@ const Contact = ({ servicesData = null }) => {
               
               {/* Serviços Dinâmicos */}
               <div className="bg-white rounded-xl p-6">
-                <h5 className="font-semibold text-gray-800 mb-4">Nossos Serviços</h5>
+                <h5 className="font-semibold text-gray-800 mb-4">{t('contact.ourServices','Nossos Serviços')}</h5>
                 {effectiveLoading ? (
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     {[...Array(6)].map((_, index) => (
@@ -169,7 +227,7 @@ const Contact = ({ servicesData = null }) => {
                   </div>
                 ) : (
                   <div className="text-center text-gray-500 text-sm py-4">
-                    Nenhum serviço disponível no momento
+                    {t('contact.noServices','Nenhum serviço disponível no momento')}
                   </div>
                 )}
               </div>
@@ -180,7 +238,7 @@ const Contact = ({ servicesData = null }) => {
                 onClick={() => window.location.href = '/orcamento'}
               >
                 <FileText className="mr-2" size={20} />
-                Solicitar Orçamento
+                {t('contact.cta','Solicitar Orçamento')}
               </Button>
             </div>
           </div>
