@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { HelmetProvider } from 'react-helmet-async'
 import Header from '@/components/layout/HeaderImproved'
 import Footer from '@/components/layout/Footer'
+import FloatingWhatsApp from '@/components/FloatingWhatsApp'
 import HomePage from '@/pages/public/HomePage'
 import AboutPage from '@/pages/public/AboutPage'
 import ServicesPage from '@/pages/public/ServicesPage'
@@ -60,6 +61,8 @@ function AppContent() {
         <Route path="/login-admin" element={<LoginPage />} />
       </Routes>
       {!isAdminRoute && <Footer />}
+      {/* Botão flutuante do WhatsApp, somente em rotas públicas */}
+      {!isAdminRoute && <FloatingWhatsApp />}
     </>
   );
 }

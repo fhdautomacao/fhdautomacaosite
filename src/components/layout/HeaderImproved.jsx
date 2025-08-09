@@ -302,69 +302,118 @@ const Header = () => {
         {/* Mobile Navigation */}
         <AnimatePresence>
           {isMenuOpen && (
-            <motion.nav
-              variants={mobileMenuVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              className="lg:hidden mt-3 pb-4 border-t pt-4 rounded-b-lg border-gray-200 bg-white/95 backdrop-blur-md shadow-lg overflow-hidden"
-            >
-              <div className="flex flex-col space-y-2">
-                {navItems.map((item, index) => (
-                  <motion.div
-                    key={item.path}
+            <>
+              {/* Backdrop overlay */}
+              <motion.div
+                key="backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 lg:hidden bg-slate-900/40 backdrop-blur-sm z-40"
+                onClick={() => setIsMenuOpen(false)}
+              />
+              {/* Fancy mobile menu */}
+              <motion.nav
+                key="mobile-menu"
+                variants={mobileMenuVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="fixed top-0 left-0 right-0 lg:hidden z-50 mt-[60px] pb-5 border-t pt-12 rounded-b-2xl border-white/20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl shadow-2xl overflow-hidden"
+              >
+                {/* Close button */}
+                <motion.button
+                  whileHover={{ scale: 1.05, rotate: 5 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsMenuOpen(false)}
+                  aria-label="Fechar menu"
+                  className="absolute top-3 right-3 z-50 p-2 rounded-full border border-slate-300/60 bg-white/70 dark:bg-slate-800/70 text-slate-700 dark:text-slate-200 shadow-md"
+                >
+                  <X size={18} />
+                </motion.button>
+                {/* Decorative glows */}
+                <div className="pointer-events-none absolute -top-20 -right-16 w-64 h-64 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-400/20 blur-2xl" />
+                <div className="pointer-events-none absolute -bottom-24 -left-10 w-72 h-72 rounded-full bg-gradient-to-br from-violet-500/15 to-fuchsia-400/15 blur-2xl" />
+
+                <div className="relative flex flex-col space-y-2 px-3 mt-2">
+                  {navItems.map((item, index) => (
+                    <motion.div
+                      key={item.path}
+                      variants={mobileItemVariants}
+                    >
+                      <Link to={item.path}>
+                        <motion.div
+                          className={`relative overflow-hidden ${getMobileNavItemClasses(item.path, item.color)} shadow-sm`}
+                          whileHover={{ scale: 1.02, x: 5 }}
+                          whileTap={{ scale: 0.98 }}
+                          transition={{ duration: 0.2 }}
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          {/* Animated accent bar */}
+                          <motion.span
+                            className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-cyan-400"
+                            initial={{ scaleY: 0 }}
+                            animate={{ scaleY: 1 }}
+                            transition={{ duration: 0.4, delay: 0.05 * index }}
+                          />
+
+                          <motion.div
+                            animate={{ rotate: location.pathname === item.path ? 360 : 0 }}
+                            transition={{ duration: 0.5 }}
+                            className="z-10"
+                          >
+                            <item.icon size={18} />
+                          </motion.div>
+                          <span className="z-10">{item.label}</span>
+
+                          {/* Ripple highlight on hover */}
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/40 to-white/0"
+                            initial={{ x: '-100%' }}
+                            whileHover={{ x: '100%' }}
+                            transition={{ duration: 0.8 }}
+                          />
+
+                          {/* Active indicator */}
+                          {location.pathname === item.path && (
+                            <motion.div
+                              className="absolute right-2 w-2 h-2 bg-white rounded-full shadow"
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ duration: 0.3 }}
+                            />
+                          )}
+                        </motion.div>
+                      </Link>
+                    </motion.div>
+                  ))}
+
+                  <motion.div 
                     variants={mobileItemVariants}
+                    className="pt-3 border-t border-white/20"
                   >
-                    <Link to={item.path}>
+                    <Link to="/orcamento" onClick={() => setIsMenuOpen(false)}>
                       <motion.div
-                        className={getMobileNavItemClasses(item.path, item.color)}
-                        whileHover={{ scale: 1.02, x: 5 }}
+                        className="relative bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold px-4 py-3 rounded-lg flex items-center justify-center space-x-2 shadow-lg overflow-hidden"
+                        whileHover={{ scale: 1.02, y: -2 }}
                         whileTap={{ scale: 0.98 }}
                         transition={{ duration: 0.2 }}
-                        onClick={() => setIsMenuOpen(false)}
                       >
                         <motion.div
-                          animate={{ rotate: location.pathname === item.path ? 360 : 0 }}
-                          transition={{ duration: 0.5 }}
-                        >
-                          <item.icon size={18} />
-                        </motion.div>
-                        <span>{item.label}</span>
-                        
-                        {/* Active indicator */}
-                        {location.pathname === item.path && (
-                          <motion.div
-                            className="absolute right-2 w-2 h-2 bg-white rounded-full"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ duration: 0.3 }}
-                          />
-                        )}
+                          className="absolute inset-0 bg-white/20"
+                          initial={{ opacity: 0 }}
+                          whileHover={{ opacity: 0.2 }}
+                          transition={{ duration: 0.2 }}
+                        />
+                        <MessageCircle size={18} className="relative z-10" />
+                        <span className="relative z-10">Solicitar Orçamento</span>
                       </motion.div>
                     </Link>
                   </motion.div>
-                ))}
-                
-                <motion.div 
-                  variants={mobileItemVariants}
-                  className="pt-3 border-t border-gray-200/20"
-                >
-                  <Link to="/orcamento" onClick={() => setIsMenuOpen(false)}>
-                    <motion.div
-                      className="bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold px-4 py-3 rounded-lg flex items-center justify-center space-x-2 shadow-lg"
-                      whileHover={{ scale: 1.02, y: -2 }}
-                      whileTap={{ scale: 0.98 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <MessageCircle size={18} />
-                      <span>Solicitar Orçamento</span>
-                    </motion.div>
-                  </Link>
-                </motion.div>
-                
-
-              </div>
-            </motion.nav>
+                </div>
+              </motion.nav>
+            </>
           )}
         </AnimatePresence>
       </div>

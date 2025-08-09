@@ -1,8 +1,10 @@
 import { Button } from '@/components/ui/button'
-import { ArrowRight, CheckCircle, Play, Award, Users, Wrench } from 'lucide-react'
+import { ArrowRight, CheckCircle, Play, Award, Users, Wrench, Hand } from 'lucide-react'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { tileGradients, buildLinearGradientRGBA } from '@/lib/gradients'
 import { useCountAnimation } from '@/hooks/useScrollAnimation'
-import { useRef } from 'react'
+import { useRef, useEffect, useState } from 'react'
 
 const Hero = () => {
   const containerRef = useRef(null)
@@ -12,8 +14,57 @@ const Hero = () => {
   })
 
   // Parallax effects
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"])
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
+  const isMobile = useIsMobile()
+  const [desktopScrollCount, setDesktopScrollCount] = useState(0)
+  const desktopGradientEnabled = isMobile ? true : desktopScrollCount >= 3
+
+  useEffect(() => {
+    if (isMobile || desktopGradientEnabled) return
+    const onWheel = (e) => {
+      if (Math.abs(e.deltaY) > 0) {
+        setDesktopScrollCount((c) => Math.min(c + 1, 3))
+      }
+    }
+    window.addEventListener('wheel', onWheel, { passive: true })
+    return () => window.removeEventListener('wheel', onWheel)
+  }, [isMobile, desktopGradientEnabled])
+
+  // Resetar o contador quando voltar ao topo (desktop)
+  useEffect(() => {
+    if (isMobile) return
+    const unsubscribe = scrollYProgress.on('change', (v) => {
+      if (v <= 0.01) {
+        setDesktopScrollCount(0)
+      }
+    })
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe()
+    }
+  }, [isMobile, scrollYProgress])
+  const y = useTransform(scrollYProgress, [0, 1], isMobile ? ["0%", "35%"] : ["0%", "50%"])
+  const opacity = useTransform(
+    scrollYProgress,
+    isMobile ? [0, 0.85] : [0, 0.5],
+    [1, 0]
+  )
+  // Sobreposição para clarear apenas o fundo no mobile (sem afetar o conteúdo)
+  const lightenOpacity = useTransform(
+    scrollYProgress,
+    [0, isMobile ? 0.7 : 0.55, isMobile ? 0.98 : 0.9],
+    [0, isMobile ? 0.12 : 0, isMobile ? 0.45 : 0]
+  )
+  // Vignette escura suave na área central para manter contraste do painel (apenas mobile)
+  const vignetteOpacity = useTransform(
+    scrollYProgress,
+    [0, isMobile ? 0.98 : 0.98],
+    [isMobile ? 0.25 : 0, isMobile ? 0.15 : 0]
+  )
+  // Halo de contraste focado atrás do painel (somente mobile)
+  const contrastHaloOpacity = useTransform(
+    scrollYProgress,
+    [0, isMobile ? 0.7 : 1, isMobile ? 0.98 : 1],
+    [isMobile ? 0.18 : 0, isMobile ? 0.34 : 0, isMobile ? 0.46 : 0]
+  )
 
   // Counter animations
   const [costRef, costCount] = useCountAnimation(25, 2000, 500)
@@ -86,6 +137,29 @@ const Hero = () => {
     }
   }
 
+  // Classes explícitas para garantir gradientes vivos no mobile (evita purge de classes dinâmicas)
+  const mobileGradientByColor = {
+    blue: 'bg-gradient-to-br from-blue-500 to-blue-600 border border-blue-500/60 text-white',
+    yellow: 'bg-gradient-to-br from-yellow-500 to-yellow-600 border border-yellow-500/60 text-slate-900',
+    green: 'bg-gradient-to-br from-green-500 to-green-600 border border-green-500/60 text-white',
+    purple: 'bg-gradient-to-br from-purple-500 to-purple-600 border border-purple-500/60 text-white'
+  }
+
+  const desktopIconColorByColor = {
+    blue: 'md:text-blue-400',
+    yellow: 'md:text-yellow-400',
+    green: 'md:text-green-400',
+    purple: 'md:text-purple-400'
+  }
+
+  // Desktop gradients para casar cor entre ambientes (evita variação de opacidade)
+  const desktopTileStyleByColor = {
+    blue: { backgroundImage: buildLinearGradientRGBA(tileGradients.desktop.blue.from, tileGradients.desktop.blue.to) },
+    yellow: { backgroundImage: buildLinearGradientRGBA(tileGradients.desktop.yellow.from, tileGradients.desktop.yellow.to) },
+    green: { backgroundImage: buildLinearGradientRGBA(tileGradients.desktop.green.from, tileGradients.desktop.green.to) },
+    purple: { backgroundImage: buildLinearGradientRGBA(tileGradients.desktop.purple.from, tileGradients.desktop.purple.to) },
+  }
+
   return (
     <section 
       ref={containerRef}
@@ -94,9 +168,30 @@ const Hero = () => {
     >
       {/* Background with Industrial Pattern */}
       <motion.div 
-        style={{ y, opacity }}
+        style={{ 
+          y: (!isMobile && !desktopGradientEnabled) ? "0%" : y,
+          opacity: (!isMobile && !desktopGradientEnabled) ? 1 : opacity 
+        }}
         className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900"
       >
+        {/* Clareamento progressivo do fundo apenas no mobile */}
+        <motion.div
+          aria-hidden
+          style={{ opacity: lightenOpacity }}
+          className="absolute inset-0 bg-white md:hidden"
+        />
+        {/* Vignette central para preservar contraste do painel (só mobile) */}
+        <motion.div
+          aria-hidden
+          style={{ opacity: vignetteOpacity }}
+          className="absolute inset-0 md:hidden pointer-events-none bg-[radial-gradient(60%_60%_at_45%_45%,rgba(0,0,0,0.35),rgba(0,0,0,0.22)_40%,rgba(0,0,0,0)_70%)]"
+        />
+        {/* Halo focal mais escuro atrás da região do painel (só mobile) */}
+        <motion.div
+          aria-hidden
+          style={{ opacity: contrastHaloOpacity }}
+          className="absolute inset-0 md:hidden pointer-events-none bg-[radial-gradient(42%_48%_at_50%_48%,rgba(0,0,0,0.7),rgba(0,0,0,0.35)_55%,rgba(0,0,0,0)_75%)]"
+        />
         {/* Geometric Pattern Overlay */}
         <div className="absolute inset-0 opacity-10">
           <motion.div 
@@ -289,17 +384,22 @@ const Hero = () => {
                   </motion.div>
                 </Button>
               </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="border-2 border-white/30 text-white hover:bg-white hover:text-slate-900 font-semibold px-6 md:px-8 py-3 md:py-4 rounded-xl backdrop-blur-sm transition-all duration-300 text-sm md:text-base w-full sm:w-auto"
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => {
+                    const el = document.getElementById('galeria')
+                    if (el) {
+                      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    } else {
+                      window.location.href = '/#galeria'
+                    }
+                  }}
+                  className="border-2 border-white/50 text-white bg-transparent hover:bg-white/15 hover:text-white font-semibold px-6 md:px-8 py-3 md:py-4 rounded-xl backdrop-blur-sm transition-all duration-200 text-sm md:text-base w-full sm:w-auto"
                 >
                   <Play className="mr-2" size={18} />
-                  Ver Nossos Projetos
+                  Ver Galeria
                 </Button>
               </motion.div>
             </motion.div>
@@ -314,12 +414,18 @@ const Hero = () => {
             <motion.div 
               whileHover={{ scale: 1.02, rotateY: 5 }}
               transition={{ duration: 0.3 }}
-              className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg rounded-3xl p-4 md:p-6 lg:p-8 border border-white/20 shadow-2xl"
+              className={
+                'relative rounded-3xl md:rounded-2xl p-4 md:p-6 lg:p-8 border ' +
+                'bg-gradient-to-br from-blue-100 to-blue-200 md:bg-transparent md:backdrop-blur-lg border-blue-200 md:border-white/20 ' +
+                'shadow-[0_10px_40px_rgba(0,0,0,0.12)] md:shadow-2xl md:bg-gradient-to-br md:from-white/10 md:to-white/5'
+              }
             >
+              {/* Mobile-only contrast helpers inside the panel */}
+              <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-blue-200/70 md:hidden" />
               {/* Industrial Equipment Visualization */}
               <div className="space-y-4 md:space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white">Nossos Diferenciais</h3>
+                  <h3 className="text-lg md:text-xl lg:text-2xl font-semibold md:font-bold text-slate-700 md:text-white">Nossos Diferenciais</h3>
                   <motion.div 
                     animate={pulseAnimation}
                     className="bg-green-500 w-3 h-3 rounded-full"
@@ -340,16 +446,22 @@ const Hero = () => {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 2 + index * 0.1, duration: 0.5 }}
                       whileHover={{ scale: 1.05, rotate: 2 }}
-                      className={`bg-gradient-to-br from-${item.color}-500/20 to-${item.color}-600/20 rounded-xl p-3 md:p-4 border border-${item.color}-400/30 cursor-pointer`}
+                      className={`rounded-xl p-3 md:p-4 cursor-pointer shadow-md ${
+                        (mobileGradientByColor[item.color] || 'bg-white/80') + ' md:text-white'
+                      } md:border`}
+                      style={!isMobile ? {
+                        ...(desktopTileStyleByColor[item.color] || {}),
+                        borderColor: tileGradients.desktop[item.color]?.border || 'rgba(255,255,255,0.18)'
+                      } : undefined}
                     >
                       <motion.div
                         whileHover={{ rotate: 360 }}
                         transition={{ duration: 0.5 }}
                       >
-                        <item.icon className={`text-${item.color}-400 mb-2`} size={20} />
+                        <item.icon className={`text-slate-800 drop-shadow mb-2 ${desktopIconColorByColor[item.color] || ''}`} size={20} />
                       </motion.div>
-                      <div className="text-white font-semibold text-xs md:text-sm">{item.title}</div>
-                      <div className={`text-${item.color}-300 text-xs`}>{item.subtitle}</div>
+                      <div className="text-slate-700 md:text-white font-medium md:font-semibold text-xs md:text-sm">{item.title}</div>
+                      <div className="text-slate-700 md:text-white/80 text-xs">{item.subtitle}</div>
                     </motion.div>
                   ))}
                 </div>
@@ -359,13 +471,17 @@ const Hero = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 2.5, duration: 0.8 }}
-                  className="bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl p-3 md:p-4 border border-green-400/30"
+                  className={
+                    'rounded-xl p-3 md:p-4 ' +
+                    'bg-gradient-to-r from-green-500/50 to-blue-500/50 border border-white/20 text-slate-900 ' +
+                    'md:from-green-500/20 md:to-blue-500/20 md:border-green-400/30 md:text-white'
+                  }
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-white font-semibold text-xs md:text-sm">Satisfação do Cliente</span>
-                    <span className="text-green-400 font-bold text-sm md:text-base">100%</span>
+                    <span className="text-slate-800 md:text-white font-semibold text-xs md:text-sm">Satisfação do Cliente</span>
+                    <span className="text-slate-800 md:text-green-400 font-bold text-sm md:text-base">100%</span>
                   </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
+                  <div className="w-full rounded-full h-2 bg-black/20 md:bg-gray-700">
                     <motion.div 
                       initial={{ width: 0 }}
                       animate={{ width: "98.5%" }}
@@ -411,14 +527,24 @@ const Hero = () => {
         className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
       >
         <div className="flex flex-col items-center space-y-2 text-white/60">
-          <span className="text-sm">Role para baixo</span>
-                      <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
-            <motion.div 
-              animate={{ y: [0, 12, 0] }}
+          <span className="text-sm">{isMobile ? 'Arraste para baixo' : 'Role para baixo'}</span>
+          {isMobile ? (
+            <motion.div
+              animate={{ y: [0, 10, 0] }}
               transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-              className="w-1 h-3 bg-white/60 rounded-full mt-2"
-            />
-          </div>
+              className="w-10 h-10 rounded-full border-2 border-white/30 flex items-center justify-center"
+            >
+              <Hand size={18} className="text-white/70" />
+            </motion.div>
+          ) : (
+            <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
+              <motion.div 
+                animate={{ y: [0, 12, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                className="w-1 h-3 bg-white/60 rounded-full mt-2"
+              />
+            </div>
+          )}
         </div>
       </motion.div>
     </section>

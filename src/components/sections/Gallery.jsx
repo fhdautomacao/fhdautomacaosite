@@ -86,7 +86,7 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
   }
 
   return (
-    <section className="py-20 bg-gradient-to-br from-white to-gray-50 relative overflow-hidden">
+    <section id="galeria" className="py-20 bg-gradient-to-br from-white to-gray-50 relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-20 left-20 w-32 h-32 border border-blue-400 rotate-45 animate-pulse"></div>
