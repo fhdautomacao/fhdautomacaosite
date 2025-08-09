@@ -1,7 +1,8 @@
-const express = require('express')
-const cors = require('cors')
-const { createClient } = require('@supabase/supabase-js')
-require('dotenv').config()
+import express from 'express'
+import cors from 'cors'
+import { createClient } from '@supabase/supabase-js'
+import dotenv from 'dotenv'
+dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -10,13 +11,13 @@ const PORT = process.env.PORT || 3001
 app.use(cors())
 app.use(express.json())
 
-// Configurar Supabase
-const supabaseUrl = process.env.SUPABASE_URL
+// Configurar Supabase (usar as variáveis já existentes no projeto)
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Variáveis de ambiente do Supabase não configuradas!')
-  console.error('Configure SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY no arquivo .env')
+  console.error('Configure VITE_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY no arquivo .env')
   process.exit(1)
 }
 
@@ -183,4 +184,4 @@ app.listen(PORT, () => {
   console.log(`🔗 API SEO: http://localhost:${PORT}/seo-settings`)
 })
 
-module.exports = app
+export default app

@@ -9,7 +9,15 @@ export default defineConfig({
     host: true,
     port: 5173,
     strictPort: true,
-    allowedHosts: "all"
+    allowedHosts: "all",
+    // Proxy para APIs durante o desenvolvimento, evitando que o Vite sirva JS em /api/*
+    proxy: {
+      "/api": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, "")
+      }
+    }
   },
   build: {
     rollupOptions: {
