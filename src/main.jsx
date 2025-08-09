@@ -17,8 +17,14 @@ console.warn = (...args) => {
 // Inicializar sistema de segurança
 initializeSecurity()
 
+const isDev = import.meta.env.DEV
+
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  isDev ? (
     <App />
-  </StrictMode>,
+  ) : (
+    <StrictMode>
+      <App />
+    </StrictMode>
+  ),
 )

@@ -479,7 +479,7 @@ const ProfitSharingManager = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-3xl font-bold text-gray-900">Divisão de Lucros</h2>
           <p className="text-gray-600">Gerencie a divisão de lucros dos serviços com seu sócio</p>

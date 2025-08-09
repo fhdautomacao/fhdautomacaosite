@@ -391,7 +391,7 @@ export default function BillsManager() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold">Boletos</h1>
           <p className="text-gray-600">Gerencie todos os boletos e parcelas</p>

@@ -6,8 +6,10 @@ import InteractiveMap from '../InteractiveMap'
 import { useServices } from '../../hooks/useServices'
 import { useMobileDetection } from '../../hooks/useMobileDetection'
 
-const Contact = () => {
-  const { services, loading: servicesLoading } = useServices()
+const Contact = ({ servicesData = null }) => {
+  const { services, loading: servicesLoading } = useServices({ initialData: servicesData, enabled: !servicesData })
+  const effectiveServices = services
+  const effectiveLoading = servicesLoading
   const [showAllServices, setShowAllServices] = useState(false)
   const isMobile = useMobileDetection()
   
@@ -121,7 +123,7 @@ const Contact = () => {
               {/* Serviços Dinâmicos */}
               <div className="bg-white rounded-xl p-6">
                 <h5 className="font-semibold text-gray-800 mb-4">Nossos Serviços</h5>
-                {servicesLoading ? (
+                {effectiveLoading ? (
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     {[...Array(6)].map((_, index) => (
                       <div key={index} className="flex items-center space-x-2 text-gray-400 animate-pulse">
@@ -130,29 +132,29 @@ const Contact = () => {
                       </div>
                     ))}
                   </div>
-                ) : services.length > 0 ? (
+                ) : effectiveServices.length > 0 ? (
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3 text-sm">
-                      {services.slice(0, showAllServices ? services.length : 6).map((service, index) => (
+                       {effectiveServices.slice(0, showAllServices ? effectiveServices.length : 6).map((service, index) => (
                         <div key={service.id || index} className="flex items-center space-x-2 text-gray-600">
                           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                           <span className="truncate">{service.name}</span>
                         </div>
                       ))}
                     </div>
-                    {services.length > 6 && !showAllServices && (
+                     {effectiveServices.length > 6 && !showAllServices && (
                       <div className="text-center">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setShowAllServices(true)}
+                           onClick={() => setShowAllServices(true)}
                           className="text-blue-600 hover:text-blue-700 text-xs"
                         >
-                          Ver todos os {services.length} serviços
+                           Ver todos os {effectiveServices.length} serviços
                         </Button>
                       </div>
                     )}
-                    {showAllServices && services.length > 6 && (
+                     {showAllServices && effectiveServices.length > 6 && (
                       <div className="text-center">
                         <Button
                           variant="ghost"

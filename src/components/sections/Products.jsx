@@ -3,27 +3,31 @@ import { Search, Filter, Package, ArrowRight, CheckCircle, X } from 'lucide-reac
 import { productsAPI } from '../../api/products'
 import { useProductCategories } from '../../hooks/useCategories'
 
-const Products = () => {
+const Products = ({ productsData = null, productCategories = null }) => {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("Todos")
-  const [products, setProducts] = useState([])
-  const [loadingProducts, setLoadingProducts] = useState(true)
-  const { categories: fetchedCategories, loading: loadingCategories, error: categoriesError } = useProductCategories()
+  const [products, setProducts] = useState(productsData || [])
+  const [loadingProducts, setLoadingProducts] = useState(!productsData)
+  const { categories: fetchedCategoriesHook, loading: loadingCategoriesHook, error: categoriesErrorHook } = useProductCategories({ initialData: productCategories, enabled: !productCategories })
+  const fetchedCategories = productCategories || fetchedCategoriesHook
+  const loadingCategories = productCategories ? false : loadingCategoriesHook
+  const categoriesError = productCategories ? null : categoriesErrorHook
 
   useEffect(() => {
+    if (productsData) return
     const fetchProducts = async () => {
       try {
         const data = await productsAPI.getAll()
         setProducts(data)
       } catch (error) {
-        setProducts([]) // Definir como array vazio em caso de erro
+        setProducts([])
       } finally {
         setLoadingProducts(false)
       }
     }
-
     fetchProducts()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productsData])
 
   // Obter apenas as categorias que realmente existem nos produtos
   const usedCategoryIds = [...new Set(products.map(prod => prod.category))]

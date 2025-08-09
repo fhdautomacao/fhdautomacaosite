@@ -5,11 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ArrowRight, Wrench, Settings, Zap, Shield, Clock, Award } from 'lucide-react'
 import { useServiceCategories } from '../../hooks/useCategories'
 
-const ServicesSection = () => {
-  const [services, setServices] = useState([])
-  const [loadingServices, setLoadingServices] = useState(true)
+const ServicesSection = ({ servicesData = null, serviceCategories = null }) => {
+  const [services, setServices] = useState(servicesData || [])
+  const [loadingServices, setLoadingServices] = useState(!servicesData)
   const [errorServices, setErrorServices] = useState(null)
-  const { categories: fetchedCategories, loading: loadingCategories, error: categoriesError } = useServiceCategories()
+  const { categories: fetchedCategoriesHook, loading: loadingCategoriesHook, error: categoriesErrorHook } = useServiceCategories({ initialData: serviceCategories, enabled: !serviceCategories })
+  const fetchedCategories = serviceCategories || fetchedCategoriesHook
+  const loadingCategories = serviceCategories ? false : loadingCategoriesHook
+  const categoriesError = serviceCategories ? null : categoriesErrorHook
 
   // Função para buscar serviços do banco de dados
   const fetchServices = async () => {
@@ -33,8 +36,10 @@ const ServicesSection = () => {
   }
 
   useEffect(() => {
+    if (servicesData) return
     fetchServices()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [servicesData])
 
   // Função para mapear ícones baseado no nome ou categoria
   const getServiceIcon = (iconName, categoryId) => {

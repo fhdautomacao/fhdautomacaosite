@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { servicesAPI } from '../api/services'
 
-export const useServices = () => {
-  const [services, setServices] = useState([])
-  const [loading, setLoading] = useState(true)
+export const useServices = (options = {}) => {
+  const { initialData = null, enabled = true } = options
+  const [services, setServices] = useState(initialData || [])
+  const [loading, setLoading] = useState(enabled && !initialData)
   const [error, setError] = useState(null)
 
   const fetchServices = async () => {
@@ -22,10 +23,13 @@ export const useServices = () => {
   }
 
   useEffect(() => {
+    if (!enabled || initialData) return
     fetchServices()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, initialData])
 
   const refreshServices = () => {
+    if (!enabled) return
     fetchServices()
   }
 

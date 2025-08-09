@@ -6,9 +6,10 @@ import { categoriesAPI } from '../api/categories';
  * @param {string} type - Tipo da categoria ('product', 'gallery', 'service')
  * @returns {Object} Estado e funções para gerenciar categorias
  */
-export const useCategories = (type = null) => {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+export const useCategories = (type = null, options = {}) => {
+  const { initialData = null, enabled = true } = options;
+  const [categories, setCategories] = useState(initialData || []);
+  const [loading, setLoading] = useState(enabled && !initialData);
   const [error, setError] = useState(null);
 
   /**
@@ -38,8 +39,9 @@ export const useCategories = (type = null) => {
    * Recarrega as categorias
    */
   const refetch = useCallback(() => {
+    if (!enabled) return;
     loadCategories();
-  }, [loadCategories]);
+  }, [enabled, loadCategories]);
 
   /**
    * Adiciona uma nova categoria
@@ -87,8 +89,9 @@ export const useCategories = (type = null) => {
 
   // Carrega as categorias quando o hook é montado ou o tipo muda
   useEffect(() => {
+    if (!enabled || initialData) return;
     loadCategories();
-  }, [loadCategories]);
+  }, [enabled, initialData, loadCategories]);
 
   return {
     categories,
@@ -104,16 +107,16 @@ export const useCategories = (type = null) => {
 /**
  * Hook específico para categorias de produtos
  */
-export const useProductCategories = () => useCategories('product');
+export const useProductCategories = (options = {}) => useCategories('product', options);
 
 /**
  * Hook específico para categorias de galeria
  */
-export const useGalleryCategories = () => useCategories('gallery');
+export const useGalleryCategories = (options = {}) => useCategories('gallery', options);
 
 /**
  * Hook específico para categorias de serviços
  */
-export const useServiceCategories = () => useCategories('service');
+export const useServiceCategories = (options = {}) => useCategories('service', options);
 
 

@@ -262,7 +262,7 @@ export default function CostsManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold">Custos</h1>
           <p className="text-gray-600">Gerencie custos fixos e variáveis, com histórico e baixa mensal.</p>

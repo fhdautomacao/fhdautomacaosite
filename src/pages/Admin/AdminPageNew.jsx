@@ -608,11 +608,12 @@ const AdminPageNew = () => {
           </main>
         </div>
 
-        {/* Overlay for mobile */}
+        {/* Overlay for mobile (sempre abaixo da sidebar) */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-[9990] lg:hidden"
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
             onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
           />
         )}
       </div>

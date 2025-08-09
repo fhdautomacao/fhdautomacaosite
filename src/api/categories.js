@@ -16,6 +16,27 @@ export const categoriesAPI = {
     return data;
   },
 
+  // Buscar categorias por múltiplos tipos em UMA chamada
+  getByTypes: async (types = []) => {
+    const query = supabase
+      .from("categories")
+      .select("*")
+      .order("type", { ascending: true })
+      .order("name", { ascending: true });
+
+    const finalQuery = Array.isArray(types) && types.length > 0
+      ? query.in("type", types)
+      : query;
+
+    const { data, error } = await finalQuery;
+
+    if (error) {
+      console.error("Erro ao buscar categorias (múltiplos tipos):", error);
+      throw error;
+    }
+    return data;
+  },
+
   // Buscar todas as categorias
   getAll: async () => {
     const { data, error } = await supabase

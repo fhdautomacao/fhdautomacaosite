@@ -623,7 +623,7 @@ const CompaniesManager = () => {
             <Card key={company.id} className="group hover:shadow-lg transition-all duration-300 border-0 bg-gradient-to-r from-white to-gray-50 hover:from-blue-50 hover:to-white">
               <CardContent className="p-4">
                 <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-3">
+                  <div className="flex items-center gap-3 mb-3 flex-wrap">
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <Building className="h-5 w-5 text-blue-600" />
                     </div>
@@ -735,8 +735,8 @@ const CompaniesManager = () => {
                     </div>
                   )}
                   
-                  {/* Botões de Ação */}
-                  <div className="flex items-center justify-end space-x-2 pt-2 border-t border-gray-100">
+                   {/* Botões de Ação */}
+                  <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-gray-100">
                     <Button
                       variant="outline"
                       size="sm"

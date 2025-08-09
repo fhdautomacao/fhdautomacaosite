@@ -3,28 +3,32 @@ import { ChevronLeft, ChevronRight, X, Camera, Filter, ArrowRight } from 'lucide
 import { galleryAPI } from '../../api/gallery'
 import { useGalleryCategories } from '../../hooks/useCategories'
 
-const Gallery = () => {
+const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
   const [selectedImage, setSelectedImage] = useState(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedCategory, setSelectedCategory] = useState('Todos')
-  const [images, setImages] = useState([])
-  const [loadingImages, setLoadingImages] = useState(true)
-  const { categories: fetchedCategories, loading: loadingCategories, error: categoriesError } = useGalleryCategories()
+  const [images, setImages] = useState(galleryItemsData || [])
+  const [loadingImages, setLoadingImages] = useState(!galleryItemsData)
+  const { categories: fetchedCategoriesHook, loading: loadingCategoriesHook, error: categoriesErrorHook } = useGalleryCategories({ initialData: galleryCategories, enabled: !galleryCategories })
+  const fetchedCategories = galleryCategories || fetchedCategoriesHook
+  const loadingCategories = galleryCategories ? false : loadingCategoriesHook
+  const categoriesError = galleryCategories ? null : categoriesErrorHook
 
   useEffect(() => {
+    if (galleryItemsData) return
     const fetchGalleryItems = async () => {
       try {
         const data = await galleryAPI.getAll()
         setImages(data)
       } catch (error) {
-        setImages([]) // Definir como array vazio em caso de erro
+        setImages([])
       } finally {
         setLoadingImages(false)
       }
     }
-
     fetchGalleryItems()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [galleryItemsData])
 
   // Obter apenas as categorias que realmente existem nas imagens
   const usedCategoryIds = [...new Set(images.map(img => img.category))]
