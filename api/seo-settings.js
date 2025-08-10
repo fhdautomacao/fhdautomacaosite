@@ -210,21 +210,130 @@ async function handleDelete(req, res) {
   }
 }
 
+// Configuração CORS segura
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'https://fhd-automacao-industrial-bq67.vercel.app', // Produção antiga
+      'https://fhd-automacao-industrial-bq67.vercel.app/admin', // Admin produção antiga
+      'https://fhd-automacao-industrial-bq67.vercel.app/admin/*', // Admin subpáginas antiga
+      'https://fhdautomacaoindustrialapp.vercel.app', // Nova produção
+      'https://fhdautomacaoindustrialapp.vercel.app/admin', // Nova admin produção
+      'https://fhdautomacaoindustrialapp.vercel.app/admin/*', // Nova admin subpáginas
+      process.env.NEXT_PUBLIC_APP_URL,
+      process.env.NEXT_PUBLIC_APP_URL + '/admin',
+      process.env.NEXT_PUBLIC_APP_URL + '/admin/*',
+      ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [])
+    ].filter(Boolean)
+
+    if (!origin) { 
+      console.log('⚠️ [API] Requisição sem origin (server-to-server)')
+      return callback(null, true) 
+    }
+    
+    if (allowedOrigins.includes(origin) || allowedOrigins.some(allowed => origin.startsWith(allowed))) {
+      console.log('✅ [API] Origin permitida:', origin)
+      callback(null, true)
+    } else {
+      console.warn('🚫 [API] CORS bloqueado para origem:', origin)
+      callback(new Error('Não permitido pelo CORS'))
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization', 'X-API-Key', 'X-Admin-Request'],
+  optionsSuccessStatus: 200
+}
+
+// Middleware de autenticação admin
+const requireAdminAuth = (req, res, next) => {
+  const apiKey = req.headers['x-api-key']
+  const authHeader = req.headers.authorization
+  const referer = req.get('Referer') || ''
+  const isAdminRequest = referer.includes('/admin') || req.path.includes('/admin') || req.headers['x-admin-request'] === 'true'
+  
+  if (!isAdminRequest) { 
+    console.log('✅ [API] Requisição pública - sem autenticação necessária')
+    return next() 
+  }
+  
+  if (!apiKey && !authHeader) { 
+    console.warn('🚫 [API] Tentativa de acesso admin sem autenticação')
+    return res.status(401).json({ 
+      error: 'Acesso não autorizado', 
+      message: 'Autenticação necessária para operações administrativas' 
+    }) 
+  }
+  
+  if (apiKey && apiKey !== process.env.ADMIN_API_KEY) { 
+    console.warn('🚫 [API] API Key inválida')
+    return res.status(401).json({ 
+      error: 'API Key inválida', 
+      message: 'Chave de API fornecida é inválida' 
+    }) 
+  }
+  
+  if (authHeader && !authHeader.startsWith('Bearer ')) { 
+    console.warn('🚫 [API] Formato de autorização inválido')
+    return res.status(401).json({ 
+      error: 'Formato de autorização inválido', 
+      message: 'Token deve estar no formato Bearer' 
+    }) 
+  }
+  
+  console.log('✅ [API] Acesso admin autorizado')
+  next()
+}
+
 // Handler principal
 export default async function handler(req, res) {
   console.log('🚀 [API] Requisição recebida:', req.method, req.url)
   console.log('🔍 [API] Query params:', req.query)
   console.log('🔍 [API] Headers:', req.headers)
+  console.log('🌐 [API] Origin:', req.headers.origin)
   
-  // Configurar CORS
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  // Aplicar CORS
+  const origin = req.headers.origin
+  if (origin) {
+    const isAllowed = corsOptions.origin(origin, (error, allowed) => {
+      if (error || !allowed) {
+        console.warn('🚫 [API] CORS bloqueado:', origin)
+        return res.status(403).json({ 
+          error: 'CORS não permitido', 
+          message: 'Origem não autorizada' 
+        })
+      }
+    })
+    
+    if (isAllowed === false) {
+      return res.status(403).json({ 
+        error: 'CORS não permitido', 
+        message: 'Origem não autorizada' 
+      })
+    }
+  }
+  
+  // Configurar headers CORS para origem permitida
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+  }
+  res.setHeader('Access-Control-Allow-Methods', corsOptions.methods.join(', '))
+  res.setHeader('Access-Control-Allow-Headers', corsOptions.allowedHeaders.join(', '))
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
 
   // Responder a requisições OPTIONS (preflight)
   if (req.method === 'OPTIONS') {
     console.log('✅ [API] Respondendo a OPTIONS')
     return res.status(200).end()
+  }
+
+  // Aplicar autenticação admin para operações de escrita
+  if (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE') {
+    requireAdminAuth(req, res, () => {
+      // Continua para o handler específico
+    })
   }
 
   try {

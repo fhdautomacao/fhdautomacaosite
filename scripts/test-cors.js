@@ -5,7 +5,7 @@
  * Execute com: node scripts/test-cors.js
  */
 
-const fetch = require('node-fetch')
+import fetch from 'node-fetch'
 
 const API_BASE_URL = process.env.API_URL || 'http://localhost:3001'
 
@@ -197,8 +197,6 @@ async function testCORS() {
 }
 
 // Executar testes
-if (require.main === module) {
-  testCORS().catch(console.error)
-}
+testCORS().catch(console.error)
 
-module.exports = { testCORS }
+export { testCORS }
