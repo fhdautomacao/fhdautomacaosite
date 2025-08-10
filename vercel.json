@@ -23,6 +23,10 @@
   ],
   "routes": [
     {
+      "src": "/api/test-config",
+      "dest": "/api/test-config.js"
+    },
+    {
       "src": "/api/auth",
       "dest": "/api/auth.js"
     },

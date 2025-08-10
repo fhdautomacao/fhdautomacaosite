@@ -3,14 +3,30 @@ import { createClient } from '@supabase/supabase-js'
 
 // Configuração JWT
 const JWT_SECRET = process.env.JWT_SECRET || 'U3pZjijm9HvwB4T0uGvgXlazWT63+f2U701YmPc6i7umkChmBalYatFX+s1j/ERIbXcSWNjOqcZB5WdDWZqJzw=='
-const JWT_EXPIRES_IN = '24h' // Token expira em 24 horas
+const JWT_EXPIRES_IN = '24h'
 
 // Configuração Supabase
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
 
+console.log('🔧 [AUTH] Configuração Supabase:', {
+  hasUrl: !!supabaseUrl,
+  hasKey: !!supabaseKey,
+  url: supabaseUrl ? 'Configurado' : 'Não configurado'
+})
+
 // Criar cliente Supabase
-const supabase = createClient(supabaseUrl, supabaseKey)
+let supabase = null
+try {
+  if (supabaseUrl && supabaseKey) {
+    supabase = createClient(supabaseUrl, supabaseKey)
+    console.log('✅ [AUTH] Cliente Supabase criado com sucesso')
+  } else {
+    console.error('❌ [AUTH] Supabase não configurado - URL ou Key ausentes')
+  }
+} catch (error) {
+  console.error('❌ [AUTH] Erro ao criar cliente Supabase:', error)
+}
 
 // Lista de usuários autorizados
 const AUTHORIZED_USERS = [
@@ -18,49 +34,23 @@ const AUTHORIZED_USERS = [
   'fhduser@fhd.com'
 ]
 
-// Configuração CORS segura
-const corsOptions = {
-  origin: function (origin, callback) {
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'https://fhd-automacao-industrial-bq67.vercel.app',
-      'https://fhd-automacao-industrial-bq67.vercel.app/admin',
-      'https://fhdautomacaoindustrialapp.vercel.app',
-      'https://fhdautomacaoindustrialapp.vercel.app/admin',
-      process.env.NEXT_PUBLIC_APP_URL,
-      process.env.NEXT_PUBLIC_APP_URL + '/admin',
-      ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [])
-    ].filter(Boolean)
-
-    if (!origin) { 
-      return callback(null, true) 
-    }
-    
-    if (allowedOrigins.includes(origin) || allowedOrigins.some(allowed => origin.startsWith(allowed))) {
-      callback(null, true)
-    } else {
-      callback(new Error('Não permitido pelo CORS'))
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
-  optionsSuccessStatus: 200
-}
-
 // Função para gerar token JWT personalizado
 const generateCustomToken = (user) => {
-  const payload = {
-    id: user.id,
-    email: user.email,
-    name: user.user_metadata?.name || user.email,
-    role: user.email === 'adminfhd@fhd.com' ? 'admin' : 'user',
-    iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 horas
+  try {
+    const payload = {
+      id: user.id,
+      email: user.email,
+      name: user.user_metadata?.name || user.email,
+      role: user.email === 'adminfhd@fhd.com' ? 'admin' : 'user',
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60)
+    }
+    
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN })
+  } catch (error) {
+    console.error('❌ [AUTH] Erro ao gerar token:', error)
+    throw error
   }
-  
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN })
 }
 
 // Função para verificar token JWT
@@ -68,6 +58,7 @@ const verifyToken = (token) => {
   try {
     return jwt.verify(token, JWT_SECRET)
   } catch (error) {
+    console.error('❌ [AUTH] Erro ao verificar token:', error)
     throw new Error('Token inválido ou expirado')
   }
 }
@@ -75,11 +66,13 @@ const verifyToken = (token) => {
 // Função para login usando Supabase
 async function handleLogin(req, res) {
   try {
+    console.log('🔐 [AUTH] Iniciando processo de login...')
+    
     const { email, password } = req.body
-
-    console.log('🔐 [AUTH] Tentativa de login para:', email)
+    console.log('📧 [AUTH] Email recebido:', email ? 'Sim' : 'Não')
 
     if (!email || !password) {
+      console.log('❌ [AUTH] Email ou senha ausentes')
       return res.status(400).json({
         success: false,
         error: 'Email e senha são obrigatórios'
@@ -87,13 +80,15 @@ async function handleLogin(req, res) {
     }
 
     // Verificar se o Supabase está configurado
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('❌ [AUTH] Supabase não configurado')
+    if (!supabase) {
+      console.error('❌ [AUTH] Supabase não disponível')
       return res.status(500).json({
         success: false,
         error: 'Configuração do Supabase não encontrada'
       })
     }
+
+    console.log('🔐 [AUTH] Tentando autenticar com Supabase...')
 
     // Autenticar com Supabase
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -109,13 +104,15 @@ async function handleLogin(req, res) {
       })
     }
 
-    if (!data.user) {
-      console.error('❌ [AUTH] Usuário não encontrado')
+    if (!data || !data.user) {
+      console.error('❌ [AUTH] Usuário não encontrado na resposta')
       return res.status(401).json({
         success: false,
         error: 'Credenciais inválidas'
       })
     }
+
+    console.log('✅ [AUTH] Usuário autenticado:', data.user.email)
 
     // Verificar se o usuário tem permissão de acesso
     if (!AUTHORIZED_USERS.includes(data.user.email)) {
@@ -126,11 +123,13 @@ async function handleLogin(req, res) {
       })
     }
 
+    console.log('✅ [AUTH] Usuário autorizado, gerando token...')
+
     // Gerar token JWT personalizado
     const customToken = generateCustomToken(data.user)
     
     // Calcular data de expiração
-    const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000)) // 24 horas
+    const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000))
 
     console.log('✅ [AUTH] Login bem-sucedido para:', data.user.email)
     
@@ -161,11 +160,11 @@ async function handleLogout(req, res) {
   try {
     console.log('✅ [AUTH] Logout solicitado')
     
-    // Fazer logout do Supabase
-    const { error } = await supabase.auth.signOut()
-    
-    if (error) {
-      console.error('❌ [AUTH] Erro no logout Supabase:', error)
+    if (supabase) {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('❌ [AUTH] Erro no logout Supabase:', error)
+      }
     }
     
     return res.status(200).json({
@@ -193,9 +192,7 @@ async function handleVerifyToken(req, res) {
       })
     }
 
-    const token = authHeader.substring(7) // Remove 'Bearer '
-    
-    // Verificar token
+    const token = authHeader.substring(7)
     const decoded = verifyToken(token)
     
     console.log('✅ [AUTH] Token verificado para:', decoded.email)
@@ -234,11 +231,15 @@ async function handleRefreshToken(req, res) {
     }
 
     const token = authHeader.substring(7)
-    
-    // Verificar token atual
     const decoded = verifyToken(token)
     
-    // Verificar se o usuário ainda existe no Supabase
+    if (!supabase) {
+      return res.status(500).json({
+        success: false,
+        error: 'Supabase não disponível'
+      })
+    }
+
     const { data: { user }, error } = await supabase.auth.getUser()
     
     if (error || !user || user.email !== decoded.email) {
@@ -248,7 +249,6 @@ async function handleRefreshToken(req, res) {
       })
     }
 
-    // Gerar novo token
     const newToken = generateCustomToken(user)
     const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000))
 
@@ -281,34 +281,10 @@ export default async function handler(req, res) {
   console.log('🚀 [AUTH] Requisição recebida:', req.method, req.url)
   console.log('🌐 [AUTH] Origin:', req.headers.origin)
   
-  // Aplicar CORS
-  const origin = req.headers.origin
-  if (origin) {
-    const isAllowed = corsOptions.origin(origin, (error, allowed) => {
-      if (error || !allowed) {
-        console.warn('🚫 [AUTH] CORS bloqueado:', origin)
-        return res.status(403).json({ 
-          error: 'CORS não permitido', 
-          message: 'Origem não autorizada' 
-        })
-      }
-    })
-    
-    if (isAllowed === false) {
-      return res.status(403).json({ 
-        error: 'CORS não permitido', 
-        message: 'Origem não autorizada' 
-      })
-    }
-  }
-  
-  // Configurar headers CORS
-  if (origin) {
-    res.setHeader('Access-Control-Allow-Origin', origin)
-  }
-  res.setHeader('Access-Control-Allow-Methods', corsOptions.methods.join(', '))
-  res.setHeader('Access-Control-Allow-Headers', corsOptions.allowedHeaders.join(', '))
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
+  // Configurar CORS básico
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
 
   // Responder a requisições OPTIONS
   if (req.method === 'OPTIONS') {
