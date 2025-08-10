@@ -1,12 +1,12 @@
 import { useEffect, useCallback } from 'react'
 import pushNotificationService from '@/services/pushNotificationService'
-import { useAuth } from '@/contexts/AuthContext'
+import { useJWTAuth } from '@/contexts/JWTAuthContext'
 
 /**
  * Hook para gerenciar notificações push
  */
 export const useNotifications = () => {
-  const { user } = useAuth()
+  const { user } = useJWTAuth()
   
   // Inicializar notificações automaticamente
   useEffect(() => {

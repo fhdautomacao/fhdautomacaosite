@@ -3,7 +3,7 @@ import { billsAPI } from '@/api/bills'
 import { profitSharingAPI } from '@/api/profitSharing'
 import { useNotifications } from './useNotifications'
 import { costsAPI } from '@/api/costs'
-import { useAuth } from '@/contexts/AuthContext'
+import { useJWTAuth } from '@/contexts/JWTAuthContext'
 
 /**
  * Hook para verificar e atualizar boletos vencidos automaticamente
@@ -13,7 +13,7 @@ import { useAuth } from '@/contexts/AuthContext'
 export const useOverdueChecker = (enabled = true, intervalMinutes = 60) => {
   const intervalRef = useRef(null)
   const { notifyOverdueBills, notifyProfitSharing } = useNotifications()
-  const { user } = useAuth()
+  const { user } = useJWTAuth()
 
   const checkAndUpdateOverdue = async () => {
     // Só executar se o usuário estiver autenticado

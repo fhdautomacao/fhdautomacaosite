@@ -3,12 +3,12 @@ import { Bell, X, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { quotationsAPI } from '@/api/quotations'
-import { useAuth } from '@/contexts/AuthContext'
+import { useJWTAuth } from '@/contexts/JWTAuthContext'
 
 const QuotationNotification = ({ variant = 'floating' }) => {
   const [pendingCount, setPendingCount] = useState(0)
   const [isVisible, setIsVisible] = useState(true)
-  const { user } = useAuth()
+  const { user } = useJWTAuth()
 
   useEffect(() => {
     // Só carregar se o usuário estiver autenticado

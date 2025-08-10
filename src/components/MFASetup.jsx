@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../contexts/AuthContext'
+import { useJWTAuth } from '../contexts/JWTAuthContext'
 import QRCode from 'qrcode'
 
 const MFASetup = () => {
-  const { user } = useAuth()
+  const { user } = useJWTAuth()
   const [isEnrolling, setIsEnrolling] = useState(false)
   const [qrCodeUrl, setQrCodeUrl] = useState('')
   const [factorId, setFactorId] = useState('')
