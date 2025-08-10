@@ -47,8 +47,7 @@ const generateCustomToken = (user) => {
       email: user.email,
       name: user.user_metadata?.name || user.email,
       role: user.email === 'adminfhd@fhd.com' ? 'admin' : 'user',
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60)
+      iat: Math.floor(Date.now() / 1000)
     }
     
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN })
