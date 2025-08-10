@@ -21,14 +21,14 @@ import { ModalProvider } from '@/components/ModalProvider'
 function App() {
   return (
     <HelmetProvider>
-      <JWTAuthProvider>
-        <ModalProvider>
-          <Router>
+      <ModalProvider>
+        <Router>
+          <JWTAuthProvider>
             {/* Move useLocation and isAdminRoute inside Router */}
             <AppContent />
-          </Router>
-        </ModalProvider>
-      </JWTAuthProvider>
+          </JWTAuthProvider>
+        </Router>
+      </ModalProvider>
     </HelmetProvider>
   )
 }

@@ -17,7 +17,13 @@ export const JWTAuthProvider = ({ children }) => {
   const [token, setToken] = useState(null)
   const [loading, setLoading] = useState(true)
   const [tokenExpiry, setTokenExpiry] = useState(null)
+  const [isRouterReady, setIsRouterReady] = useState(false)
   const navigate = useNavigate()
+
+  // Marcar que o Router está pronto
+  useEffect(() => {
+    setIsRouterReady(true)
+  }, [])
 
   // API base URL
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fhdautomacaoindustrialapp.vercel.app/api'
@@ -86,9 +92,14 @@ export const JWTAuthProvider = ({ children }) => {
     console.log('✅ Logout JWT realizado')
     toast.success('Logout realizado com sucesso!')
     
-    // Redirecionar para login
-    navigate('/admin/login')
-  }, [navigate])
+    // Redirecionar para login apenas se o Router estiver pronto
+    if (isRouterReady) {
+      navigate('/admin/login')
+    } else {
+      // Fallback para window.location se o Router não estiver pronto
+      window.location.href = '/admin/login'
+    }
+  }, [navigate, isRouterReady])
 
   // Função para verificar token
   const verifyToken = useCallback(async (authToken) => {
