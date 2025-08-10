@@ -425,19 +425,23 @@ const AdminPageNew = () => {
       
       <MobileOptimizations />
 
-      <div className="min-h-screen bg-gray-50 flex touch-target">
+      <div className="min-h-screen bg-gray-50 flex flex-col touch-target">
         {/* Admin Header */}
-        <AdminHeader />
+        <AdminHeader 
+          onManageMenu={() => setManageMenuOpen(true)} 
+          activeSection={activeSection}
+        />
         
-        {/* Sidebar */}
-        <motion.aside
-          initial={false}
-          animate={{ 
-            x: !isMobile() ? 0 : (sidebarOpen ? 0 : -300)
-          }}
-          transition={{ duration: 0.3 }}
-          className="fixed inset-y-0 left-0 z-50 w-64 sm:w-72 bg-white shadow-lg lg:static lg:inset-0 flex flex-col"
-        >
+        <div className="flex flex-1">
+          {/* Sidebar */}
+          <motion.aside
+            initial={false}
+            animate={{ 
+              x: !isMobile() ? 0 : (sidebarOpen ? 0 : -300)
+            }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-y-0 left-0 z-50 w-64 sm:w-72 bg-white shadow-lg lg:static lg:inset-0 flex flex-col"
+          >
           <div className="h-16 px-4 sm:px-6 border-b flex items-center">
             <div className="grid items-center w-full gap-2 [grid-template-columns:1fr_auto]">
               {/* Buscar seção no lugar da logo */}
@@ -538,64 +542,16 @@ const AdminPageNew = () => {
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Header */}
-          <header className="bg-white shadow-sm border-b h-14 sm:h-16 flex items-center justify-between px-3 sm:px-6 relative">
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2"
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-            <div className="flex items-center space-x-1 sm:space-x-2">
-                <Home className="h-4 w-4 text-gray-400 hidden sm:block" />
-                <span className="text-sm text-gray-600 hidden sm:block">/</span>
-                <span className="text-sm sm:text-base font-medium text-gray-900 capitalize truncate">
-                  {activeSection}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-1 sm:space-x-4">
-            {/* Removida a busca antiga do header */}
-              <Button variant="outline" size="sm" onClick={()=>setManageMenuOpen(true)}>Gerenciar Menu</Button>
-              <Button variant="outline" size="sm" className="hidden sm:inline-flex" onClick={() => window.open('/', '_blank') }>
-                <Eye className="h-4 w-4 mr-2" />
-                Ver Site
-              </Button>
-              <Button variant="outline" size="sm" className="p-2">
-                <Bell className="h-4 w-4" />
-                <span className="sr-only">Notificações</span>
-              </Button>
-              <Button variant="outline" size="sm" className="sm:hidden p-2" onClick={() => window.open('/', '_blank') }>
-                <Eye className="h-4 w-4" />
-                <span className="sr-only">Ver Site</span>
-              </Button>
-              {/* Logo com menu de conta (no lugar do botão sair) */}
-              <DropdownMenu open={accountOpen} onOpenChange={setAccountOpen}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="px-2" onClick={()=>setAccountOpen((v)=>!v)}>
-                    <div className="flex items-center">
-                      <div className="p-1.5 bg-blue-600 rounded-md">
-                        <Shield className="h-4 w-4 text-white" />
-                      </div>
-                    </div>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64">
-                  <DropdownMenuLabel>Conta</DropdownMenuLabel>
-                  <div className="px-3 pb-2 text-sm">
-                    <div className="font-medium truncate">{user?.user_metadata?.name || 'Admin'}</div>
-                    <div className="text-gray-500 truncate">{user?.email || 'admin@fhdautomacao.com.br'}</div>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
-                    <LogOut className="h-4 w-4 mr-2" /> Sair
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+          {/* Header simplificado com botão de menu mobile */}
+          <header className="bg-white shadow-sm border-b h-14 sm:h-16 flex items-center px-3 sm:px-6 relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
           </header>
 
           {/* Content */}
@@ -610,6 +566,7 @@ const AdminPageNew = () => {
               {renderContent()}
             </motion.div>
           </main>
+        </div>
         </div>
 
         {/* Overlay for mobile (sempre abaixo da sidebar) */}

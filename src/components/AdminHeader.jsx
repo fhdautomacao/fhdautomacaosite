@@ -15,11 +15,13 @@ import {
   Shield, 
   Clock, 
   Settings,
-  AlertTriangle
+  AlertTriangle,
+  Eye,
+  Bell
 } from 'lucide-react'
 import { toast } from 'sonner'
 
-const AdminHeader = () => {
+const AdminHeader = ({ onManageMenu, activeSection = 'dashboard' }) => {
   const { user, logout, isTokenExpiringSoon, isTokenExpired } = useJWTAuth()
   const [showExpiryWarning, setShowExpiryWarning] = useState(false)
 
@@ -44,10 +46,10 @@ const AdminHeader = () => {
   if (!user) return null
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
-      <div className="flex items-center justify-between">
-        {/* Logo e título */}
-        <div className="flex items-center space-x-4">
+    <header className="bg-white border-b border-gray-200 px-6 py-4 w-full">
+      <div className="flex items-center justify-between max-w-7xl mx-auto">
+        {/* Logo e título centralizado */}
+        <div className="flex items-center space-x-4 flex-1">
           <div className="flex items-center space-x-2">
             <Shield className="h-8 w-8 text-blue-600" />
             <div>
@@ -57,8 +59,18 @@ const AdminHeader = () => {
           </div>
         </div>
 
+        {/* Breadcrumb centralizado */}
+        <div className="flex items-center space-x-2 flex-1 justify-center">
+          <div className="flex items-center space-x-1 sm:space-x-2">
+            <span className="text-sm text-gray-600 hidden sm:block">/</span>
+            <span className="text-sm sm:text-base font-medium text-gray-900 capitalize truncate">
+              {activeSection}
+            </span>
+          </div>
+        </div>
+
         {/* Informações do usuário e ações */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 flex-1 justify-end">
           {/* Aviso de expiração */}
           {isTokenExpiringSoon() && (
             <div className="flex items-center space-x-2 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -68,6 +80,19 @@ const AdminHeader = () => {
               </span>
             </div>
           )}
+
+          {/* Botões de ação */}
+          <Button variant="outline" size="sm" onClick={onManageMenu}>Gerenciar Menu</Button>
+          
+          <Button variant="outline" size="sm" className="hidden sm:inline-flex" onClick={() => window.open('/', '_blank') }>
+            <Eye className="h-4 w-4 mr-2" />
+            Ver Site
+          </Button>
+          
+          <Button variant="outline" size="sm" className="p-2">
+            <Bell className="h-4 w-4" />
+            <span className="sr-only">Notificações</span>
+          </Button>
 
           {/* Dropdown do usuário */}
           <DropdownMenu>
