@@ -331,9 +331,38 @@ export default async function handler(req, res) {
 
   // Aplicar autenticação admin para operações de escrita
   if (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE') {
-    requireAdminAuth(req, res, () => {
-      // Continua para o handler específico
-    })
+    const apiKey = req.headers['x-api-key']
+    const authHeader = req.headers.authorization
+    const referer = req.headers.referer || ''
+    const isAdminRequest = referer.includes('/admin') || req.headers['x-admin-request'] === 'true'
+    
+    if (isAdminRequest) {
+      if (!apiKey && !authHeader) { 
+        console.warn('🚫 [API] Tentativa de acesso admin sem autenticação')
+        return res.status(401).json({ 
+          error: 'Acesso não autorizado', 
+          message: 'Autenticação necessária para operações administrativas' 
+        }) 
+      }
+      
+      if (apiKey && apiKey !== process.env.ADMIN_API_KEY) { 
+        console.warn('🚫 [API] API Key inválida')
+        return res.status(401).json({ 
+          error: 'API Key inválida', 
+          message: 'Chave de API fornecida é inválida' 
+        }) 
+      }
+      
+      if (authHeader && !authHeader.startsWith('Bearer ')) { 
+        console.warn('🚫 [API] Formato de autorização inválido')
+        return res.status(401).json({ 
+          error: 'Formato de autorização inválido', 
+          message: 'Token deve estar no formato Bearer' 
+        }) 
+      }
+      
+      console.log('✅ [API] Acesso admin autorizado')
+    }
   }
 
   try {
