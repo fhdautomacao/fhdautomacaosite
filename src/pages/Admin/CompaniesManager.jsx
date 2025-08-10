@@ -34,10 +34,10 @@ import { ModalActionButton, ModalSection, ModalGrid } from '@/components/admin/A
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { companiesAPI } from '@/api/companies'
 import { billsAPI } from '@/api/bills'
-import { useAuth } from '@/contexts/AuthContext'
+import { useJWTAuth } from '@/contexts/JWTAuthContext'
 
 const CompaniesManager = () => {
-  const { userPermissions } = useAuth()
+  const { userPermissions } = useJWTAuth()
   const [companies, setCompanies] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')

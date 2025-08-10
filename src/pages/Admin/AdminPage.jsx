@@ -21,11 +21,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import GalleryManager from './GalleryManager'
 import ClientsManager from './ClientsManager'
 import ProductsManager from './ProductsManager'
-import { useAuth } from '@/contexts/AuthContext'
+import { useJWTAuth } from '@/contexts/JWTAuthContext'
 
 const AdminPage = () => {
   const [activeTab, setActiveTab] = useState('dashboard')
-  const { logout } = useAuth()
+  const { logout } = useJWTAuth()
 
   const handleLogout = () => {
     logout()

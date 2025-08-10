@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { useAuth } from '../../contexts/AuthContext'
+import { useJWTAuth } from '../../contexts/JWTAuthContext'
 import securityManager from '../../lib/securityConfig'
 import { Card } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
 import { Button } from '../../components/ui/button'
 
 const SecuritySettings = () => {
-  const { user } = useAuth()
+  const { user } = useJWTAuth()
   const [securityLogs, setSecurityLogs] = useState([])
   const [activeSessions, setActiveSessions] = useState([])
   const [blockedUsers, setBlockedUsers] = useState([])

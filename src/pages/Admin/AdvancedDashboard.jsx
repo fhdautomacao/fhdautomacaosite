@@ -111,10 +111,10 @@ import { quotationsAPI } from '@/api/quotations'
 import { billsAPI } from '@/api/bills'
 import { profitSharingAPI } from '@/api/profitSharing'
 import { companiesAPI } from '@/api/companies'
-import { useAuth } from '@/contexts/AuthContext'
+import { useJWTAuth } from '@/contexts/JWTAuthContext'
 
 const AdvancedDashboard = ({ onNavigateToSection }) => {
-  const { userPermissions } = useAuth()
+  const { userPermissions } = useJWTAuth()
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('30')
   const [refreshing, setRefreshing] = useState(false)

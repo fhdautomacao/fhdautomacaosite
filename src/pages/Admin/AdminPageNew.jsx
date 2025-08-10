@@ -71,7 +71,7 @@ const AdminPageNew = () => {
   const [visibilityMap, setVisibilityMap] = useState({})
   const [manageMenuOpen, setManageMenuOpen] = useState(false)
   const [manageSearch, setManageSearch] = useState('')
-  const { logout, user } = useJWTAuth()
+  const { logout, user, userPermissions } = useJWTAuth()
   const [accountOpen, setAccountOpen] = useState(false)
   
   // Ativar verificação automática de boletos vencidos

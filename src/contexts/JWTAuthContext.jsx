@@ -19,6 +19,7 @@ export const JWTAuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const [tokenExpiry, setTokenExpiry] = useState(null)
   const [isRouterReady, setIsRouterReady] = useState(false)
+  const [userPermissions, setUserPermissions] = useState({})
   const navigate = useNavigate()
 
   // Marcar que o Router está pronto
@@ -28,6 +29,36 @@ export const JWTAuthProvider = ({ children }) => {
 
   // API base URL - usar a função getApiUrl que detecta automaticamente o ambiente
   const API_BASE_URL = getApiUrl()
+
+  // Função para verificar permissões do usuário
+  const checkUserPermissions = useCallback((email) => {
+    const isAdmin = email === 'adminfhd@fhd.com'
+    const isUser = email === 'fhduser@fhd.com'
+    
+    const permissions = {
+      // Permissões gerais
+      canAccessDashboard: isAdmin,
+      canAccessBills: isAdmin,
+      canAccessProfitSharing: isAdmin,
+      canAccessCompanies: isAdmin,
+      canAccessSEO: isAdmin,
+      
+      // Permissões específicas
+      canAccessQuotations: true, // Ambos podem acessar
+      canAccessClients: true, // Ambos podem acessar
+      canAccessProducts: true, // Ambos podem acessar
+      canAccessGallery: true, // Ambos podem acessar
+      canAccessServices: true, // Ambos podem acessar
+      canAccessCosts: isAdmin,
+      
+      // Permissões de administração
+      isAdmin: isAdmin,
+      isUser: isUser
+    }
+    
+    setUserPermissions(permissions)
+    return permissions
+  }, [])
 
   // Função para fazer login
   const login = useCallback(async (email, password) => {
@@ -58,6 +89,9 @@ export const JWTAuthProvider = ({ children }) => {
         localStorage.setItem('jwt_token', authToken)
         localStorage.setItem('jwt_user', JSON.stringify(userData))
         localStorage.setItem('jwt_expires_at', expiresAt)
+        
+        // Verificar permissões do usuário
+        checkUserPermissions(userData.email)
         
         // Atualizar estado
         setUser(userData)
@@ -91,6 +125,7 @@ export const JWTAuthProvider = ({ children }) => {
     setUser(null)
     setToken(null)
     setTokenExpiry(null)
+    setUserPermissions({})
     
     console.log('✅ Logout JWT realizado')
     toast.success('Logout realizado com sucesso!')
@@ -308,6 +343,7 @@ export const JWTAuthProvider = ({ children }) => {
     verifyToken,
     refreshToken,
     getAuthHeaders,
+    userPermissions,
     isAuthenticated: !!user && !!token && !isTokenExpired(),
     isTokenExpired,
     isTokenExpiringSoon

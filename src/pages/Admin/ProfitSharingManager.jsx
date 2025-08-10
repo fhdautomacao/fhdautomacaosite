@@ -36,10 +36,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { profitSharingAPI } from '@/api/profitSharing'
 import { companiesAPI } from '@/api/companies'
 import { billsAPI } from '@/api/bills'
-import { useAuth } from '@/contexts/AuthContext'
+import { useJWTAuth } from '@/contexts/JWTAuthContext'
 
 const ProfitSharingManager = () => {
-  const { userPermissions } = useAuth()
+  const { userPermissions } = useJWTAuth()
   const [profitSharings, setProfitSharings] = useState([])
   const [companies, setCompanies] = useState([])
   const [bills, setBills] = useState([])
