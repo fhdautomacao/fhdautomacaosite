@@ -22,9 +22,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AdminModal from '@/components/admin/AdminModal'
 import { ModalActionButton, ModalSection, ModalGrid } from '@/components/admin/AdminModal'
 import { Badge } from '@/components/ui/badge'
-import { productsAPI } from '@/api/products'
 import { useProductCategories } from '@/hooks/useCategories'
-import { useAuthenticatedSupabase } from '@/hooks/useAuthenticatedSupabase'
+import { useJWTAuth } from '@/contexts/JWTAuthContext'
+import { supabase } from '@/lib/supabase'
 
 const ProductsManager = () => {
   const [products, setProducts] = useState([])
@@ -41,7 +41,7 @@ const ProductsManager = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const { categories, loading: categoriesLoading, error: categoriesError } = useProductCategories()
-  const { authenticatedOperation, canPerformOperations, loading: authLoading } = useAuthenticatedSupabase()
+  const { isAuthenticated } = useJWTAuth()
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -86,20 +86,68 @@ const ProductsManager = () => {
     try {
       setLoading(true)
       
-      if (!canPerformOperations()) {
-        throw new Error('Usuário não autenticado no banco de dados')
+      console.log('🔍 Verificando autenticação JWT:', isAuthenticated)
+      
+      // Verificar se está autenticado
+      if (!isAuthenticated) {
+        throw new Error('Usuário não autenticado no sistema')
       }
       
-      const data = await authenticatedOperation(async (supabase) => {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .order('display_order', { ascending: true })
-        
-        if (error) throw error
-        return data
-      })
+      // Verificar autenticação Supabase
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      console.log('🔍 Status Supabase Auth:', { user: !!user, error: authError })
       
+      if (authError) {
+        console.error('❌ Erro na verificação Supabase Auth:', authError)
+      }
+      
+      if (!user) {
+        console.log('⚠️ Usuário não autenticado no Supabase, tentando renovar sessão...')
+        
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+        
+        if (refreshError || !refreshData.session) {
+          throw new Error('Sessão Supabase expirada. Faça login novamente.')
+        }
+        
+        console.log('✅ Sessão Supabase renovada')
+      }
+      
+      // Tentar carregar produtos diretamente
+      console.log('📊 Carregando produtos...')
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('display_order', { ascending: true })
+      
+      if (error) {
+        console.error('❌ Erro na consulta:', error)
+        
+        // Se for erro de autenticação, tentar renovar sessão
+        if (error.message?.includes('row-level security') || error.message?.includes('authentication')) {
+          console.log('🔄 Tentando renovar sessão Supabase...')
+          
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+          
+          if (refreshError || !refreshData.session) {
+            throw new Error('Sessão expirada. Faça login novamente.')
+          }
+          
+          // Tentar novamente após renovar sessão
+          const { data: retryData, error: retryError } = await supabase
+            .from('products')
+            .select('*')
+            .order('display_order', { ascending: true })
+          
+          if (retryError) throw retryError
+          setProducts(retryData)
+          return
+        }
+        
+        throw error
+      }
+      
+      console.log('✅ Produtos carregados com sucesso:', data?.length || 0)
       setProducts(data)
     } catch (error) {
       console.error("Erro ao carregar produtos:", error)
@@ -127,29 +175,28 @@ const ProductsManager = () => {
         return
       }
 
-      if (!canPerformOperations()) {
-        throw new Error('Usuário não autenticado no banco de dados')
+      // Verificar se está autenticado
+      if (!isAuthenticated) {
+        throw new Error('Usuário não autenticado no sistema')
       }
 
       let imageUrl = "/products/placeholder.jpg"
       if (newProduct.image) {
-        imageUrl = await authenticatedOperation(async (supabase) => {
-          const fileExt = newProduct.image.name.split('.').pop()
-          const fileName = `${Date.now()}.${fileExt}`
-          const filePath = `products/${fileName}`
+        const fileExt = newProduct.image.name.split('.').pop()
+        const fileName = `${Date.now()}.${fileExt}`
+        const filePath = `products/${fileName}`
 
-          const { data, error } = await supabase.storage
-            .from('images')
-            .upload(filePath, newProduct.image)
+        const { data, error } = await supabase.storage
+          .from('images')
+          .upload(filePath, newProduct.image)
 
-          if (error) throw error
+        if (error) throw error
 
-          const { data: { publicUrl } } = supabase.storage
-            .from('images')
-            .getPublicUrl(filePath)
+        const { data: { publicUrl } } = supabase.storage
+          .from('images')
+          .getPublicUrl(filePath)
 
-          return publicUrl
-        })
+        imageUrl = publicUrl
       }
 
       const productData = {
@@ -163,16 +210,37 @@ const ProductsManager = () => {
         display_order: products.length
       }
       
-      await authenticatedOperation(async (supabase) => {
-        const { data, error } = await supabase
-          .from('products')
-          .insert([productData])
-          .select()
-          .single()
+      const { data, error } = await supabase
+        .from('products')
+        .insert([productData])
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('❌ Erro ao inserir produto:', error)
         
-        if (error) throw error
-        return data
-      })
+        // Se for erro de autenticação, tentar renovar sessão
+        if (error.message?.includes('row-level security') || error.message?.includes('authentication')) {
+          console.log('🔄 Tentando renovar sessão Supabase...')
+          
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+          
+          if (refreshError || !refreshData.session) {
+            throw new Error('Sessão expirada. Faça login novamente.')
+          }
+          
+          // Tentar novamente após renovar sessão
+          const { data: retryData, error: retryError } = await supabase
+            .from('products')
+            .insert([productData])
+            .select()
+            .single()
+          
+          if (retryError) throw retryError
+        } else {
+          throw error
+        }
+      }
       
       await loadProducts() // Recarregar lista
       setNewProduct({ name: "", category: "", description: "", features: [], price: "", image: null })
@@ -190,51 +258,72 @@ const ProductsManager = () => {
   const handleEditProduct = async () => {
     if (selectedProduct) {
       try {
-        if (!canPerformOperations()) {
-          throw new Error('Usuário não autenticado no banco de dados')
-        }
+              // Verificar se está autenticado
+      if (!isAuthenticated) {
+        throw new Error('Usuário não autenticado no sistema')
+      }
 
-        let imageUrl = selectedProduct.image_url
-        if (selectedProduct.image && typeof selectedProduct.image !== 'string') { // Verifica se é um novo arquivo
-          imageUrl = await authenticatedOperation(async (supabase) => {
-            const fileExt = selectedProduct.image.name.split('.').pop()
-            const fileName = `${Date.now()}.${fileExt}`
-            const filePath = `products/${fileName}`
+      let imageUrl = selectedProduct.image_url
+      if (selectedProduct.image && typeof selectedProduct.image !== 'string') { // Verifica se é um novo arquivo
+        const fileExt = selectedProduct.image.name.split('.').pop()
+        const fileName = `${Date.now()}.${fileExt}`
+        const filePath = `products/${fileName}`
 
-            const { data, error } = await supabase.storage
-              .from('images')
-              .upload(filePath, selectedProduct.image)
+        const { data, error } = await supabase.storage
+          .from('images')
+          .upload(filePath, selectedProduct.image)
 
-            if (error) throw error
+        if (error) throw error
 
-            const { data: { publicUrl } } = supabase.storage
-              .from('images')
-              .getPublicUrl(filePath)
+        const { data: { publicUrl } } = supabase.storage
+          .from('images')
+          .getPublicUrl(filePath)
 
-            return publicUrl
-          })
-        }
+        imageUrl = publicUrl
+      }
 
-        const updates = {
-          name: selectedProduct.name,
-          category: selectedProduct.category,
-          description: selectedProduct.description,
-          features: selectedProduct.features,
-          price: selectedProduct.price,
-          image_url: imageUrl
-        }
+      const updates = {
+        name: selectedProduct.name,
+        category: selectedProduct.category,
+        description: selectedProduct.description,
+        features: selectedProduct.features,
+        price: selectedProduct.price,
+        image_url: imageUrl
+      }
+      
+      const { data, error } = await supabase
+        .from('products')
+        .update(updates)
+        .eq('id', selectedProduct.id)
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('❌ Erro ao atualizar produto:', error)
         
-        await authenticatedOperation(async (supabase) => {
-          const { data, error } = await supabase
+        // Se for erro de autenticação, tentar renovar sessão
+        if (error.message?.includes('row-level security') || error.message?.includes('authentication')) {
+          console.log('🔄 Tentando renovar sessão Supabase...')
+          
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+          
+          if (refreshError || !refreshData.session) {
+            throw new Error('Sessão expirada. Faça login novamente.')
+          }
+          
+          // Tentar novamente após renovar sessão
+          const { data: retryData, error: retryError } = await supabase
             .from('products')
             .update(updates)
             .eq('id', selectedProduct.id)
             .select()
             .single()
           
-          if (error) throw error
-          return data
-        })
+          if (retryError) throw retryError
+        } else {
+          throw error
+        }
+      }
         
         await loadProducts() // Recarregar lista
         setIsEditModalOpen(false)
@@ -249,18 +338,40 @@ const ProductsManager = () => {
   const handleDeleteProduct = async (id) => {
     if (confirm("Tem certeza que deseja excluir este produto?")) {
       try {
-        if (!canPerformOperations()) {
-          throw new Error('Usuário não autenticado no banco de dados')
-        }
+              // Verificar se está autenticado
+      if (!isAuthenticated) {
+        throw new Error('Usuário não autenticado no sistema')
+      }
 
-        await authenticatedOperation(async (supabase) => {
-          const { error } = await supabase
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id)
+      
+      if (error) {
+        console.error('❌ Erro ao deletar produto:', error)
+        
+        // Se for erro de autenticação, tentar renovar sessão
+        if (error.message?.includes('row-level security') || error.message?.includes('authentication')) {
+          console.log('🔄 Tentando renovar sessão Supabase...')
+          
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+          
+          if (refreshError || !refreshData.session) {
+            throw new Error('Sessão expirada. Faça login novamente.')
+          }
+          
+          // Tentar novamente após renovar sessão
+          const { error: retryError } = await supabase
             .from('products')
             .delete()
             .eq('id', id)
           
-          if (error) throw error
-        })
+          if (retryError) throw retryError
+        } else {
+          throw error
+        }
+      }
         
         await loadProducts() // Recarregar lista
       } catch (error) {
@@ -318,12 +429,10 @@ const ProductsManager = () => {
   return (
     <div className="space-y-6">
       {/* Loading */}
-      {(loading || authLoading) && (
+      {loading && (
         <div className="flex justify-center items-center py-12">
           <Loader2 className="h-8 w-8 animate-spin" />
-          <span className="ml-2">
-            {authLoading ? 'Verificando autenticação...' : 'Carregando produtos...'}
-          </span>
+          <span className="ml-2">Carregando produtos...</span>
         </div>
       )}
 

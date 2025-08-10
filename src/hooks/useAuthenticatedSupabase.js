@@ -3,7 +3,7 @@ import { useJWTAuth } from '@/contexts/JWTAuthContext'
 import { supabase } from '@/lib/supabase'
 
 export const useAuthenticatedSupabase = () => {
-  const { isAuthenticated } = useJWTAuth()
+  const { isAuthenticated, token } = useJWTAuth()
   const [isSupabaseAuthenticated, setIsSupabaseAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -41,22 +41,34 @@ export const useAuthenticatedSupabase = () => {
 
   // Verificar autenticação na inicialização
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && token) {
       checkSupabaseAuth()
     } else {
       setIsSupabaseAuthenticated(false)
       setLoading(false)
     }
-  }, [isAuthenticated, checkSupabaseAuth])
+  }, [isAuthenticated, token, checkSupabaseAuth])
 
-  // Função para fazer operações autenticadas
+  // Função para fazer operações autenticadas com verificação automática
   const authenticatedOperation = useCallback(async (operation) => {
     if (!isAuthenticated) {
       throw new Error('Usuário não autenticado no sistema')
     }
 
-    if (!isSupabaseAuthenticated) {
-      throw new Error('Usuário não autenticado no banco de dados. Faça login novamente.')
+    // Verificar autenticação Supabase antes de cada operação
+    const { data: { user }, error } = await supabase.auth.getUser()
+    
+    if (error || !user) {
+      console.log('🔄 Usuário não autenticado no Supabase, tentando renovar sessão...')
+      
+      // Tentar renovar a sessão
+      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+      
+      if (refreshError || !refreshData.session) {
+        throw new Error('Sessão expirada. Faça login novamente.')
+      }
+      
+      console.log('✅ Sessão Supabase renovada')
     }
 
     try {
@@ -65,26 +77,33 @@ export const useAuthenticatedSupabase = () => {
       console.error('❌ Erro na operação autenticada:', error)
       
       // Se for erro de autenticação, tentar renovar sessão
-      if (error.message?.includes('JWT') || error.message?.includes('authentication')) {
-        console.log('🔄 Tentando renovar sessão Supabase...')
-        const { data, error: refreshError } = await supabase.auth.refreshSession()
+      if (error.message?.includes('JWT') || error.message?.includes('authentication') || error.message?.includes('row-level security')) {
+        console.log('🔄 Erro de autenticação detectado, tentando renovar sessão...')
         
-        if (refreshError || !data.session) {
-          throw new Error('Sessão expirada. Faça login novamente.')
+        try {
+          const { data, error: refreshError } = await supabase.auth.refreshSession()
+          
+          if (refreshError || !data.session) {
+            throw new Error('Sessão expirada. Faça login novamente.')
+          }
+          
+          console.log('✅ Sessão renovada, tentando operação novamente...')
+          
+          // Tentar operação novamente
+          return await operation(supabase)
+        } catch (refreshError) {
+          throw new Error('Falha na renovação da sessão. Faça login novamente.')
         }
-        
-        // Tentar operação novamente
-        return await operation(supabase)
       }
       
       throw error
     }
-  }, [isAuthenticated, isSupabaseAuthenticated])
+  }, [isAuthenticated])
 
   // Função para verificar se pode fazer operações
   const canPerformOperations = useCallback(() => {
-    return isAuthenticated && isSupabaseAuthenticated && !loading
-  }, [isAuthenticated, isSupabaseAuthenticated, loading])
+    return isAuthenticated && !loading
+  }, [isAuthenticated, loading])
 
   return {
     supabase,
