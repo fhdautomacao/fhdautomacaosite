@@ -3,12 +3,25 @@ import { supabase } from '../lib/supabase'
 export const productsAPI = {
   // Buscar todos os produtos
   async getAll() {
+    console.log('🔍 productsAPI.getAll(): Iniciando busca...')
+    
     const { data, error } = await supabase
       .from('products')
       .select('*')
       .order('display_order', { ascending: true })
     
-    if (error) throw error
+    console.log('📊 productsAPI.getAll(): Resultado:', {
+      data: data?.length || 0,
+      error: error?.message || null,
+      products: data
+    })
+    
+    if (error) {
+      console.error('❌ productsAPI.getAll(): Erro:', error)
+      throw error
+    }
+    
+    console.log('✅ productsAPI.getAll(): Sucesso')
     return data
   },
 

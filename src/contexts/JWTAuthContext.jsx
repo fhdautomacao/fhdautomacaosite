@@ -81,7 +81,30 @@ export const JWTAuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password })
       })
 
-      const data = await response.json()
+      console.log('📡 Resposta do login:', {
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText
+      })
+
+      // Verificar se a resposta é JSON
+      const contentType = response.headers.get('content-type')
+      console.log('📄 Content-Type da resposta:', contentType)
+
+      let data
+      try {
+        const responseText = await response.text()
+        console.log('📄 Resposta bruta:', responseText)
+        
+        if (contentType && contentType.includes('application/json')) {
+          data = JSON.parse(responseText)
+        } else {
+          throw new Error(`Resposta não é JSON válido. Content-Type: ${contentType}`)
+        }
+      } catch (parseError) {
+        console.error('❌ Erro ao fazer parse da resposta:', parseError)
+        throw new Error('Erro na resposta do servidor. Verifique se a API está funcionando.')
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Erro no login')

@@ -301,6 +301,9 @@ async function handleRefreshToken(req, res) {
 export default async function handler(req, res) {
   console.log('🚀 [AUTH] Requisição recebida:', req.method, req.url)
   console.log('🌐 [AUTH] Origin:', req.headers.origin)
+  console.log('📋 [AUTH] Headers:', req.headers)
+  console.log('📝 [AUTH] Body:', req.body)
+  console.log('🔍 [AUTH] Query:', req.query)
   
   // Configurar CORS básico
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -331,12 +334,14 @@ export default async function handler(req, res) {
           case 'refresh':
             return await handleRefreshToken(req, res)
           default:
+            console.log('❌ [AUTH] Ação não especificada:', action)
             return res.status(400).json({
               success: false,
               error: 'Ação não especificada'
             })
         }
       default:
+        console.log('❌ [AUTH] Método não permitido:', method)
         return res.status(405).json({
           success: false,
           error: 'Método não permitido'

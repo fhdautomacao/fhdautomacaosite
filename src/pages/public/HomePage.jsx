@@ -26,6 +26,8 @@ const HomePage = () => {
     let isCancelled = false
     const load = async () => {
       try {
+        console.log('🚀 HomePage: Iniciando carregamento de dados...')
+        
         const [srv, allCats, prods, gal, cls] = await Promise.all([
           servicesAPI.getActive(),
           categoriesAPI.getByTypes(['service','product','gallery']),
@@ -33,6 +35,17 @@ const HomePage = () => {
           galleryAPI.getAll(),
           clientsAPI.getAll(),
         ])
+        
+        console.log('📊 HomePage: Dados carregados:', {
+          services: srv?.length || 0,
+          categories: allCats?.length || 0,
+          products: prods?.length || 0,
+          gallery: gal?.length || 0,
+          clients: cls?.length || 0
+        })
+        
+        console.log('🔍 HomePage: Produtos recebidos:', prods)
+        
         if (!isCancelled) {
           setServices(srv || [])
           const catSrv = (allCats || []).filter(c => c.type === 'service')
@@ -44,8 +57,11 @@ const HomePage = () => {
           setGalleryItems(gal || [])
           setGalleryCategories(catGal)
           setClients(cls || [])
+          
+          console.log('✅ HomePage: Estados atualizados')
         }
       } catch (err) {
+        console.error('❌ HomePage: Erro ao carregar dados:', err)
         // Apenas logar; as seções têm fallback/estados de erro
         console.warn('Falha ao carregar dados iniciais da Home:', err)
       }

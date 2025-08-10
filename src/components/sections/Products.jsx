@@ -17,33 +17,56 @@ const Products = ({ productsData = null, productCategories = null }) => {
   const categoriesError = productCategories ? null : categoriesErrorHook
 
   useEffect(() => {
-    if (productsData) return
+    // Se productsData foi passado como prop, usar ele
+    if (productsData) {
+      console.log('📦 Products: Usando productsData da prop:', productsData.length)
+      setProducts(productsData)
+      setLoadingProducts(false)
+      return
+    }
+    
+    // Se não, buscar do API
     const fetchProducts = async () => {
       try {
+        console.log('📦 Products: Buscando produtos da API...')
         const data = await productsAPI.getAll()
         setProducts(data)
       } catch (error) {
+        console.error('❌ Products: Erro ao buscar produtos:', error)
         setProducts([])
       } finally {
         setLoadingProducts(false)
       }
     }
     fetchProducts()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productsData])
 
   // Obter apenas as categorias que realmente existem nos produtos
   const usedCategoryIds = [...new Set(products.map(prod => prod.category))]
   const usedCategories = fetchedCategories.filter(cat => usedCategoryIds.includes(cat.id))
-  const allCategories = [{ id: ALL_KEY, label: t('common.all','Todos') }, ...usedCategories.map(cat => ({ id: cat.name, label: cat.name }))]
+  const allCategories = [{ id: ALL_KEY, label: t('common.all','Todos') }, ...usedCategories.map(cat => ({ id: cat.id, label: cat.name }))]
+
+  // Debug logs
+  console.log('🔍 Debug Products:', {
+    totalProducts: products.length,
+    usedCategoryIds,
+    usedCategories: usedCategories.map(c => ({ id: c.id, name: c.name })),
+    allCategories: allCategories.map(c => ({ id: c.id, label: c.label })),
+    selectedCategory,
+    searchTerm
+  })
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.features.some(feature => feature.toLowerCase().includes(searchTerm.toLowerCase()))
-    const matchesCategory = selectedCategory === ALL_KEY || 
-                            (fetchedCategories.find(cat => cat.id === product.category)?.name === selectedCategory)
+    const matchesCategory = selectedCategory === ALL_KEY || product.category === selectedCategory
     return matchesSearch && matchesCategory
+  })
+
+  console.log('🔍 Filtered Products:', {
+    filteredCount: filteredProducts.length,
+    products: filteredProducts.map(p => ({ id: p.id, name: p.name, category: p.category }))
   })
 
   const getCategoryColor = (categoryName) => {
