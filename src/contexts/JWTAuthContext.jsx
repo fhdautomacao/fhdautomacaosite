@@ -37,7 +37,7 @@ export const JWTAuthProvider = ({ children }) => {
     const isUser = email === 'fhduser@fhd.com'
     
     const permissions = {
-      // Permissões gerais
+      // Permissões gerais - Admin tem acesso total
       canAccessDashboard: isAdmin,
       canAccessBills: isAdmin,
       canAccessProfitSharing: isAdmin,
@@ -56,6 +56,10 @@ export const JWTAuthProvider = ({ children }) => {
       isAdmin: isAdmin,
       isUser: isUser
     }
+    
+    console.log('🔐 [PERMISSIONS] Verificando permissões para:', email)
+    console.log('🔐 [PERMISSIONS] É admin?', isAdmin)
+    console.log('🔐 [PERMISSIONS] Permissões:', permissions)
     
     setUserPermissions(permissions)
     return permissions
@@ -143,6 +147,8 @@ export const JWTAuthProvider = ({ children }) => {
   // Função para verificar token
   const verifyToken = useCallback(async (authToken) => {
     try {
+      console.log('🔍 Verificando token na URL:', `${API_BASE_URL}/auth?action=verify`)
+      
       const response = await fetch(`${API_BASE_URL}/auth?action=verify`, {
         method: 'POST',
         headers: {
@@ -152,13 +158,22 @@ export const JWTAuthProvider = ({ children }) => {
         }
       })
 
+      console.log('📡 Resposta da verificação:', {
+        status: response.status,
+        ok: response.ok
+      })
+
       const data = await response.json()
+      console.log('📄 Dados da resposta:', data)
 
       if (!response.ok) {
+        console.error('❌ Erro na resposta:', data.error)
         throw new Error(data.error || 'Token inválido')
       }
 
-      return data.success && data.data.valid
+      const isValid = data.success && data.data.valid
+      console.log('✅ Token válido:', isValid)
+      return isValid
     } catch (error) {
       console.error('❌ Erro na verificação do token:', error)
       return false
@@ -230,10 +245,12 @@ export const JWTAuthProvider = ({ children }) => {
   const initializeAuth = useCallback(async () => {
     // Evitar inicialização múltipla
     if (isInitialized.current) {
+      console.log('🔄 Inicialização já em andamento, ignorando...')
       return
     }
     
     try {
+      console.log('🚀 Iniciando autenticação JWT...')
       setLoading(true)
       isInitialized.current = true
       
@@ -241,6 +258,13 @@ export const JWTAuthProvider = ({ children }) => {
       const storedToken = localStorage.getItem('jwt_token')
       const storedUser = localStorage.getItem('jwt_user')
       const storedExpiresAt = localStorage.getItem('jwt_expires_at')
+      
+      console.log('📦 Dados do localStorage:', {
+        hasToken: !!storedToken,
+        hasUser: !!storedUser,
+        hasExpiresAt: !!storedExpiresAt,
+        tokenLength: storedToken ? storedToken.length : 0
+      })
       
       if (!storedToken || !storedUser || !storedExpiresAt) {
         console.log('⚠️ Nenhum token JWT encontrado')
@@ -250,6 +274,13 @@ export const JWTAuthProvider = ({ children }) => {
       
       const userData = JSON.parse(storedUser)
       const expiryDate = new Date(storedExpiresAt)
+      
+      console.log('👤 Dados do usuário:', {
+        userId: userData.id,
+        email: userData.email,
+        expiryDate: expiryDate.toISOString(),
+        now: new Date().toISOString()
+      })
       
       // Verificar se o token expirou
       if (new Date() > expiryDate) {
@@ -263,6 +294,11 @@ export const JWTAuthProvider = ({ children }) => {
       const timeUntilExpiry = expiryDate.getTime() - new Date().getTime()
       const fiveMinutes = 5 * 60 * 1000
       
+      console.log('⏰ Tempo até expiração:', {
+        timeUntilExpiry: timeUntilExpiry / 1000 / 60, // em minutos
+        fiveMinutes: fiveMinutes / 1000 / 60
+      })
+      
       if (timeUntilExpiry < fiveMinutes) {
         console.log('⚠️ Token JWT próximo de expirar, tentando renovar...')
         const refreshed = await refreshToken(storedToken)
@@ -274,8 +310,11 @@ export const JWTAuthProvider = ({ children }) => {
           return
         }
       } else {
+        console.log('🔍 Verificando validade do token...')
         // Verificar se o token ainda é válido
         const isValid = await verifyToken(storedToken)
+        
+        console.log('✅ Resultado da verificação:', isValid)
         
         if (!isValid) {
           console.log('❌ Token JWT inválido')
@@ -288,16 +327,17 @@ export const JWTAuthProvider = ({ children }) => {
         setUser(userData)
         setToken(storedToken)
         setTokenExpiry(expiryDate)
+        checkUserPermissions(userData.email)
       }
       
-      console.log('✅ Autenticação JWT inicializada')
+      console.log('✅ Autenticação JWT inicializada com sucesso')
     } catch (error) {
       console.error('❌ Erro na inicialização da autenticação:', error)
       logout()
     } finally {
       setLoading(false)
     }
-  }, [logout, refreshToken, verifyToken])
+  }, [logout, refreshToken, verifyToken, checkUserPermissions])
 
   // Verificar autenticação na inicialização (apenas uma vez)
   useEffect(() => {

@@ -199,7 +199,7 @@ const AdminPageNew = () => {
       children: [
         { id: 'costs', label: 'Gestão de Custos', icon: DollarSign }
       ],
-      requiresPermission: 'canAccessBills'
+      requiresPermission: 'canAccessCosts'
     },
     {
       id: 'companies',
@@ -209,7 +209,7 @@ const AdminPageNew = () => {
       children: [
         { id: 'companies', label: 'Gerenciar Empresas', icon: Building }
       ],
-      requiresPermission: 'canAccessBills'
+      requiresPermission: 'canAccessCompanies'
     },
     {
       id: 'profit-sharing',
@@ -219,7 +219,7 @@ const AdminPageNew = () => {
       children: [
         { id: 'profit-sharing', label: 'Controle de Divisão', icon: Calculator }
       ],
-      requiresPermission: 'canAccessBills'
+      requiresPermission: 'canAccessProfitSharing'
     },
     {
       id: 'settings',
@@ -494,7 +494,7 @@ const AdminPageNew = () => {
                       <div className="ml-10 -mt-2 mb-2 flex gap-2">
                         <Button variant="ghost" size="sm" onClick={async()=>{
                           const newVal = !(visibilityMap[item.id] === false)
-                          await menuPrefsAPI.setVisibility(item.id, !newVal)
+                          await menuPrefsAPI.setVisibility(item.id, !newVal, user?.id)
                           setVisibilityMap(prev=>({ ...prev, [item.id]: !newVal }))
                         }}>
                           {visibilityMap[item.id] === false ? 'Mostrar' : 'Ocultar'}
@@ -606,7 +606,7 @@ const AdminPageNew = () => {
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-600">{visibilityMap[item.id] === false ? 'Oculta' : 'Visível'}</span>
                         <Switch checked={!(visibilityMap[item.id] === false)} onCheckedChange={async(checked)=>{
-                          await menuPrefsAPI.setVisibility(item.id, checked)
+                          await menuPrefsAPI.setVisibility(item.id, checked, user?.id)
                           setVisibilityMap(prev=>({ ...prev, [item.id]: checked }))
                         }} />
                       </div>
@@ -621,7 +621,7 @@ const AdminPageNew = () => {
                               <div className="flex items-center gap-2">
                                 <span className="text-xs text-gray-600">{visibilityMap[child.id] === false ? 'Oculta' : 'Visível'}</span>
                                 <Switch checked={!(visibilityMap[child.id] === false)} onCheckedChange={async(checked)=>{
-                                  await menuPrefsAPI.setVisibility(child.id, checked)
+                                  await menuPrefsAPI.setVisibility(child.id, checked, user?.id)
                                   setVisibilityMap(prev=>({ ...prev, [child.id]: checked }))
                                 }} />
                               </div>

@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 
 // Configuração JWT
 const JWT_SECRET = process.env.JWT_SECRET || 'U3pZjijm9HvwB4T0uGvgXlazWT63+f2U701YmPc6i7umkChmBalYatFX+s1j/ERIbXcSWNjOqcZB5WdDWZqJzw=='
-const JWT_EXPIRES_IN = '24h'
+const JWT_EXPIRES_IN = '5h'
 
 // Configuração Supabase
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
@@ -62,9 +62,23 @@ const generateCustomToken = (user) => {
 // Função para verificar token JWT
 const verifyToken = (token) => {
   try {
-    return jwt.verify(token, JWT_SECRET)
+    console.log('🔍 [AUTH] Verificando token JWT...')
+    console.log('🔑 [AUTH] JWT_SECRET configurado:', !!JWT_SECRET)
+    console.log('📏 [AUTH] Tamanho do token:', token.length)
+    
+    const decoded = jwt.verify(token, JWT_SECRET)
+    console.log('✅ [AUTH] Token decodificado:', {
+      id: decoded.id,
+      email: decoded.email,
+      role: decoded.role,
+      iat: decoded.iat,
+      exp: decoded.exp
+    })
+    
+    return decoded
   } catch (error) {
-    console.error('❌ [AUTH] Erro ao verificar token:', error)
+    console.error('❌ [AUTH] Erro ao verificar token:', error.message)
+    console.error('❌ [AUTH] Tipo de erro:', error.name)
     throw new Error('Token inválido ou expirado')
   }
 }
@@ -134,8 +148,8 @@ async function handleLogin(req, res) {
     // Gerar token JWT personalizado
     const customToken = generateCustomToken(data.user)
     
-    // Calcular data de expiração
-    const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000))
+    // Calcular data de expiração (5 horas)
+    const expiresAt = new Date(Date.now() + (5 * 60 * 60 * 1000))
 
     console.log('✅ [AUTH] Login bem-sucedido para:', data.user.email)
     
@@ -257,7 +271,7 @@ async function handleRefreshToken(req, res) {
     }
 
     const newToken = generateCustomToken(user)
-    const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000))
+    const expiresAt = new Date(Date.now() + (5 * 60 * 60 * 1000))
 
     console.log('✅ [AUTH] Token renovado para:', user.email)
     

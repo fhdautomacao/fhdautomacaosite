@@ -16,12 +16,23 @@ export const menuPrefsAPI = {
     return map
   },
 
-  async setVisibility(sectionId, isVisible) {
-    const user = (await supabase.auth.getUser()).data.user
-    if (!user) throw new Error('Not authenticated')
+  async setVisibility(sectionId, isVisible, userId = null) {
+    // Se userId não for fornecido, tentar obter do localStorage (JWT)
+    if (!userId) {
+      const storedUser = localStorage.getItem('jwt_user')
+      if (storedUser) {
+        const userData = JSON.parse(storedUser)
+        userId = userData.id
+      }
+    }
+    
+    if (!userId) {
+      throw new Error('Not authenticated')
+    }
+    
     const { data, error } = await supabase
       .from('user_menu_prefs')
-      .upsert({ user_id: user.id, section_id: sectionId, is_visible: !!isVisible }, { onConflict: 'user_id,section_id' })
+      .upsert({ user_id: userId, section_id: sectionId, is_visible: !!isVisible }, { onConflict: 'user_id,section_id' })
       .select()
       .single()
     if (error) throw error

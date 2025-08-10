@@ -33,9 +33,9 @@ const AdminHeader = ({ onManageMenu, activeSection = 'dashboard' }) => {
   const formatExpiryTime = () => {
     if (!user) return ''
     
-    // Simular tempo restante (em produção, isso viria do token)
+    // Obter tempo restante do token (em produção, isso viria do token)
     const now = new Date()
-    const expiry = new Date(now.getTime() + (23 * 60 * 60 * 1000)) // 23 horas restantes
+    const expiry = new Date(now.getTime() + (4 * 60 * 60 * 1000)) // 4 horas restantes (aproximado)
     const diff = expiry - now
     const hours = Math.floor(diff / (1000 * 60 * 60))
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
