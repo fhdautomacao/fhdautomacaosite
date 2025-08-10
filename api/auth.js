@@ -1,17 +1,21 @@
 import jwt from 'jsonwebtoken'
+import { createClient } from '@supabase/supabase-js'
 
 // Configuração JWT
 const JWT_SECRET = process.env.JWT_SECRET || 'U3pZjijm9HvwB4T0uGvgXlazWT63+f2U701YmPc6i7umkChmBalYatFX+s1j/ERIbXcSWNjOqcZB5WdDWZqJzw=='
 const JWT_EXPIRES_IN = '24h' // Token expira em 24 horas
 
-// Usuários administradores (em produção, isso deveria vir do banco de dados)
-const ADMIN_USERS = [
-  {
-    email: 'adminfhd@fhd.com',
-    password: 'admin123', // Em produção, usar hash bcrypt
-    name: 'Administrador FHD',
-    role: 'admin'
-  }
+// Configuração Supabase
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+
+// Criar cliente Supabase
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+// Lista de usuários autorizados
+const AUTHORIZED_USERS = [
+  'adminfhd@fhd.com',
+  'fhduser@fhd.com'
 ]
 
 // Configuração CORS segura
@@ -45,13 +49,13 @@ const corsOptions = {
   optionsSuccessStatus: 200
 }
 
-// Função para gerar token JWT
-const generateToken = (user) => {
+// Função para gerar token JWT personalizado
+const generateCustomToken = (user) => {
   const payload = {
-    id: user.email,
+    id: user.id,
     email: user.email,
-    name: user.name,
-    role: user.role,
+    name: user.user_metadata?.name || user.email,
+    role: user.email === 'adminfhd@fhd.com' ? 'admin' : 'user',
     iat: Math.floor(Date.now() / 1000),
     exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 horas
   }
@@ -68,10 +72,12 @@ const verifyToken = (token) => {
   }
 }
 
-// Função para login
+// Função para login usando Supabase
 async function handleLogin(req, res) {
   try {
     const { email, password } = req.body
+
+    console.log('🔐 [AUTH] Tentativa de login para:', email)
 
     if (!email || !password) {
       return res.status(400).json({
@@ -80,34 +86,64 @@ async function handleLogin(req, res) {
       })
     }
 
-    // Buscar usuário
-    const user = ADMIN_USERS.find(u => u.email === email)
-    
-    if (!user || user.password !== password) {
+    // Verificar se o Supabase está configurado
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('❌ [AUTH] Supabase não configurado')
+      return res.status(500).json({
+        success: false,
+        error: 'Configuração do Supabase não encontrada'
+      })
+    }
+
+    // Autenticar com Supabase
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
+
+    if (error) {
+      console.error('❌ [AUTH] Erro de autenticação Supabase:', error.message)
       return res.status(401).json({
         success: false,
         error: 'Credenciais inválidas'
       })
     }
 
-    // Gerar token JWT
-    const token = generateToken(user)
+    if (!data.user) {
+      console.error('❌ [AUTH] Usuário não encontrado')
+      return res.status(401).json({
+        success: false,
+        error: 'Credenciais inválidas'
+      })
+    }
+
+    // Verificar se o usuário tem permissão de acesso
+    if (!AUTHORIZED_USERS.includes(data.user.email)) {
+      console.error('❌ [AUTH] Usuário não autorizado:', data.user.email)
+      return res.status(403).json({
+        success: false,
+        error: 'Acesso negado. Usuário não autorizado.'
+      })
+    }
+
+    // Gerar token JWT personalizado
+    const customToken = generateCustomToken(data.user)
     
     // Calcular data de expiração
     const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000)) // 24 horas
 
-    console.log('✅ [AUTH] Login bem-sucedido para:', email)
+    console.log('✅ [AUTH] Login bem-sucedido para:', data.user.email)
     
     return res.status(200).json({
       success: true,
       data: {
         user: {
-          id: user.email,
-          email: user.email,
-          name: user.name,
-          role: user.role
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.user_metadata?.name || data.user.email,
+          role: data.user.email === 'adminfhd@fhd.com' ? 'admin' : 'user'
         },
-        token,
+        token: customToken,
         expiresAt: expiresAt.toISOString()
       }
     })
@@ -124,6 +160,13 @@ async function handleLogin(req, res) {
 async function handleLogout(req, res) {
   try {
     console.log('✅ [AUTH] Logout solicitado')
+    
+    // Fazer logout do Supabase
+    const { error } = await supabase.auth.signOut()
+    
+    if (error) {
+      console.error('❌ [AUTH] Erro no logout Supabase:', error)
+    }
     
     return res.status(200).json({
       success: true,
@@ -195,10 +238,10 @@ async function handleRefreshToken(req, res) {
     // Verificar token atual
     const decoded = verifyToken(token)
     
-    // Buscar usuário
-    const user = ADMIN_USERS.find(u => u.email === decoded.email)
+    // Verificar se o usuário ainda existe no Supabase
+    const { data: { user }, error } = await supabase.auth.getUser()
     
-    if (!user) {
+    if (error || !user || user.email !== decoded.email) {
       return res.status(401).json({
         success: false,
         error: 'Usuário não encontrado'
@@ -206,7 +249,7 @@ async function handleRefreshToken(req, res) {
     }
 
     // Gerar novo token
-    const newToken = generateToken(user)
+    const newToken = generateCustomToken(user)
     const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000))
 
     console.log('✅ [AUTH] Token renovado para:', user.email)
@@ -215,10 +258,10 @@ async function handleRefreshToken(req, res) {
       success: true,
       data: {
         user: {
-          id: user.email,
+          id: user.id,
           email: user.email,
-          name: user.name,
-          role: user.role
+          name: user.user_metadata?.name || user.email,
+          role: user.email === 'adminfhd@fhd.com' ? 'admin' : 'user'
         },
         token: newToken,
         expiresAt: expiresAt.toISOString()
