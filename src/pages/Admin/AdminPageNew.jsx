@@ -37,12 +37,13 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from '@/components/ui/dropdown-menu'
-import { useAuth } from '@/contexts/AuthContext'
+import { useJWTAuth } from '@/contexts/JWTAuthContext'
 import { useOverdueChecker } from '@/hooks/useOverdueChecker'
 import { menuPrefsAPI } from '@/api/menuPrefs'
 import AdminModal from '@/components/admin/AdminModal'
 import { ModalActionButton, ModalSection, ModalGrid } from '@/components/admin/AdminModal'
 import { Switch } from '@/components/ui/switch'
+import AdminHeader from '@/components/AdminHeader'
 
 // Import existing managers
 import GalleryManager from './GalleryManager'
@@ -70,7 +71,7 @@ const AdminPageNew = () => {
   const [visibilityMap, setVisibilityMap] = useState({})
   const [manageMenuOpen, setManageMenuOpen] = useState(false)
   const [manageSearch, setManageSearch] = useState('')
-  const { logout, userPermissions, user } = useAuth()
+  const { logout, user } = useJWTAuth()
   const [accountOpen, setAccountOpen] = useState(false)
   
   // Ativar verificação automática de boletos vencidos
@@ -425,6 +426,9 @@ const AdminPageNew = () => {
       <MobileOptimizations />
 
       <div className="min-h-screen bg-gray-50 flex touch-target">
+        {/* Admin Header */}
+        <AdminHeader />
+        
         {/* Sidebar */}
         <motion.aside
           initial={false}

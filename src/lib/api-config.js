@@ -12,16 +12,17 @@ export const isAdminPage = () => {
 export const getAuthHeaders = () => {
   const headers = {
     'Content-Type': 'application/json',
+    'Origin': window.location.origin
   }
 
   // Se estamos na página admin, adicionar header de identificação
   if (isAdminPage()) {
     headers['X-Admin-Request'] = 'true'
     
-    // Aqui você pode adicionar token de autenticação se necessário
-    const adminToken = localStorage.getItem('adminToken')
-    if (adminToken) {
-      headers['Authorization'] = `Bearer ${adminToken}`
+    // Adicionar token JWT se disponível
+    const token = localStorage.getItem('jwt_token')
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
     }
   }
 

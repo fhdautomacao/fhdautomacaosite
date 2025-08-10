@@ -1,38 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { motion } from 'framer-motion';
-import { Shield } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { Shield, Clock, AlertCircle } from 'lucide-react';
+import { useJWTAuth } from '@/contexts/JWTAuthContext';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated, loading: authLoading } = useJWTAuth();
+
+  // Verificar se já está autenticado
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      navigate('/admin-fhd');
+    }
+  }, [isAuthenticated, authLoading, navigate]);
+
+  // Verificar se houve logout por expiração de sessão
+  useEffect(() => {
+    const expired = localStorage.getItem('session_expired');
+    if (expired === 'true') {
+      setSessionExpired(true);
+      localStorage.removeItem('session_expired');
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSessionExpired(false);
     setLoading(true);
 
-    console.log('Valores dos campos:', { email, password: password ? '***' : 'vazio' });
+    console.log('Tentando login JWT:', { email, password: password ? '***' : 'vazio' });
 
     try {
       await login(email, password);
-      navigate('/admin-fhd'); // Redireciona para a página de administração após o login
+      navigate('/admin-fhd');
     } catch (error) {
-      console.error('Erro no login:', error);
+      console.error('Erro no login JWT:', error);
       setError(error.message || 'Erro interno. Tente novamente.');
     }
     
     setLoading(false);
   };
+
+  // Mostrar loading enquanto verifica autenticação
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Verificando autenticação...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -53,6 +83,21 @@ const LoginPage = () => {
             </motion.div>
             <CardTitle className="text-3xl font-bold text-gray-900">Acesso Administrativo</CardTitle>
             <CardDescription className="mt-2 text-gray-600">Faça login para acessar o painel.</CardDescription>
+            
+            {/* Alerta de sessão expirada */}
+            {sessionExpired && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg"
+              >
+                <div className="flex items-center text-red-800">
+                  <Clock className="h-4 w-4 mr-2" />
+                  <span className="text-sm font-medium">Sessão expirada</span>
+                </div>
+                <p className="text-red-600 text-xs mt-1">Faça login novamente para continuar.</p>
+              </motion.div>
+            )}
           </CardHeader>
           <CardContent>
             <form className="space-y-6" onSubmit={handleSubmit}>
@@ -88,7 +133,12 @@ const LoginPage = () => {
                   className="mt-1"
                 />
               </div>
-              {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+              {error && (
+                <div className="flex items-center justify-center p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <AlertCircle className="h-4 w-4 text-red-600 mr-2" />
+                  <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              )}
               <Button
                 type="submit"
                 disabled={loading}

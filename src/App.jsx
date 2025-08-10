@@ -13,22 +13,22 @@ import TermosDeUso from '@/pages/public/TermosDeUso'
 import PoliticaPrivacidade from '@/pages/public/PoliticaPrivacidade'
 import AdminPageNew from '@/pages/Admin/AdminPageNew.jsx'
 import LoginPage from '@/pages/Admin/LoginPage.jsx'
-import ProtectedRoute from '@/components/common/ProtectedRoute'
-import { AuthProvider } from '@/contexts/AuthContext'
+import ProtectedRoute from '@/components/ProtectedRoute'
+import { JWTAuthProvider } from '@/contexts/JWTAuthContext'
 import { ModalProvider } from '@/components/ModalProvider'
 // import TesteFramework from '@/pages/TesteFramework'
 
 function App() {
   return (
     <HelmetProvider>
-      <AuthProvider>
+      <JWTAuthProvider>
         <ModalProvider>
           <Router>
             {/* Move useLocation and isAdminRoute inside Router */}
             <AppContent />
           </Router>
         </ModalProvider>
-      </AuthProvider>
+      </JWTAuthProvider>
     </HelmetProvider>
   )
 }
@@ -58,6 +58,7 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
+        <Route path="/admin/login" element={<LoginPage />} />
         <Route path="/login-admin" element={<LoginPage />} />
       </Routes>
       {!isAdminRoute && <Footer />}
