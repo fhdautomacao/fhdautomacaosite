@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useJWTAuth } from '@/contexts/JWTAuthContext'
 import { toast } from 'sonner'
@@ -7,18 +7,30 @@ const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading, logout } = useJWTAuth()
   const navigate = useNavigate()
 
+  // Memoizar o status de autenticação para evitar re-renderizações
+  const authStatus = useMemo(() => ({
+    isAuthenticated,
+    loading
+  }), [isAuthenticated, loading])
+
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    // Só verificar se não estiver carregando e não estiver autenticado
+    if (!authStatus.loading && !authStatus.isAuthenticated) {
       console.log('🚫 Acesso negado - usuário não autenticado')
-      localStorage.setItem('session_expired', 'true')
-      logout()
-      navigate('/admin/login')
-      toast.error('Acesso negado. Faça login para continuar.')
+      
+      // Evitar múltiplas chamadas de logout
+      const sessionExpired = localStorage.getItem('session_expired')
+      if (!sessionExpired) {
+        localStorage.setItem('session_expired', 'true')
+        logout()
+        navigate('/admin/login')
+        toast.error('Acesso negado. Faça login para continuar.')
+      }
     }
-  }, [isAuthenticated, loading, logout, navigate])
+  }, [authStatus.isAuthenticated, authStatus.loading, logout, navigate])
 
   // Mostrar loading enquanto verifica autenticação
-  if (loading) {
+  if (authStatus.loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -30,7 +42,7 @@ const ProtectedRoute = ({ children }) => {
   }
 
   // Se não estiver autenticado, não renderizar nada (será redirecionado)
-  if (!isAuthenticated) {
+  if (!authStatus.isAuthenticated) {
     return null
   }
 

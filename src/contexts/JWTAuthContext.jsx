@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { getApiUrl } from '@/lib/urls-config'
@@ -21,6 +21,7 @@ export const JWTAuthProvider = ({ children }) => {
   const [isRouterReady, setIsRouterReady] = useState(false)
   const [userPermissions, setUserPermissions] = useState({})
   const navigate = useNavigate()
+  const isInitialized = useRef(false)
 
   // Marcar que o Router está pronto
   useEffect(() => {
@@ -112,7 +113,7 @@ export const JWTAuthProvider = ({ children }) => {
     } finally {
       setLoading(false)
     }
-  }, [API_BASE_URL])
+  }, [API_BASE_URL, checkUserPermissions])
 
   // Função para fazer logout
   const logout = useCallback(() => {
@@ -227,8 +228,14 @@ export const JWTAuthProvider = ({ children }) => {
 
   // Função para inicializar autenticação
   const initializeAuth = useCallback(async () => {
+    // Evitar inicialização múltipla
+    if (isInitialized.current) {
+      return
+    }
+    
     try {
       setLoading(true)
+      isInitialized.current = true
       
       // Recuperar dados do localStorage
       const storedToken = localStorage.getItem('jwt_token')
@@ -245,7 +252,7 @@ export const JWTAuthProvider = ({ children }) => {
       const expiryDate = new Date(storedExpiresAt)
       
       // Verificar se o token expirou
-      if (isTokenExpired()) {
+      if (new Date() > expiryDate) {
         console.log('❌ Token JWT expirado')
         logout()
         toast.error('Sessão expirada. Faça login novamente.')
@@ -253,7 +260,10 @@ export const JWTAuthProvider = ({ children }) => {
       }
       
       // Verificar se o token está próximo de expirar
-      if (isTokenExpiringSoon()) {
+      const timeUntilExpiry = expiryDate.getTime() - new Date().getTime()
+      const fiveMinutes = 5 * 60 * 1000
+      
+      if (timeUntilExpiry < fiveMinutes) {
         console.log('⚠️ Token JWT próximo de expirar, tentando renovar...')
         const refreshed = await refreshToken(storedToken)
         
@@ -287,26 +297,31 @@ export const JWTAuthProvider = ({ children }) => {
     } finally {
       setLoading(false)
     }
-  }, [logout, refreshToken, verifyToken, isTokenExpired, isTokenExpiringSoon])
+  }, [logout, refreshToken, verifyToken])
 
-  // Verificar autenticação na inicialização
+  // Verificar autenticação na inicialização (apenas uma vez)
   useEffect(() => {
-    initializeAuth()
-  }, [initializeAuth])
+    if (!isInitialized.current) {
+      initializeAuth()
+    }
+  }, []) // Removida dependência de initializeAuth
 
   // Verificar expiração do token periodicamente
   useEffect(() => {
     if (!token || !tokenExpiry) return
 
     const checkExpiry = () => {
-      if (isTokenExpired()) {
+      if (new Date() > tokenExpiry) {
         console.log('❌ Token JWT expirado durante verificação periódica')
         logout()
         toast.error('Sessão expirada. Faça login novamente.')
         return
       }
 
-      if (isTokenExpiringSoon()) {
+      const timeUntilExpiry = tokenExpiry.getTime() - new Date().getTime()
+      const fiveMinutes = 5 * 60 * 1000
+      
+      if (timeUntilExpiry < fiveMinutes) {
         console.log('⚠️ Token JWT próximo de expirar, renovando...')
         refreshToken(token).then(refreshed => {
           if (!refreshed) {
@@ -322,7 +337,7 @@ export const JWTAuthProvider = ({ children }) => {
     const interval = setInterval(checkExpiry, 60000)
     
     return () => clearInterval(interval)
-  }, [token, tokenExpiry, isTokenExpired, isTokenExpiringSoon, refreshToken, logout])
+  }, [token, tokenExpiry, refreshToken, logout])
 
   // Função para obter headers de autenticação
   const getAuthHeaders = useCallback(() => {
@@ -334,6 +349,11 @@ export const JWTAuthProvider = ({ children }) => {
     }
   }, [token])
 
+  // Memoizar o valor de isAuthenticated para evitar recálculos desnecessários
+  const isAuthenticated = useMemo(() => {
+    return !!user && !!token && !isTokenExpired()
+  }, [user, token, isTokenExpired])
+
   const value = {
     user,
     token,
@@ -344,7 +364,7 @@ export const JWTAuthProvider = ({ children }) => {
     refreshToken,
     getAuthHeaders,
     userPermissions,
-    isAuthenticated: !!user && !!token && !isTokenExpired(),
+    isAuthenticated,
     isTokenExpired,
     isTokenExpiringSoon
   }
