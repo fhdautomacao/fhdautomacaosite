@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useJWTAuth } from '@/contexts/JWTAuthContext'
 import { toast } from 'sonner'
@@ -7,11 +7,11 @@ const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading, logout } = useJWTAuth()
   const navigate = useNavigate()
 
-  // Memoizar o status de autenticação para evitar re-renderizações
-  const authStatus = useMemo(() => ({
+  // Status de autenticação
+  const authStatus = {
     isAuthenticated,
     loading
-  }), [isAuthenticated, loading])
+  }
 
   useEffect(() => {
     // Só verificar se não estiver carregando e não estiver autenticado

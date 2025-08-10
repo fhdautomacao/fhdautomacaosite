@@ -349,10 +349,8 @@ export const JWTAuthProvider = ({ children }) => {
     }
   }, [token])
 
-  // Memoizar o valor de isAuthenticated para evitar recálculos desnecessários
-  const isAuthenticated = useMemo(() => {
-    return !!user && !!token && !isTokenExpired()
-  }, [user, token, isTokenExpired])
+  // Calcular isAuthenticated diretamente
+  const isAuthenticated = !!user && !!token && !isTokenExpired()
 
   const value = {
     user,

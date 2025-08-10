@@ -68,22 +68,20 @@ if (new Date() > expiryDate) {
 }
 ```
 
-#### Memoização do valor isAuthenticated:
+#### Cálculo direto do valor isAuthenticated:
 ```javascript
-const isAuthenticated = useMemo(() => {
-  return !!user && !!token && !isTokenExpired()
-}, [user, token, isTokenExpired])
+const isAuthenticated = !!user && !!token && !isTokenExpired()
 ```
 
 ### 2. ProtectedRoute.jsx
 
 #### Otimização para evitar re-renderizações:
 ```javascript
-// Memoizar o status de autenticação
-const authStatus = useMemo(() => ({
+// Status de autenticação
+const authStatus = {
   isAuthenticated,
   loading
-}), [isAuthenticated, loading])
+}
 
 // Evitar múltiplas chamadas de logout
 const sessionExpired = localStorage.getItem('session_expired')
@@ -120,12 +118,40 @@ Para monitorar se o problema foi resolvido, verifique:
 3. **Performance**: Login deve ser rápido e sem travamentos
 4. **Logs do servidor**: Não deve haver spam de logs de autenticação
 
+## Correção Adicional - Erro useMemo
+
+### Problema Identificado
+Após as correções iniciais, foi identificado um erro `ReferenceError: useMemo is not defined` na página de login.
+
+### Causa
+O `useMemo` estava sendo usado mas não estava sendo importado corretamente, ou havia problemas de compatibilidade.
+
+### Solução Implementada
+Removido o uso de `useMemo` e substituído por cálculos diretos:
+
+```javascript
+// Antes (causava erro):
+const isAuthenticated = useMemo(() => {
+  return !!user && !!token && !isTokenExpired()
+}, [user, token, isTokenExpired])
+
+// Depois (corrigido):
+const isAuthenticated = !!user && !!token && !isTokenExpired()
+```
+
+### Benefícios
+- ✅ Eliminação do erro de `useMemo`
+- ✅ Código mais simples e direto
+- ✅ Melhor compatibilidade
+- ✅ Performance mantida
+
 ## Prevenção Futura
 
 Para evitar problemas similares:
 
 1. **Sempre usar `useRef` para controle de inicialização**
 2. **Evitar dependências circulares em `useCallback`**
-3. **Memoizar valores computados com `useMemo`**
+3. **Verificar imports antes de usar hooks React**
 4. **Usar arrays de dependência vazios quando apropriado**
 5. **Testar componentes de autenticação isoladamente**
+6. **Preferir cálculos diretos quando possível**
