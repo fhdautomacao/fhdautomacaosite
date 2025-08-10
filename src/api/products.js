@@ -10,18 +10,12 @@ export const productsAPI = {
       .select('*')
       .order('display_order', { ascending: true })
     
-    console.log('📊 productsAPI.getAll(): Resultado:', {
-      data: data?.length || 0,
-      error: error?.message || null,
-      products: data
-    })
-    
     if (error) {
-      console.error('❌ productsAPI.getAll(): Erro:', error)
+      console.error('❌ Erro ao buscar produtos:', error)
       throw error
     }
     
-    console.log('✅ productsAPI.getAll(): Sucesso')
+    console.log('✅ Produtos carregados:', data?.length || 0)
     return data
   },
 
@@ -39,13 +33,21 @@ export const productsAPI = {
 
   // Criar novo produto
   async create(product) {
+    console.log('🔧 productsAPI.create(): Criando produto...')
+    console.log('📝 Dados do produto:', product)
+    
     const { data, error } = await supabase
       .from('products')
       .insert([product])
       .select()
       .single()
     
-    if (error) throw error
+    if (error) {
+      console.error('❌ Erro ao criar produto:', error)
+      throw error
+    }
+    
+    console.log('✅ Produto criado com sucesso:', data.id)
     return data
   },
 
@@ -57,7 +59,7 @@ export const productsAPI = {
       .eq('id', id)
       .select()
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -79,70 +81,16 @@ export const productsAPI = {
     const filePath = `products/${fileName}`
 
     const { data, error } = await supabase.storage
-      .from('arquivos')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false,
-      })
+      .from('images')
+      .upload(filePath, file)
 
     if (error) throw error
 
-    const { data: publicURL } = supabase.storage
-      .from('arquivos')
+    const { data: { publicUrl } } = supabase.storage
+      .from('images')
       .getPublicUrl(filePath)
 
-    return publicURL.publicUrl
-  },
-
-  // Buscar produtos por categoria
-  async getByCategory(category) {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('category', category)
-      .eq('is_active', true)
-      .order('display_order', { ascending: true })
-    
-    if (error) throw error
-    return data
-  },
-
-  // Buscar produtos ativos
-  async getActive() {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('is_active', true)
-      .order('display_order', { ascending: true })
-    
-    if (error) throw error
-    return data
-  },
-
-  // Atualizar ordem de exibição
-  async updateDisplayOrder(id, displayOrder) {
-    const { data, error } = await supabase
-      .from('products')
-      .update({ display_order: displayOrder })
-      .eq('id', id)
-      .select()
-      .single()
-    
-    if (error) throw error
-    return data
-  },
-
-  // Ativar/desativar produto
-  async toggleActive(id, isActive) {
-    const { data, error } = await supabase
-      .from('products')
-      .update({ is_active: isActive })
-      .eq('id', id)
-      .select()
-      .single()
-    
-    if (error) throw error
-    return data
+    return publicUrl
   }
 }
 

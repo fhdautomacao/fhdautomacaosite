@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef } f
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { getApiUrl } from '@/lib/urls-config'
+import { supabase } from '@/lib/supabase'
 
 const JWTAuthContext = createContext()
 
@@ -118,6 +119,24 @@ export const JWTAuthProvider = ({ children }) => {
         localStorage.setItem('jwt_user', JSON.stringify(userData))
         localStorage.setItem('jwt_expires_at', expiresAt)
         
+        // Autenticar no Supabase Auth para contornar RLS
+        console.log('🔐 Autenticando no Supabase Auth...')
+        const { data: supabaseData, error: supabaseError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        })
+
+        if (supabaseError) {
+          console.error('❌ Erro na autenticação Supabase:', supabaseError)
+          throw new Error('Erro na autenticação do banco de dados')
+        }
+
+        if (supabaseData?.user) {
+          console.log('✅ Autenticação Supabase bem-sucedida:', supabaseData.user.email)
+          // Salvar token de sessão do Supabase
+          localStorage.setItem('supabase_session', JSON.stringify(supabaseData.session))
+        }
+        
         // Verificar permissões do usuário
         checkUserPermissions(userData.email)
         
@@ -126,7 +145,7 @@ export const JWTAuthProvider = ({ children }) => {
         setToken(authToken)
         setTokenExpiry(new Date(expiresAt))
         
-        console.log('✅ Login JWT bem-sucedido:', userData.email)
+        console.log('✅ Login JWT + Supabase bem-sucedido:', userData.email)
         toast.success('Login realizado com sucesso!')
         
         return data.data
@@ -143,11 +162,26 @@ export const JWTAuthProvider = ({ children }) => {
   }, [API_BASE_URL, checkUserPermissions])
 
   // Função para fazer logout
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    try {
+      // Fazer logout do Supabase Auth
+      console.log('🔐 Fazendo logout do Supabase Auth...')
+      const { error: supabaseError } = await supabase.auth.signOut()
+      
+      if (supabaseError) {
+        console.error('❌ Erro no logout Supabase:', supabaseError)
+      } else {
+        console.log('✅ Logout Supabase realizado')
+      }
+    } catch (error) {
+      console.error('❌ Erro ao fazer logout do Supabase:', error)
+    }
+
     // Limpar localStorage
     localStorage.removeItem('jwt_token')
     localStorage.removeItem('jwt_user')
     localStorage.removeItem('jwt_expires_at')
+    localStorage.removeItem('supabase_session')
     
     // Limpar estado
     setUser(null)
@@ -155,7 +189,7 @@ export const JWTAuthProvider = ({ children }) => {
     setTokenExpiry(null)
     setUserPermissions({})
     
-    console.log('✅ Logout JWT realizado')
+    console.log('✅ Logout JWT + Supabase realizado')
     toast.success('Logout realizado com sucesso!')
     
     // Redirecionar para login apenas se o Router estiver pronto
@@ -273,7 +307,7 @@ export const JWTAuthProvider = ({ children }) => {
     }
     
     try {
-      console.log('🚀 Iniciando autenticação JWT...')
+      console.log('🚀 Iniciando autenticação JWT + Supabase...')
       setLoading(true)
       isInitialized.current = true
       
@@ -281,11 +315,13 @@ export const JWTAuthProvider = ({ children }) => {
       const storedToken = localStorage.getItem('jwt_token')
       const storedUser = localStorage.getItem('jwt_user')
       const storedExpiresAt = localStorage.getItem('jwt_expires_at')
+      const storedSupabaseSession = localStorage.getItem('supabase_session')
       
       console.log('📦 Dados do localStorage:', {
         hasToken: !!storedToken,
         hasUser: !!storedUser,
         hasExpiresAt: !!storedExpiresAt,
+        hasSupabaseSession: !!storedSupabaseSession,
         tokenLength: storedToken ? storedToken.length : 0
       })
       
@@ -311,6 +347,36 @@ export const JWTAuthProvider = ({ children }) => {
         logout()
         toast.error('Sessão expirada. Faça login novamente.')
         return
+      }
+      
+      // Restaurar sessão do Supabase se disponível
+      if (storedSupabaseSession) {
+        try {
+          const session = JSON.parse(storedSupabaseSession)
+          console.log('🔐 Restaurando sessão Supabase...')
+          
+          // Verificar se a sessão do Supabase ainda é válida
+          const { data: { user }, error } = await supabase.auth.getUser()
+          
+          if (error || !user) {
+            console.log('⚠️ Sessão Supabase expirada, tentando renovar...')
+            // Tentar renovar a sessão do Supabase
+            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+            
+            if (refreshError || !refreshData.session) {
+              console.log('❌ Falha na renovação da sessão Supabase')
+              // Continuar apenas com JWT, mas avisar o usuário
+              toast.warning('Sessão do banco de dados expirada. Algumas operações podem não funcionar.')
+            } else {
+              console.log('✅ Sessão Supabase renovada')
+              localStorage.setItem('supabase_session', JSON.stringify(refreshData.session))
+            }
+          } else {
+            console.log('✅ Sessão Supabase válida')
+          }
+        } catch (error) {
+          console.error('❌ Erro ao restaurar sessão Supabase:', error)
+        }
       }
       
       // Verificar se o token está próximo de expirar
@@ -353,7 +419,7 @@ export const JWTAuthProvider = ({ children }) => {
         checkUserPermissions(userData.email)
       }
       
-      console.log('✅ Autenticação JWT inicializada com sucesso')
+      console.log('✅ Autenticação JWT + Supabase inicializada com sucesso')
     } catch (error) {
       console.error('❌ Erro na inicialização da autenticação:', error)
       logout()

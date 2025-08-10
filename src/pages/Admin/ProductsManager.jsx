@@ -24,6 +24,7 @@ import { ModalActionButton, ModalSection, ModalGrid } from '@/components/admin/A
 import { Badge } from '@/components/ui/badge'
 import { productsAPI } from '@/api/products'
 import { useProductCategories } from '@/hooks/useCategories'
+import { useAuthenticatedSupabase } from '@/hooks/useAuthenticatedSupabase'
 
 const ProductsManager = () => {
   const [products, setProducts] = useState([])
@@ -40,6 +41,7 @@ const ProductsManager = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const { categories, loading: categoriesLoading, error: categoriesError } = useProductCategories()
+  const { authenticatedOperation, canPerformOperations, loading: authLoading } = useAuthenticatedSupabase()
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -83,11 +85,25 @@ const ProductsManager = () => {
   const loadProducts = async () => {
     try {
       setLoading(true)
-      const data = await productsAPI.getAll()
+      
+      if (!canPerformOperations()) {
+        throw new Error('Usuário não autenticado no banco de dados')
+      }
+      
+      const data = await authenticatedOperation(async (supabase) => {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .order('display_order', { ascending: true })
+        
+        if (error) throw error
+        return data
+      })
+      
       setProducts(data)
     } catch (error) {
       console.error("Erro ao carregar produtos:", error)
-      setError("Erro ao carregar produtos")
+      setError(error.message || "Erro ao carregar produtos")
     } finally {
       setLoading(false)
     }
@@ -111,9 +127,29 @@ const ProductsManager = () => {
         return
       }
 
+      if (!canPerformOperations()) {
+        throw new Error('Usuário não autenticado no banco de dados')
+      }
+
       let imageUrl = "/products/placeholder.jpg"
       if (newProduct.image) {
-        imageUrl = await productsAPI.uploadImage(newProduct.image)
+        imageUrl = await authenticatedOperation(async (supabase) => {
+          const fileExt = newProduct.image.name.split('.').pop()
+          const fileName = `${Date.now()}.${fileExt}`
+          const filePath = `products/${fileName}`
+
+          const { data, error } = await supabase.storage
+            .from('images')
+            .upload(filePath, newProduct.image)
+
+          if (error) throw error
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('images')
+            .getPublicUrl(filePath)
+
+          return publicUrl
+        })
       }
 
       const productData = {
@@ -127,7 +163,17 @@ const ProductsManager = () => {
         display_order: products.length
       }
       
-      await productsAPI.create(productData)
+      await authenticatedOperation(async (supabase) => {
+        const { data, error } = await supabase
+          .from('products')
+          .insert([productData])
+          .select()
+          .single()
+        
+        if (error) throw error
+        return data
+      })
+      
       await loadProducts() // Recarregar lista
       setNewProduct({ name: "", category: "", description: "", features: [], price: "", image: null })
       setNewFeature("")
@@ -135,7 +181,7 @@ const ProductsManager = () => {
       setIsAddModalOpen(false)
     } catch (error) {
       console.error("Erro ao adicionar produto:", error)
-      setErrors({ submit: "Erro ao adicionar produto. Verifique os dados e tente novamente." })
+      setErrors({ submit: error.message || "Erro ao adicionar produto. Verifique os dados e tente novamente." })
     } finally {
       setIsSubmitting(false)
     }
@@ -144,9 +190,29 @@ const ProductsManager = () => {
   const handleEditProduct = async () => {
     if (selectedProduct) {
       try {
+        if (!canPerformOperations()) {
+          throw new Error('Usuário não autenticado no banco de dados')
+        }
+
         let imageUrl = selectedProduct.image_url
         if (selectedProduct.image && typeof selectedProduct.image !== 'string') { // Verifica se é um novo arquivo
-          imageUrl = await productsAPI.uploadImage(selectedProduct.image)
+          imageUrl = await authenticatedOperation(async (supabase) => {
+            const fileExt = selectedProduct.image.name.split('.').pop()
+            const fileName = `${Date.now()}.${fileExt}`
+            const filePath = `products/${fileName}`
+
+            const { data, error } = await supabase.storage
+              .from('images')
+              .upload(filePath, selectedProduct.image)
+
+            if (error) throw error
+
+            const { data: { publicUrl } } = supabase.storage
+              .from('images')
+              .getPublicUrl(filePath)
+
+            return publicUrl
+          })
         }
 
         const updates = {
@@ -158,13 +224,24 @@ const ProductsManager = () => {
           image_url: imageUrl
         }
         
-        await productsAPI.update(selectedProduct.id, updates)
+        await authenticatedOperation(async (supabase) => {
+          const { data, error } = await supabase
+            .from('products')
+            .update(updates)
+            .eq('id', selectedProduct.id)
+            .select()
+            .single()
+          
+          if (error) throw error
+          return data
+        })
+        
         await loadProducts() // Recarregar lista
         setIsEditModalOpen(false)
         setSelectedProduct(null)
       } catch (error) {
         console.error("Erro ao editar produto:", error)
-        setError("Erro ao editar produto")
+        setError(error.message || "Erro ao editar produto")
       }
     }
   }
@@ -172,11 +249,23 @@ const ProductsManager = () => {
   const handleDeleteProduct = async (id) => {
     if (confirm("Tem certeza que deseja excluir este produto?")) {
       try {
-        await productsAPI.delete(id)
+        if (!canPerformOperations()) {
+          throw new Error('Usuário não autenticado no banco de dados')
+        }
+
+        await authenticatedOperation(async (supabase) => {
+          const { error } = await supabase
+            .from('products')
+            .delete()
+            .eq('id', id)
+          
+          if (error) throw error
+        })
+        
         await loadProducts() // Recarregar lista
       } catch (error) {
         console.error("Erro ao excluir produto:", error)
-        setError("Erro ao excluir produto")
+        setError(error.message || "Erro ao excluir produto")
       }
     }
   }
@@ -229,10 +318,12 @@ const ProductsManager = () => {
   return (
     <div className="space-y-6">
       {/* Loading */}
-      {loading && (
+      {(loading || authLoading) && (
         <div className="flex justify-center items-center py-12">
           <Loader2 className="h-8 w-8 animate-spin" />
-          <span className="ml-2">Carregando produtos...</span>
+          <span className="ml-2">
+            {authLoading ? 'Verificando autenticação...' : 'Carregando produtos...'}
+          </span>
         </div>
       )}
 
