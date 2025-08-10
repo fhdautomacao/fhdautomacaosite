@@ -52,23 +52,35 @@ export default async function handler(req, res) {
 
     console.log('Autenticação bem-sucedida:', { userId: data.user.id })
 
+    // Calcular data de expiração (24 horas a partir de agora)
+    const expiresAt = new Date()
+    expiresAt.setHours(expiresAt.getHours() + 24)
+
     // Usar dados do usuário autenticado
-    const response = {
-      user: {
-        id: data.user.id,
-        email: data.user.email,
-        name: data.user.user_metadata?.name || data.user.email,
-        isAdmin: data.user.email === 'adminfhd@fhd.com' // Definir admin baseado no email
-      },
-      token: data.session.access_token,
-      refresh_token: data.session.refresh_token,
+    const userData = {
+      id: data.user.id,
+      email: data.user.email,
+      name: data.user.user_metadata?.name || data.user.email,
+      role: data.user.email === 'adminfhd@fhd.com' ? 'admin' : 'user'
     }
 
-    console.log('Resposta de sucesso:', { userId: response.user.id, email: response.user.email })
+    const response = {
+      success: true,
+      data: {
+        user: userData,
+        token: data.session.access_token,
+        expiresAt: expiresAt.toISOString()
+      }
+    }
+
+    console.log('Resposta de sucesso:', { userId: userData.id, email: userData.email })
     return res.status(200).json(response)
 
   } catch (error) {
     console.error('Erro na API de login:', error)
-    return res.status(500).json({ error: 'Erro interno do servidor' })
+    return res.status(500).json({ 
+      success: false,
+      error: 'Erro interno do servidor' 
+    })
   }
 } 

@@ -120,6 +120,24 @@ async function handleLogin(req, res) {
   }
 }
 
+// Função para logout
+async function handleLogout(req, res) {
+  try {
+    console.log('✅ [AUTH] Logout solicitado')
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Logout realizado com sucesso'
+    })
+  } catch (error) {
+    console.error('❌ [AUTH] Erro no logout:', error)
+    return res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor'
+    })
+  }
+}
+
 // Função para verificar token
 async function handleVerifyToken(req, res) {
   try {
@@ -266,6 +284,8 @@ export default async function handler(req, res) {
         switch (action) {
           case 'login':
             return await handleLogin(req, res)
+          case 'logout':
+            return await handleLogout(req, res)
           case 'verify':
             return await handleVerifyToken(req, res)
           case 'refresh':

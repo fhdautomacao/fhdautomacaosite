@@ -1,7 +1,7 @@
 // Configuração para chamadas de API com autenticação CORS
 import { getApiUrl } from './urls-config'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || getApiUrl()
+const API_BASE_URL = getApiUrl()
 
 // Função para verificar se estamos na página admin
 export const isAdminPage = () => {

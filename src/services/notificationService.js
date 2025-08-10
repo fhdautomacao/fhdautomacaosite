@@ -1,13 +1,15 @@
 // Serviço unificado para notificações
+import { getApiUrl } from '@/lib/urls-config'
+
 class NotificationService {
   constructor() {
-    this.apiUrl = process.env.VITE_API_URL || 'https://fhd-automacao-industrial-bq67.vercel.app'
+    this.apiUrl = getApiUrl()
   }
 
   // Enviar notificação para app mobile
   async sendMobileNotification(type, data) {
     try {
-      const response = await fetch(`${this.apiUrl}/api/notify-mobile`, {
+      const response = await fetch(`${this.apiUrl}/notify-mobile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

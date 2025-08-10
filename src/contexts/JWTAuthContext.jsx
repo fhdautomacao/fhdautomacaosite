@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
+import { getApiUrl } from '@/lib/urls-config'
 
 const JWTAuthContext = createContext()
 
@@ -25,13 +26,15 @@ export const JWTAuthProvider = ({ children }) => {
     setIsRouterReady(true)
   }, [])
 
-  // API base URL
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fhdautomacaoindustrialapp.vercel.app/api'
+  // API base URL - usar a função getApiUrl que detecta automaticamente o ambiente
+  const API_BASE_URL = getApiUrl()
 
   // Função para fazer login
   const login = useCallback(async (email, password) => {
     try {
       setLoading(true)
+      
+      console.log('🔗 Tentando login na URL:', `${API_BASE_URL}/auth?action=login`)
       
       const response = await fetch(`${API_BASE_URL}/auth?action=login`, {
         method: 'POST',
