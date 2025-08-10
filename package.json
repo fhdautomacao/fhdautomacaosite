@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "vercel-build": "vite build && npm run copy-assets",
-    "copy-assets": "cp -r public/* dist/ 2>/dev/null || xcopy public dist /E /I /Y 2>nul || echo 'Assets copied'"
+    "copy-assets": "cp -r public/* dist/ 2>/dev/null || xcopy public dist /E /I /Y 2>nul || echo 'Assets copied'",
+    "test:cors": "node scripts/test-cors.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.7",
@@ -58,6 +59,7 @@
     "lucide-react": "^0.510.0",
     "multer": "^2.0.2",
     "next-themes": "^0.4.6",
+    "node-fetch": "^2.7.0",
     "react": "^18.0.0",
     "react-day-picker": "8.10.1",
     "react-dom": "^18.0.0",
