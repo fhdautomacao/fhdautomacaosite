@@ -12,7 +12,8 @@ const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.NEXT_PUBLI
 console.log('🔧 [AUTH] Configuração Supabase:', {
   hasUrl: !!supabaseUrl,
   hasKey: !!supabaseKey,
-  url: supabaseUrl ? 'Configurado' : 'Não configurado'
+  url: supabaseUrl ? 'Configurado' : 'Não configurado',
+  keyLength: supabaseKey ? supabaseKey.length : 0
 })
 
 // Criar cliente Supabase
@@ -23,6 +24,8 @@ try {
     console.log('✅ [AUTH] Cliente Supabase criado com sucesso')
   } else {
     console.error('❌ [AUTH] Supabase não configurado - URL ou Key ausentes')
+    console.error('❌ [AUTH] URL:', supabaseUrl ? 'Presente' : 'Ausente')
+    console.error('❌ [AUTH] Key:', supabaseKey ? 'Presente' : 'Ausente')
   }
 } catch (error) {
   console.error('❌ [AUTH] Erro ao criar cliente Supabase:', error)
@@ -37,6 +40,8 @@ const AUTHORIZED_USERS = [
 // Função para gerar token JWT personalizado
 const generateCustomToken = (user) => {
   try {
+    console.log('🔑 [AUTH] Gerando token para usuário:', user.email)
+    
     const payload = {
       id: user.id,
       email: user.email,
@@ -46,7 +51,9 @@ const generateCustomToken = (user) => {
       exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60)
     }
     
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN })
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN })
+    console.log('✅ [AUTH] Token gerado com sucesso')
+    return token
   } catch (error) {
     console.error('❌ [AUTH] Erro ao gerar token:', error)
     throw error
@@ -148,6 +155,7 @@ async function handleLogin(req, res) {
     })
   } catch (error) {
     console.error('❌ [AUTH] Erro no login:', error)
+    console.error('❌ [AUTH] Stack trace:', error.stack)
     return res.status(500).json({
       success: false,
       error: 'Erro interno do servidor'
@@ -323,6 +331,7 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     console.error('❌ [AUTH] Erro geral:', error)
+    console.error('❌ [AUTH] Stack trace:', error.stack)
     return res.status(500).json({
       success: false,
       error: 'Erro interno do servidor'
