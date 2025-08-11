@@ -76,20 +76,44 @@ export const productsAPI = {
 
   // Upload de imagem para o storage
   async uploadImage(file) {
+    console.log('📤 productsAPI.uploadImage(): Iniciando upload...')
+    
+    // Verificar autenticação antes do upload
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      console.log('⚠️ Usuário não autenticado no Supabase, tentando renovar sessão...')
+      
+      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+      
+      if (refreshError || !refreshData.session) {
+        throw new Error('Sessão Supabase expirada. Faça login novamente.')
+      }
+      
+      console.log('✅ Sessão Supabase renovada')
+    }
+
     const fileExt = file.name.split('.').pop()
     const fileName = `${Date.now()}.${fileExt}`
     const filePath = `products/${fileName}`
 
+    console.log('📤 Upload para bucket arquivos:', filePath)
+
     const { data, error } = await supabase.storage
-      .from('images')
+      .from('arquivos')
       .upload(filePath, file)
 
-    if (error) throw error
+    if (error) {
+      console.error('❌ Erro no upload:', error)
+      throw new Error(`Erro no upload da imagem: ${error.message}`)
+    }
+
+    console.log('✅ Upload concluído:', data)
 
     const { data: { publicUrl } } = supabase.storage
-      .from('images')
+      .from('arquivos')
       .getPublicUrl(filePath)
 
+    console.log('🔗 URL pública gerada:', publicUrl)
     return publicUrl
   }
 }

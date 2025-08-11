@@ -180,23 +180,45 @@ const ProductsManager = () => {
         throw new Error('Usuário não autenticado no sistema')
       }
 
+      // Verificar autenticação Supabase antes do upload
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) {
+        console.log('⚠️ Usuário não autenticado no Supabase, tentando renovar sessão...')
+        
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+        
+        if (refreshError || !refreshData.session) {
+          throw new Error('Sessão Supabase expirada. Faça login novamente.')
+        }
+        
+        console.log('✅ Sessão Supabase renovada')
+      }
+
       let imageUrl = "/products/placeholder.jpg"
       if (newProduct.image) {
         const fileExt = newProduct.image.name.split('.').pop()
         const fileName = `${Date.now()}.${fileExt}`
         const filePath = `products/${fileName}`
 
+        console.log('📤 Iniciando upload para bucket arquivos:', filePath)
+        
         const { data, error } = await supabase.storage
-          .from('images')
+          .from('arquivos')
           .upload(filePath, newProduct.image)
 
-        if (error) throw error
+        if (error) {
+          console.error('❌ Erro no upload:', error)
+          throw new Error(`Erro no upload da imagem: ${error.message}`)
+        }
+
+        console.log('✅ Upload concluído:', data)
 
         const { data: { publicUrl } } = supabase.storage
-          .from('images')
+          .from('arquivos')
           .getPublicUrl(filePath)
 
         imageUrl = publicUrl
+        console.log('🔗 URL pública gerada:', imageUrl)
       }
 
       const productData = {
@@ -263,23 +285,45 @@ const ProductsManager = () => {
         throw new Error('Usuário não autenticado no sistema')
       }
 
+      // Verificar autenticação Supabase antes do upload
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) {
+        console.log('⚠️ Usuário não autenticado no Supabase, tentando renovar sessão...')
+        
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+        
+        if (refreshError || !refreshData.session) {
+          throw new Error('Sessão Supabase expirada. Faça login novamente.')
+        }
+        
+        console.log('✅ Sessão Supabase renovada')
+      }
+
       let imageUrl = selectedProduct.image_url
       if (selectedProduct.image && typeof selectedProduct.image !== 'string') { // Verifica se é um novo arquivo
         const fileExt = selectedProduct.image.name.split('.').pop()
         const fileName = `${Date.now()}.${fileExt}`
         const filePath = `products/${fileName}`
 
+        console.log('📤 Iniciando upload para edição no bucket arquivos:', filePath)
+        
         const { data, error } = await supabase.storage
-          .from('images')
+          .from('arquivos')
           .upload(filePath, selectedProduct.image)
 
-        if (error) throw error
+        if (error) {
+          console.error('❌ Erro no upload:', error)
+          throw new Error(`Erro no upload da imagem: ${error.message}`)
+        }
+
+        console.log('✅ Upload de edição concluído:', data)
 
         const { data: { publicUrl } } = supabase.storage
-          .from('images')
+          .from('arquivos')
           .getPublicUrl(filePath)
 
         imageUrl = publicUrl
+        console.log('🔗 URL pública de edição gerada:', imageUrl)
       }
 
       const updates = {
