@@ -310,7 +310,7 @@ const Hero = () => {
                 <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">
                   {costCount}%
                 </div>
-                <div className="text-blue-300 text-xs md:text-sm">Redução de Custos</div>
+                <div className="text-blue-300 text-xs md:text-sm">{t('hero.stats.costReduction')}</div>
               </motion.div>
               <motion.div 
                 ref={productsRef}
@@ -320,7 +320,7 @@ const Hero = () => {
                 <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">
                   {productsCount}+
                 </div>
-                <div className="text-blue-300 text-xs md:text-sm">Produtos no Catálogo</div>
+                <div className="text-blue-300 text-xs md:text-sm">{t('hero.stats.catalogProducts')}</div>
               </motion.div>
               <motion.div 
                 ref={sectorsRef}
@@ -330,17 +330,13 @@ const Hero = () => {
                 <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">
                   {sectorsCount}+
                 </div>
-                <div className="text-blue-300 text-xs md:text-sm">Setores Atendidos</div>
+                <div className="text-blue-300 text-xs md:text-sm">{t('hero.stats.sectorsServed')}</div>
               </motion.div>
             </motion.div>
 
             {/* Benefits */}
             <motion.div variants={itemVariants} className="space-y-3 md:space-y-4">
-              {[
-                "Projetos personalizados e sob medida",
-                "Suporte técnico especializado",
-                "Tecnologia de ponta e inovação constante"
-              ].map((benefit, index) => (
+              {t('hero.benefits', { returnObjects: true }).map((benefit, index) => (
                 <motion.div 
                   key={index}
                   initial={{ opacity: 0, x: -20 }}
@@ -375,7 +371,7 @@ const Hero = () => {
                   className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 md:px-8 py-3 md:py-4 rounded-xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 text-sm md:text-base w-full sm:w-auto"
                   onClick={() => window.location.href = '/orcamento'}
                 >
-                  Solicitar Orçamento Gratuito
+                  {t('hero.cta.requestQuote')}
                   <motion.div
                     animate={{ x: [0, 5, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
@@ -399,7 +395,7 @@ const Hero = () => {
                   className="border-2 border-white/50 text-white bg-transparent hover:bg-white/15 hover:text-white font-semibold px-6 md:px-8 py-3 md:py-4 rounded-xl backdrop-blur-sm transition-all duration-200 text-sm md:text-base w-full sm:w-auto"
                 >
                   <Play className="mr-2" size={18} />
-                  Ver Galeria
+                  {t('hero.cta.viewGallery')}
                 </Button>
               </motion.div>
             </motion.div>

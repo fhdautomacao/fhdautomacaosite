@@ -22,6 +22,10 @@
     "fairPrice": "Precio Justo",
     "quality": "Calidad",
     "support": "Atención",
+    "expYears": "Más de 10 años",
+    "fairPriceDesc": "Soluciones que caben en su bolsillo",
+    "qualityDesc": "Certificada",
+    "supportDesc": "Vamos hasta su empresa"
     "clientSatisfaction": "Satisfacción del Cliente",
     "badge": "Líderes en Automatización Industrial",
     "ctaQuote": "Solicitar Presupuesto Gratuito",
@@ -42,6 +46,10 @@
       "costReduction": "Reducción de Costos",
       "catalogProducts": "Productos en el Catálogo",
       "sectorsServed": "Sectores Atendidos"
+    },
+    "cta": {
+      "requestQuote": "Solicitar Cotización Gratuita",
+      "viewGallery": "Ver Galería"
     }
   },
   "about": {
@@ -198,6 +206,27 @@
     "ctaSubtitle": "Ponte en contacto con nosotros y descubre cómo podemos transformar tus necesidades en soluciones eficientes de automatización industrial.",
     "startProject": "Iniciar Proyecto",
     "seeMore": "Ver Más Proyectos"
+  },
+  "footer": {
+    "contactInfo": "Información de Contacto",
+    "phone": "Teléfono",
+    "email": "Correo Electrónico",
+    "address": "Dirección",
+    "workingHours": "Horario de Funcionamiento",
+    "weekdays": "Lunes a Viernes: 8h a 18h",
+    "saturday": "Sábado: 8h a 12h",
+    "sunday": "Domingo: Cerrado",
+    "quickLinks": "Enlaces Rápidos",
+    "ourServices": "Nuestros Servicios",
+    "socialMedia": "Síguenos en redes sociales",
+    "excellence": "Excelencia en Automatización",
+    "description": "Especialistas en automatización hidráulica y neumática, ofreciendo soluciones innovadoras y confiables para la industria. Más de una década de experiencia atendiendo empresas de diversos segmentos con calidad y eficiencia.",
+    "readyToTransform": "¿Listo para transformar su industria?",
+    "contactCTA": "Entre en contacto con nosotros y descubra cómo nuestras soluciones pueden optimizar sus procesos industriales.",
+    "requestQuote": "Solicitar Cotización",
+    "copyright": "© 2025 FHD Automatización Industrial. Hecho con amor para la industria brasileña.",
+    "privacyPolicy": "Política de Privacidad",
+    "termsOfUse": "Términos de Uso"
   },
   "clients": {
     "badge": "Clientes Satisfechos",

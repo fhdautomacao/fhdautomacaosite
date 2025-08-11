@@ -22,6 +22,10 @@
     "fairPrice": "Fair Price",
     "quality": "Quality",
     "support": "Support",
+    "expYears": "Over 10 years",
+    "fairPriceDesc": "Solutions that fit your budget",
+    "qualityDesc": "Certified",
+    "supportDesc": "We come to your company"
     "clientSatisfaction": "Client Satisfaction",
     "badge": "Leaders in Industrial Automation",
     "ctaQuote": "Request Free Quote",
@@ -42,6 +46,10 @@
       "costReduction": "Cost Reduction",
       "catalogProducts": "Products in Catalog",
       "sectorsServed": "Sectors Served"
+    },
+    "cta": {
+      "requestQuote": "Request Free Quote",
+      "viewGallery": "View Gallery"
     }
   },
   "about": {
@@ -198,6 +206,27 @@
     "ctaSubtitle": "Contact us and discover how we can turn your needs into efficient industrial automation solutions.",
     "startProject": "Start Project",
     "seeMore": "See More Projects"
+  },
+  "footer": {
+    "contactInfo": "Contact Information",
+    "phone": "Phone",
+    "email": "Email",
+    "address": "Address",
+    "workingHours": "Working Hours",
+    "weekdays": "Monday to Friday: 8am to 6pm",
+    "saturday": "Saturday: 8am to 12pm",
+    "sunday": "Sunday: Closed",
+    "quickLinks": "Quick Links",
+    "ourServices": "Our Services",
+    "socialMedia": "Follow us on social media",
+    "excellence": "Excellence in Automation",
+    "description": "Specialists in hydraulic and pneumatic automation, offering innovative and reliable solutions for industry. Over a decade of experience serving companies from various segments with quality and efficiency.",
+    "readyToTransform": "Ready to transform your industry?",
+    "contactCTA": "Contact us and discover how our solutions can optimize your industrial processes.",
+    "requestQuote": "Request Quote",
+    "copyright": "© 2025 FHD Industrial Automation. Made with love for Brazilian industry.",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfUse": "Terms of Use"
   },
   "clients": {
     "badge": "Satisfied Clients",

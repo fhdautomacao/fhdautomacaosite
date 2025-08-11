@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin, ArrowRight, Heart } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 const Footer = () => {
+  const { t } = useTranslation()
   const [logoError, setLogoError] = useState(false)
   return (
     <footer className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white relative overflow-hidden">
@@ -36,18 +38,16 @@ const Footer = () => {
               </div>
               <div>
                 <h3 className="text-2xl font-bold group-hover:text-blue-200 transition-colors duration-300">FHD Automação Industrial</h3>
-                <p className="text-blue-200 text-sm group-hover:text-blue-300 transition-colors duration-300">Excelência em Automação</p>
+                <p className="text-blue-200 text-sm group-hover:text-blue-300 transition-colors duration-300">{t('footer.excellence')}</p>
               </div>
             </Link>
             <p className="text-blue-100 mb-8 leading-relaxed text-lg">
-              Especialistas em <span className="font-semibold text-white">automação hidráulica e pneumática</span>, oferecendo soluções inovadoras 
-              e confiáveis para a indústria. Mais de uma década de experiência atendendo empresas 
-              de diversos segmentos com <span className="font-semibold text-white">qualidade e eficiência</span>.
+              {t('footer.description')}
             </p>
             
             {/* Social Media */}
             <div>
-              <h4 className="text-lg font-semibold mb-4 text-white">Siga-nos nas redes sociais</h4>
+              <h4 className="text-lg font-semibold mb-4 text-white">{t('footer.socialMedia')}</h4>
               <div className="flex space-x-4">
                 <a href="#" className="group bg-blue-700 p-4 rounded-xl hover:bg-white hover:text-blue-800 transition-all duration-300 hover:scale-110 shadow-lg">
                   <Facebook size={24} className="group-hover:scale-110 transition-transform duration-300" />
@@ -64,7 +64,7 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-xl font-bold mb-8 text-white">Links Rápidos</h4>
+            <h4 className="text-xl font-bold mb-8 text-white">{t('footer.quickLinks')}</h4>
             <ul className="space-y-4">
               {[
                 { name: "Home", href: "#home" },
@@ -90,7 +90,7 @@ const Footer = () => {
 
           {/* Services */}
           <div>
-            <h4 className="text-xl font-bold mb-8 text-white">Nossos Serviços</h4>
+            <h4 className="text-xl font-bold mb-8 text-white">{t('footer.ourServices')}</h4>
             <ul className="space-y-4">
               {[
                 "Automação Hidráulica",
@@ -119,7 +119,7 @@ const Footer = () => {
                   <Phone size={24} />
                 </div>
                 <div>
-                  <p className="text-sm text-blue-200 mb-1">Telefone</p>
+                  <p className="text-sm text-blue-200 mb-1">{t('footer.phone')}</p>
                   <p className="font-bold text-lg text-white">(19) 99865-2144</p>
                 </div>
               </div>
@@ -131,7 +131,7 @@ const Footer = () => {
                   <Mail size={24} />
                 </div>
                 <div>
-                  <p className="text-sm text-blue-200 mb-1">E-mail</p>
+                  <p className="text-sm text-blue-200 mb-1">{t('footer.email')}</p>
                   <p className="font-bold text-lg text-white">comercial@fhdautomacao.com.br</p>
                 </div>
               </div>
@@ -143,7 +143,7 @@ const Footer = () => {
                   <MapPin size={24} />
                 </div>
                 <div>
-                  <p className="text-sm text-blue-200 mb-1">Endereço</p>
+                  <p className="text-sm text-blue-200 mb-1">{t('footer.address')}</p>
                   <p className="font-bold text-lg text-white">R. João Eribert Biondo, 336</p>
                   <p className="text-sm text-blue-200">Jd. Res. Ravagnani, Sumaré - SP</p>
                 </div>
@@ -156,16 +156,16 @@ const Footer = () => {
         <div className="mt-16 text-center">
           <div className="bg-gradient-to-r from-white/10 to-white/5 rounded-3xl p-8 backdrop-blur-sm border border-white/20">
             <h4 className="text-2xl font-bold text-white mb-4">
-              Pronto para transformar sua indústria?
+              {t('footer.readyToTransform')}
             </h4>
             <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-              Entre em contato conosco e descubra como nossas soluções podem otimizar seus processos industriais.
+              {t('footer.contactCTA')}
             </p>
             <button 
               className="group bg-white text-blue-800 font-bold px-8 py-4 rounded-xl hover:bg-blue-50 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 mx-auto"
               onClick={() => window.location.href = '/orcamento'}
             >
-              <span>Solicitar Orçamento</span>
+              <span>{t('footer.requestQuote')}</span>
               <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform duration-300" />
             </button>
           </div>
@@ -174,16 +174,15 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-blue-700 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-blue-200 text-sm mb-4 md:mb-0 flex items-center">
-            © 2025 FHD Automação Industrial. Feito com 
+            {t('footer.copyright')}
             <Heart className="mx-2 text-red-400" size={16} fill="currentColor" />
-            para a indústria brasileira.
           </p>
           <div className="flex space-x-6 text-sm">
             <a href="/politica-de-privacidade" className="text-blue-200 hover:text-white transition-colors duration-300 hover:underline">
-              Política de Privacidade
+              {t('footer.privacyPolicy')}
             </a>
             <a href="/termos-de-uso" className="text-blue-200 hover:text-white transition-colors duration-300 hover:underline">
-              Termos de Uso
+              {t('footer.termsOfUse')}
             </a>
           </div>
         </div>

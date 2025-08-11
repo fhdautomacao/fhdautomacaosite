@@ -22,6 +22,10 @@
     "fairPrice": "Preço Justo",
     "quality": "Qualidade",
     "support": "Atendimento",
+    "expYears": "Mais de 10 anos",
+    "fairPriceDesc": "Soluções que cabem no seu bolso",
+    "qualityDesc": "Certificada",
+    "supportDesc": "Vamos até sua empresa"
     "clientSatisfaction": "Satisfação do Cliente",
     "badge": "Líderes em Automação Industrial",
     "ctaQuote": "Solicitar Orçamento Gratuito",
@@ -42,6 +46,10 @@
       "costReduction": "Redução de Custos",
       "catalogProducts": "Produtos no Catálogo",
       "sectorsServed": "Setores Atendidos"
+    },
+    "cta": {
+      "requestQuote": "Solicitar Orçamento Gratuito",
+      "viewGallery": "Ver Galeria"
     }
   },
   "about": {
@@ -124,6 +132,27 @@
     "ctaSubtitle": "Entre em contato conosco e descubra como podemos transformar suas necessidades em soluções eficientes de automação industrial.",
     "startProject": "Iniciar Projeto",
     "seeMore": "Ver Mais Projetos"
+  },
+  "footer": {
+    "contactInfo": "Informações de Contato",
+    "phone": "Telefone",
+    "email": "E-mail",
+    "address": "Endereço",
+    "workingHours": "Horário de Funcionamento",
+    "weekdays": "Segunda a Sexta: 8h às 18h",
+    "saturday": "Sábado: 8h às 12h",
+    "sunday": "Domingo: Fechado",
+    "quickLinks": "Links Rápidos",
+    "ourServices": "Nossos Serviços",
+    "socialMedia": "Siga-nos nas redes sociais",
+    "excellence": "Excelência em Automação",
+    "description": "Especialistas em automação hidráulica e pneumática, oferecendo soluções inovadoras e confiáveis para a indústria. Mais de uma década de experiência atendendo empresas de diversos segmentos com qualidade e eficiência.",
+    "readyToTransform": "Pronto para transformar sua indústria?",
+    "contactCTA": "Entre em contato conosco e descubra como nossas soluções podem otimizar seus processos industriais.",
+    "requestQuote": "Solicitar Orçamento",
+    "copyright": "© 2025 FHD Automação Industrial. Feito com amor para a indústria brasileira.",
+    "privacyPolicy": "Política de Privacidade",
+    "termsOfUse": "Termos de Uso"
   },
   "clients": {
     "badge": "Clientes Satisfeitos",

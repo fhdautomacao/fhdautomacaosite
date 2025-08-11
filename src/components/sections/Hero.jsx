@@ -1,7 +1,9 @@
 import { Button } from '@/components/ui/button'
 import { ArrowRight, CheckCircle, Play, Award, Users, Wrench } from 'lucide-react'
+import { useI18n } from '@/i18n/index.jsx'
 
 const Hero = () => {
+  const { t } = useI18n()
   return (
     <section id="home" className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background with Industrial Pattern */}
@@ -30,25 +32,23 @@ const Hero = () => {
             {/* Badge */}
             <div className="inline-flex items-center bg-gradient-to-r from-blue-600/20 to-blue-800/20 backdrop-blur-sm border border-blue-400/30 rounded-full px-6 py-3">
               <Award className="text-yellow-400 mr-2" size={20} />
-              <span className="text-blue-100 font-semibold">Líderes em Automação Industrial</span>
+              <span className="text-blue-100 font-semibold">{t('hero.badge')}</span>
             </div>
 
             {/* Main Heading */}
             <div className="space-y-6">
               <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-white leading-tight">
-                Automação{' '}
+                {t('hero.heading.automation')}{' '}
                 <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-                  Hidráulica
+                  {t('hero.heading.hydraulics')}
                 </span>{' '}
-                e{' '}
+                {t('hero.heading.and')}{' '}
                 <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                  Pneumática
+                  {t('hero.heading.pneumatics')}
                 </span>
               </h1>
               <p className="text-lg md:text-xl lg:text-2xl text-blue-100 leading-relaxed max-w-2xl">
-                Transformamos desafios industriais em soluções eficientes com mais de{' '}
-                <span className="text-yellow-400 font-bold">10 anos</span> de experiência 
-                e tecnologia de ponta.
+                {t('hero.subtitle')}
               </p>
             </div>
 
@@ -56,15 +56,15 @@ const Hero = () => {
             <div className="grid grid-cols-3 gap-4 md:gap-8 py-8">
               <div className="text-center">
                 <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">25%</div>
-                <div className="text-blue-300 text-xs md:text-sm">Redução de Custos</div>
+                <div className="text-blue-300 text-xs md:text-sm">{t('hero.stats.costReduction')}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">30+</div>
-                <div className="text-blue-300 text-xs md:text-sm">Produtos no Catálogo</div>
+                <div className="text-blue-300 text-xs md:text-sm">{t('hero.stats.catalogProducts')}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">10+</div>
-                <div className="text-blue-300 text-xs md:text-sm">Setores Atendidos</div>
+                <div className="text-blue-300 text-xs md:text-sm">{t('hero.stats.sectorsServed')}</div>
               </div>
             </div>
 
@@ -74,19 +74,19 @@ const Hero = () => {
                 <div className="bg-green-500/20 p-2 rounded-lg group-hover:bg-green-500/30 transition-colors flex-shrink-0">
                   <CheckCircle className="text-green-400" size={18} />
                 </div>
-                <span className="text-blue-100 text-sm md:text-base">Projetos personalizados e sob medida</span>
+                <span className="text-blue-100 text-sm md:text-base">{t('hero.benefits.0')}</span>
               </div>
               <div className="flex items-center space-x-3 md:space-x-4 group">
                 <div className="bg-green-500/20 p-2 rounded-lg group-hover:bg-green-500/30 transition-colors flex-shrink-0">
                   <CheckCircle className="text-green-400" size={18} />
                 </div>
-                <span className="text-blue-100 text-sm md:text-base">Suporte técnico especializado</span>
+                <span className="text-blue-100 text-sm md:text-base">{t('hero.benefits.1')}</span>
               </div>
               <div className="flex items-center space-x-3 md:space-x-4 group">
                 <div className="bg-green-500/20 p-2 rounded-lg group-hover:bg-green-500/30 transition-colors flex-shrink-0">
                   <CheckCircle className="text-green-400" size={18} />
                 </div>
-                <span className="text-blue-100 text-sm md:text-base">Tecnologia de ponta e inovação constante</span>
+                <span className="text-blue-100 text-sm md:text-base">{t('hero.benefits.2')}</span>
               </div>
             </div>
 
@@ -96,7 +96,7 @@ const Hero = () => {
                 size="lg" 
                 className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 md:px-8 py-3 md:py-4 rounded-xl shadow-2xl hover:shadow-blue-500/25 transform hover:scale-105 transition-all duration-300 text-sm md:text-base"
               >
-                Solicitar Orçamento Gratuito
+                {t('hero.cta.requestQuote')}
                 <ArrowRight className="ml-2" size={18} />
               </Button>
               <Button 
@@ -105,7 +105,7 @@ const Hero = () => {
                 className="border-2 border-white/30 text-white hover:bg-white hover:text-slate-900 font-semibold px-6 md:px-8 py-3 md:py-4 rounded-xl backdrop-blur-sm transition-all duration-300 text-sm md:text-base"
               >
                 <Play className="mr-2" size={18} />
-                Ver Nossos Projetos
+                {t('hero.cta.viewGallery')}
               </Button>
             </div>
           </div>
@@ -117,7 +117,7 @@ const Hero = () => {
               {/* Industrial Equipment Visualization */}
               <div className="space-y-4 md:space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white">Nossos Diferenciais</h3>
+                  <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white">{t('hero.title')}</h3>
                   <div className="bg-green-500 w-3 h-3 rounded-full animate-pulse"></div>
                 </div>
                 
@@ -125,23 +125,23 @@ const Hero = () => {
                 <div className="grid grid-cols-2 gap-3 md:gap-4">
                   <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl p-3 md:p-4 border border-blue-400/30">
                     <Wrench className="text-blue-400 mb-2" size={20} />
-                    <div className="text-white font-semibold text-xs md:text-sm">Experiência</div>
-                    <div className="text-blue-300 text-xs">Mais de 10 anos</div>
+                    <div className="text-white font-semibold text-xs md:text-sm">{t('hero.exp')}</div>
+                    <div className="text-blue-300 text-xs">{t('hero.expYears')}</div>
                   </div>
                   <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-xl p-3 md:p-4 border border-yellow-400/30">
                     <Users className="text-yellow-400 mb-2" size={20} />
-                    <div className="text-white font-semibold text-xs md:text-sm">Preço Justo</div>
-                    <div className="text-yellow-300 text-xs">Soluções que cabem no seu bolso</div>
+                    <div className="text-white font-semibold text-xs md:text-sm">{t('hero.fairPrice')}</div>
+                    <div className="text-yellow-300 text-xs">{t('hero.fairPriceDesc')}</div>
                   </div>
                   <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-xl p-3 md:p-4 border border-green-400/30">
                     <Award className="text-green-400 mb-2" size={20} />
-                    <div className="text-white font-semibold text-xs md:text-sm">Qualidade</div>
-                    <div className="text-green-300 text-xs">Certificada</div>
+                    <div className="text-white font-semibold text-xs md:text-sm">{t('hero.quality')}</div>
+                    <div className="text-green-300 text-xs">{t('hero.qualityDesc')}</div>
                   </div>
                   <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-xl p-3 md:p-4 border border-purple-400/30">
                     <CheckCircle className="text-purple-400 mb-2" size={20} />
-                    <div className="text-white font-semibold text-xs md:text-sm">Atendimento</div>
-                    <div className="text-purple-300 text-xs">Vamos até sua empresa</div>
+                    <div className="text-white font-semibold text-xs md:text-sm">{t('hero.support')}</div>
+                    <div className="text-purple-300 text-xs">{t('hero.supportDesc')}</div>
                   </div>
                 </div>
 
