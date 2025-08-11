@@ -25,9 +25,7 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
-          ui: ['framer-motion', '@radix-ui/react-dialog', '@radix-ui/react-select'],
-          // Chunks otimizados para mobile
-          mobile: ['@radix-ui/react-dialog', '@radix-ui/react-select'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-select'],
           animations: ['framer-motion']
         }
       }
@@ -41,13 +39,7 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     // Otimizações de compressão
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
-    }
+    minify: 'esbuild'
   },
   plugins: [react(), tailwindcss()],
   resolve: {
