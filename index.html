@@ -2,7 +2,10 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
 
     
@@ -37,12 +40,26 @@
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" href="/logo.png" />
     
+    <!-- Preload critical images -->
+    <link rel="preload" as="image" href="/logo.png" />
+    
     <!-- Canonical URL -->
     <link rel="canonical" href="https://fhdautomacaoindustrialapp.vercel.app/" />
     
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Critical CSS inline para mobile -->
+    <style>
+      /* CSS crítico para mobile - apenas estilos essenciais */
+      body { margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+      #root { min-height: 100vh; }
+      .mobile-optimized { will-change: auto; }
+      @media (max-width: 768px) {
+        .mobile-optimized { transform: translateZ(0); }
+      }
+    </style>
     
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -82,6 +99,26 @@
     
     <!-- Script para limpar cache em caso de problemas -->
     <script>
+      // Otimizações mobile - executar imediatamente
+      (function() {
+        // Detectar mobile
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+          // Otimizações específicas para mobile
+          document.documentElement.classList.add('mobile-optimized');
+          
+          // Preload crítico para mobile
+          const criticalImages = ['/logo.png'];
+          criticalImages.forEach(src => {
+            const link = document.createElement('link');
+            link.rel = 'preload';
+            link.as = 'image';
+            link.href = src;
+            document.head.appendChild(link);
+          });
+        }
+      })();
       // Forçar recarregamento do favicon
       function reloadFavicon() {
         const favicon = document.querySelector('link[rel="icon"]');
@@ -148,7 +185,7 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <script type="module" src="/src/main.jsx" defer></script>
   </body>
 </html>
 

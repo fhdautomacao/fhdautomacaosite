@@ -1,9 +1,9 @@
-// Service Worker para notificações push
-const CACHE_NAME = 'fhd-automacao-v3' // Versão atualizada para forçar limpeza
+// Service Worker para notificações push e cache otimizado para mobile
+const CACHE_NAME = 'fhd-automacao-v4' // Versão atualizada para otimizações mobile
 
 // Instalar Service Worker
 self.addEventListener('install', (event) => {
-  console.log('📱 Service Worker instalado - versão v3')
+  console.log('📱 Service Worker instalado - versão v4 (mobile optimized)')
   
   // Forçar ativação imediata
   self.skipWaiting()
@@ -22,7 +22,7 @@ self.addEventListener('install', (event) => {
 
 // Ativar Service Worker
 self.addEventListener('activate', (event) => {
-  console.log('🔥 Service Worker ativado - versão v3')
+  console.log('🔥 Service Worker ativado - versão v4 (mobile optimized)')
   
   // Forçar controle imediato
   event.waitUntil(

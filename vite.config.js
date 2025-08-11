@@ -25,18 +25,29 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
-          ui: ['framer-motion', '@radix-ui/react-dialog', '@radix-ui/react-select']
+          ui: ['framer-motion', '@radix-ui/react-dialog', '@radix-ui/react-select'],
+          // Chunks otimizados para mobile
+          mobile: ['@radix-ui/react-dialog', '@radix-ui/react-select'],
+          animations: ['framer-motion']
         }
       }
     },
     chunkSizeWarningLimit: 1000,
-    // Garantir que os assets sejam servidos corretamente
-    assetsInlineLimit: 4096,
+    // Otimizações para mobile
+    assetsInlineLimit: 8192, // Aumentar limite para reduzir requests
     cssCodeSplit: true,
     sourcemap: false,
     // Configurações específicas para Vercel
     outDir: 'dist',
-    assetsDir: 'assets'
+    assetsDir: 'assets',
+    // Otimizações de compressão
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    }
   },
   plugins: [react(), tailwindcss()],
   resolve: {

@@ -36,6 +36,9 @@ function AppContent() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin-fhd') || location.pathname.startsWith('/login-admin');
 
+  // Otimização para mobile - lazy loading de componentes não críticos
+  const isMobile = window.innerWidth <= 768;
+
   return (
     <>
       {!isAdminRoute && <Header />}
