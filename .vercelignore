@@ -40,6 +40,34 @@ jspm_packages/
 # Output of 'npm pack'
 *.tgz
 
+# Arquivos de teste e debug excluídos
+test-jwt-simple.js
+debug-permissions.js
+api/test-config.js
+server-apis/api-test.js
+src/pages/Admin/SEOManager-example.jsx
+src/pages/Admin/DashboardTest.jsx
+src/components/TestModal.jsx
+scripts/test-*.js
+
+# Documentação temporária
+*.md
+!README.md
+!docs/README.md
+!docs/arquitetura.md
+!docs/banco-dados.md
+!docs/autenticacao-seguranca.md
+!docs/deploy-producao.md
+!docs/manutencao.md
+!docs/funcionalidades.md
+!docs/apis-endpoints.md
+!docs/componentes-ui.md
+!docs/seo-system.md
+!docs/integracao-google-maps.md
+!docs/SETUP_ENV.md
+!docs/ORGANIZACAO_FINAL.md
+!docs/guia-inicio-rapido.md
+
 # Yarn Integrity file
 .yarn-integrity
 

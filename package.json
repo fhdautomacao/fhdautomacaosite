@@ -11,8 +11,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "vercel-build": "vite build && npm run copy-assets",
-    "copy-assets": "cp -r public/* dist/ 2>/dev/null || xcopy public dist /E /I /Y 2>nul || echo 'Assets copied'",
-    "test:cors": "node scripts/test-cors.js"
+    "copy-assets": "cp -r public/* dist/ 2>/dev/null || xcopy public dist /E /I /Y 2>nul || echo 'Assets copied'"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.7",
