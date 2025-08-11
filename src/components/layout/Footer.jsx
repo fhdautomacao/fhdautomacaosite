@@ -4,7 +4,7 @@ import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin, ArrowRight, Heart }
 import { useI18n } from '@/i18n/index.jsx'
 
 const Footer = () => {
-  const { t } = useTranslation()
+  const { t } = useI18n()
   const [logoError, setLogoError] = useState(false)
   return (
     <footer className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white relative overflow-hidden">
