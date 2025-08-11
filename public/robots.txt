@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://fhd-automacao-industrial-bq67.vercel.app/sitemap.xml
+Sitemap: https://fhdautomacaoindustrialapp.vercel.app/sitemap.xml
 
 # Crawl-delay
 Crawl-delay: 1

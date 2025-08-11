@@ -71,6 +71,30 @@
       "dest": "/favicon.ico"
     },
     {
+      "src": "/robots.txt",
+      "dest": "/robots.txt"
+    },
+    {
+      "src": "/sitemap.xml",
+      "dest": "/sitemap.xml"
+    },
+    {
+      "src": "/sw.js",
+      "dest": "/sw.js"
+    },
+    {
+      "src": "/googlecf5c03dc1aaee19d.html",
+      "dest": "/googlecf5c03dc1aaee19d.html"
+    },
+    {
+      "src": "/logo_no_bg.png",
+      "dest": "/logo_no_bg.png"
+    },
+    {
+      "src": "/image_white_background.png",
+      "dest": "/image_white_background.png"
+    },
+    {
       "src": "/(.*\\.js)",
       "headers": {
         "content-type": "application/javascript"
