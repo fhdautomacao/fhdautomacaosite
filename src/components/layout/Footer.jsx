@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin, ArrowRight, Heart } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
+import { useI18n } from '@/i18n/index.jsx'
 
 const Footer = () => {
   const { t } = useTranslation()
