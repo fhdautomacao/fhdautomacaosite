@@ -348,7 +348,7 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
               {/* Close Button */}
               <button 
                 onClick={closeModal}
-                className="absolute top-4 right-4 text-white hover:text-gray-300 z-10 bg-black/70 hover:bg-black/90 rounded-full p-3 transition-all duration-300 shadow-lg"
+                className="absolute top-8 right-4 text-white hover:text-gray-300 z-10 bg-black/70 hover:bg-black/90 rounded-full p-3 transition-all duration-300 shadow-lg"
                 style={{ zIndex: 100000 }}
               >
                 <X size={24} />
@@ -357,7 +357,7 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
               {/* Close Button - Parte inferior (adicional para mobile) */}
               <button 
                 onClick={closeModal}
-                className="absolute bottom-20 left-1/2 transform -translate-x-1/2 text-white hover:text-gray-300 z-10 bg-black/70 hover:bg-black/90 rounded-full px-4 py-2 transition-all duration-300 shadow-lg text-sm font-semibold"
+                className="absolute bottom-24 left-1/2 transform -translate-x-1/2 text-white hover:text-gray-300 z-10 bg-black/70 hover:bg-black/90 rounded-full px-4 py-2 transition-all duration-300 shadow-lg text-sm font-semibold"
                 style={{ zIndex: 100000 }}
               >
                 Fechar
