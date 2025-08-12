@@ -87,15 +87,8 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
     setScrollPosition(window.scrollY)
     
     if (isMobile) {
-      // No mobile, alternar entre mostrar todas as fotos ou apenas as primeiras
-      if (showAllImagesMobile) {
-        // Se já está mostrando todas, voltar para as primeiras
-        setShowAllImagesMobile(false)
-      } else {
-        // Se não está mostrando todas, ir para o header e mostrar todas
-        window.scrollTo(0, 0)
-        setShowAllImagesMobile(true)
-      }
+      // No mobile, apenas mostrar o modal com todas as fotos
+      setShowAllImagesMobile(true)
     } else {
       // No desktop, abrir o carrossel normalmente
       setShowAllImages(true)
@@ -304,7 +297,7 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
             >
               <span>
                 {isMobile 
-                  ? (showAllImagesMobile ? 'Ocultar fotos extras' : `Ver todas as ${filteredImages.length} fotos`)
+                  ? `Ver todas as ${filteredImages.length} fotos`
                   : `Ver todas as ${filteredImages.length} fotos`
                 }
               </span>
@@ -389,6 +382,74 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                 <h3 className="text-2xl sm:text-3xl font-bold mb-3">{selectedImage.title}</h3>
                 <p className="text-gray-300 text-base sm:text-lg mb-4">{selectedImage.description}</p>
                 <p className="text-sm text-gray-400">
+                  {currentIndex + 1} de {filteredImages.length} fotos
+                  {selectedCategory !== ALL_KEY && (
+                    <span> em {fetchedCategories.find(cat => cat.id === selectedCategory)?.name || selectedCategory}</span>
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Individual para Mobile */}
+        {isMobile && selectedImage && (
+          <div className="fixed inset-0 bg-black/95 z-[99999] flex items-center justify-center p-4 animate-fade-in overflow-hidden">
+            <div className="relative w-full h-full flex flex-col justify-center items-center">
+              {/* Close Button */}
+              <button 
+                onClick={closeModal}
+                className="absolute top-4 right-4 text-white hover:text-gray-300 z-10 bg-black/50 rounded-full p-2 transition-colors duration-300"
+              >
+                <X size={24} />
+              </button>
+
+              {/* Navigation Buttons */}
+              {filteredImages.length > 1 && (
+                <>
+                  <button 
+                    onClick={prevImage}
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black/50 rounded-full p-3 transition-colors duration-300"
+                  >
+                    <ChevronLeft size={32} />
+                  </button>
+                  <button 
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black/50 rounded-full p-3 transition-colors duration-300"
+                  >
+                    <ChevronRight size={32} />
+                  </button>
+                </>
+              )}
+
+              {/* Image Container - Centralizado */}
+              <div className="flex-1 flex items-center justify-center w-full max-w-full">
+                <div className="w-full h-full flex items-center justify-center">
+                  <img 
+                    src={selectedImage.image_url} 
+                    alt={selectedImage.title} 
+                    className="max-w-full max-h-full object-contain"
+                    onError={(e) => {
+                      if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {
+                        return
+                      }
+                      console.error('❌ Erro ao carregar imagem no modal mobile:', {
+                        title: selectedImage.title,
+                        url: selectedImage.image_url
+                      })
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Image Info - Fixo na parte inferior */}
+              <div className="text-white mt-4 text-center w-full">
+                <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border mb-3 ${getCategoryColor(fetchedCategories.find(cat => cat.id === selectedImage.category)?.name || selectedImage.category)}`}>
+                  {fetchedCategories.find(cat => cat.id === selectedImage.category)?.name || selectedImage.category}
+                </div>
+                <h3 className="text-xl font-bold mb-2">{selectedImage.title}</h3>
+                <p className="text-gray-300 text-sm mb-3">{selectedImage.description}</p>
+                <p className="text-xs text-gray-400">
                   {currentIndex + 1} de {filteredImages.length} fotos
                   {selectedCategory !== ALL_KEY && (
                     <span> em {fetchedCategories.find(cat => cat.id === selectedCategory)?.name || selectedCategory}</span>
@@ -500,72 +561,87 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
           </div>
         )}
 
-        {/* Modal para Mobile - Quando clica em uma imagem do carrossel */}
-        {isMobile && selectedImage && (
-          <div className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-4 animate-fade-in overflow-hidden gallery-modal-mobile">
-            <div className="relative w-full h-full flex flex-col justify-center items-center gallery-modal-content">
-              {/* Close Button */}
-              <button 
-                onClick={closeModal}
-                className="absolute top-4 right-4 text-white hover:text-gray-300 z-10 bg-black/50 rounded-full p-2 transition-colors duration-300"
-              >
-                <X size={24} />
-              </button>
-
-              {/* Navigation Buttons */}
-              {filteredImages.length > 1 && (
-                <>
-                  <button 
-                    onClick={prevImage}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black/50 rounded-full p-3 transition-colors duration-300"
-                  >
-                    <ChevronLeft size={32} />
-                  </button>
-                  <button 
-                    onClick={nextImage}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black/50 rounded-full p-3 transition-colors duration-300"
-                  >
-                    <ChevronRight size={32} />
-                  </button>
-                </>
-              )}
-
-              {/* Image Container - Centralizado */}
-              <div className="flex-1 flex items-center justify-center w-full max-w-full">
-                <div className="w-full h-full flex items-center justify-center">
-                  <img 
-                    src={selectedImage.image_url} 
-                    alt={selectedImage.title} 
-                    className="max-w-full max-h-full object-contain gallery-image"
-                    onError={(e) => {
-                      // Ignorar erros de cookies do Cloudflare - são normais e não afetam a funcionalidade
-                      if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {
-                        console.log('ℹ️ Erro de cookie Cloudflare ignorado - normal para imagens do Supabase')
-                        return
-                      }
-                      
-                      console.error('❌ Erro ao carregar imagem no modal mobile:', {
-                        title: selectedImage.title,
-                        url: selectedImage.image_url
-                      })
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Image Info - Fixo na parte inferior */}
-              <div className="text-white mt-4 text-center w-full">
-                <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border mb-3 ${getCategoryColor(fetchedCategories.find(cat => cat.id === selectedImage.category)?.name || selectedImage.category)}`}>
-                  {fetchedCategories.find(cat => cat.id === selectedImage.category)?.name || selectedImage.category}
-                </div>
-                <h3 className="text-xl font-bold mb-2">{selectedImage.title}</h3>
-                <p className="text-gray-300 text-sm mb-3">{selectedImage.description}</p>
-                <p className="text-xs text-gray-400">
-                  {currentIndex + 1} de {filteredImages.length} fotos
+        {/* Modal Mobile - Visualização Completa */}
+        {isMobile && showAllImagesMobile && (
+          <div className="fixed inset-0 bg-white z-[9999] overflow-y-auto">
+            {/* Header Fixo */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 z-10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800">
+                    Galeria Completa - {filteredImages.length} fotos
+                  </h3>
                   {selectedCategory !== ALL_KEY && (
-                    <span> em {fetchedCategories.find(cat => cat.id === selectedCategory)?.name || selectedCategory}</span>
+                    <p className="text-sm text-gray-600">
+                      Categoria: {fetchedCategories.find(cat => cat.id === selectedCategory)?.name || selectedCategory}
+                    </p>
                   )}
+                </div>
+                <button 
+                  onClick={() => setShowAllImagesMobile(false)}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full p-2 transition-colors duration-300"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Grid Responsivo de Fotos */}
+            <div className="p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {filteredImages.map((image, index) => (
+                  <div 
+                    key={image.id}
+                    className="group cursor-pointer overflow-hidden rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+                    onClick={() => openModal(image, index)}
+                  >
+                    <div className="relative aspect-square bg-gray-100">
+                      <img 
+                        src={image.image_url} 
+                        alt={image.title} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {
+                            return
+                          }
+                          e.target.style.display = 'none'
+                          const placeholder = document.createElement('div')
+                          placeholder.className = 'absolute inset-0 flex items-center justify-center bg-gray-200 text-gray-500 text-2xl'
+                          placeholder.innerHTML = '📷'
+                          e.target.parentNode.appendChild(placeholder)
+                        }}
+                      />
+                      
+                      {/* Category Badge */}
+                      <div className={`absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(fetchedCategories.find(cat => cat.id === image.category)?.name || image.category)}`}>
+                        {fetchedCategories.find(cat => cat.id === image.category)?.name || image.category}
+                      </div>
+                      
+                      {/* Overlay com Título */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end">
+                        <div className="p-3 text-white w-full">
+                          <h3 className="font-bold text-sm mb-1 line-clamp-1">{image.title}</h3>
+                          <p className="text-xs opacity-90 line-clamp-2">{image.description}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer com Informações */}
+            <div className="bg-gray-50 border-t border-gray-200 px-4 py-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-2">
+                  Clique em qualquer foto para visualizá-la em tamanho maior
                 </p>
+                <button
+                  onClick={() => setShowAllImagesMobile(false)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors duration-300"
+                >
+                  Fechar Galeria
+                </button>
               </div>
             </div>
           </div>
