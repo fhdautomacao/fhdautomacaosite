@@ -81,9 +81,10 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
     // Salvar a posição atual do scroll
     setScrollPosition(window.scrollY)
     setShowAllImages(true)
-    // No mobile, fazer scroll para o topo para que o carrossel apareça corretamente
+    // No mobile, manter a posição atual do scroll para que o carrossel apareça centralizado na visualização
     if (isMobile) {
-      window.scrollTo(0, 0)
+      // Não alterar o scroll - deixar onde está para que o carrossel apareça centralizado
+      // O carrossel vai aparecer exatamente onde o usuário está olhando
     } else {
       document.body.style.overflow = 'hidden'
     }
@@ -385,8 +386,8 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
 
         {/* Carrossel Completo - Para Mobile e Desktop */}
         {showAllImages && (
-          <div className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-2 sm:p-4 animate-fade-in overflow-hidden">
-            <div className="relative w-full h-full max-w-7xl flex flex-col">
+          <div className={`fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-2 sm:p-4 animate-fade-in overflow-hidden ${isMobile ? 'gallery-carousel-mobile' : ''}`}>
+            <div className={`relative w-full h-full max-w-7xl flex flex-col ${isMobile ? 'gallery-carousel-container' : ''}`}>
               {/* Header */}
               <div className="flex items-center justify-between mb-4 sm:mb-6 text-white">
                 <h2 className="text-lg sm:text-2xl font-bold">
