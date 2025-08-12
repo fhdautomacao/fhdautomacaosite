@@ -224,6 +224,12 @@ const Products = ({ productsData = null, productCategories = null }) => {
                      alt={product.name}
                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 bg-white"
                      onError={(e) => {
+                       // Ignorar erros de cookies do Cloudflare - são normais e não afetam a funcionalidade
+                       if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {
+                         console.log('ℹ️ Erro de cookie Cloudflare ignorado - normal para imagens do Supabase')
+                         return
+                       }
+                       
                        e.target.style.display = 'none';
                        e.target.nextSibling.style.display = 'flex';
                      }}
@@ -348,7 +354,19 @@ const Products = ({ productsData = null, productCategories = null }) => {
                  <img 
                    src={selectedProduct.image_url} 
                    alt={selectedProduct.name} 
-                   className="w-full h-full object-contain" 
+                   className="w-full h-full object-contain"
+                   onError={(e) => {
+                     // Ignorar erros de cookies do Cloudflare - são normais e não afetam a funcionalidade
+                     if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {
+                       console.log('ℹ️ Erro de cookie Cloudflare ignorado - normal para imagens do Supabase')
+                       return
+                     }
+                     
+                     console.error('❌ Erro ao carregar imagem do produto no modal:', {
+                       name: selectedProduct.name,
+                       url: selectedProduct.image_url
+                     })
+                   }}
                  />
                </div>
 

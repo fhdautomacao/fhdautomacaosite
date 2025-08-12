@@ -159,6 +159,17 @@
         }, 3000)
       })
       
+      // Suprimir erros de cookies do Cloudflare no console
+      const originalConsoleError = console.error
+      console.error = function(...args) {
+        const message = args.join(' ')
+        if (message.includes('__cf_bm') || message.includes('cookie') && message.includes('rejeitado')) {
+          // Suprimir erros de cookies do Cloudflare
+          return
+        }
+        originalConsoleError.apply(console, args)
+      }
+      
 
     </script>
   </head>

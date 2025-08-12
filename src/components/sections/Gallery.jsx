@@ -223,7 +223,13 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                             naturalHeight: e.target.naturalHeight,
                             currentSrc: e.target.currentSrc
                           })
-                          console.error('🔍 Stack trace do erro:', new Error().stack)
+                          
+                          // Ignorar erros de cookies do Cloudflare - são normais e não afetam a funcionalidade
+                          if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {
+                            console.log('ℹ️ Erro de cookie Cloudflare ignorado - normal para imagens do Supabase')
+                            return
+                          }
+                          
                           e.target.style.display = 'none'
                           // Mostrar placeholder de erro
                           const placeholder = document.createElement('div')
@@ -316,10 +322,26 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                 </>
               )}
 
-              {/* Image */}
-              <div className="rounded-2xl aspect-video flex items-center justify-center shadow-2xl overflow-hidden">
-                <img src={selectedImage.image_url} alt={selectedImage.title} className="w-full h-full object-contain" />
-              </div>
+                             {/* Image */}
+               <div className="rounded-2xl aspect-video flex items-center justify-center shadow-2xl overflow-hidden">
+                 <img 
+                   src={selectedImage.image_url} 
+                   alt={selectedImage.title} 
+                   className="w-full h-full object-contain"
+                   onError={(e) => {
+                     // Ignorar erros de cookies do Cloudflare - são normais e não afetam a funcionalidade
+                     if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {
+                       console.log('ℹ️ Erro de cookie Cloudflare ignorado - normal para imagens do Supabase')
+                       return
+                     }
+                     
+                     console.error('❌ Erro ao carregar imagem no modal:', {
+                       title: selectedImage.title,
+                       url: selectedImage.image_url
+                     })
+                   }}
+                 />
+               </div>
 
               {/* Image Info */}
               <div className="text-black mt-6 text-center">
@@ -379,6 +401,18 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                            src={image.image_url} 
                            alt={image.title} 
                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                           onError={(e) => {
+                             // Ignorar erros de cookies do Cloudflare - são normais e não afetam a funcionalidade
+                             if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {
+                               console.log('ℹ️ Erro de cookie Cloudflare ignorado - normal para imagens do Supabase')
+                               return
+                             }
+                             
+                             console.error('❌ Erro ao carregar imagem no carrossel:', {
+                               title: image.title,
+                               url: image.image_url
+                             })
+                           }}
                          />
                          
                          {/* Category Badge */}
