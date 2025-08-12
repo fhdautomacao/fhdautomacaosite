@@ -82,6 +82,15 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
     setSelectedImage(null)
   }
 
+  const closeMobileGallery = () => {
+    setShowAllImagesMobile(false)
+    // Fazer scroll suave para a seção da galeria
+    const gallerySection = document.getElementById('galeria')
+    if (gallerySection) {
+      gallerySection.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
   const openCarousel = () => {
     // Salvar a posição atual do scroll
     setScrollPosition(window.scrollY)
@@ -395,12 +404,12 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
 
         {/* Modal Individual para Mobile */}
         {isMobile && selectedImage && (
-          <div className="fixed inset-0 bg-black/95 z-[99999] flex items-center justify-center p-4 animate-fade-in overflow-hidden">
+          <div className="fixed inset-0 bg-black/95 z-[99999] flex items-center justify-center p-2 animate-fade-in overflow-hidden">
             <div className="relative w-full h-full flex flex-col justify-center items-center">
               {/* Close Button */}
               <button 
                 onClick={closeModal}
-                className="absolute top-4 right-4 text-white hover:text-gray-300 z-10 bg-black/50 rounded-full p-2 transition-colors duration-300"
+                className="absolute top-4 right-4 text-white hover:text-gray-300 z-10 bg-black/50 rounded-full p-3 transition-colors duration-300"
               >
                 <X size={24} />
               </button>
@@ -410,46 +419,44 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                 <>
                   <button 
                     onClick={prevImage}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black/50 rounded-full p-3 transition-colors duration-300"
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black/50 rounded-full p-3 transition-colors duration-300"
                   >
-                    <ChevronLeft size={32} />
+                    <ChevronLeft size={28} />
                   </button>
                   <button 
                     onClick={nextImage}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black/50 rounded-full p-3 transition-colors duration-300"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black/50 rounded-full p-3 transition-colors duration-300"
                   >
-                    <ChevronRight size={32} />
+                    <ChevronRight size={28} />
                   </button>
                 </>
               )}
 
-              {/* Image Container - Centralizado */}
-              <div className="flex-1 flex items-center justify-center w-full max-w-full">
-                <div className="w-full h-full flex items-center justify-center">
-                  <img 
-                    src={selectedImage.image_url} 
-                    alt={selectedImage.title} 
-                    className="max-w-full max-h-full object-contain"
-                    onError={(e) => {
-                      if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {
-                        return
-                      }
-                      console.error('❌ Erro ao carregar imagem no modal mobile:', {
-                        title: selectedImage.title,
-                        url: selectedImage.image_url
-                      })
-                    }}
-                  />
-                </div>
+              {/* Image Container - Ocupa quase toda a tela */}
+              <div className="w-full h-full flex items-center justify-center px-4 py-16">
+                <img 
+                  src={selectedImage.image_url} 
+                  alt={selectedImage.title} 
+                  className="max-w-full max-h-full object-contain rounded-lg"
+                  onError={(e) => {
+                    if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {
+                      return
+                    }
+                    console.error('❌ Erro ao carregar imagem no modal mobile:', {
+                      title: selectedImage.title,
+                      url: selectedImage.image_url
+                    })
+                  }}
+                />
               </div>
 
               {/* Image Info - Fixo na parte inferior */}
-              <div className="text-white mt-4 text-center w-full">
-                <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border mb-3 ${getCategoryColor(fetchedCategories.find(cat => cat.id === selectedImage.category)?.name || selectedImage.category)}`}>
+              <div className="absolute bottom-4 left-4 right-4 text-white text-center bg-black/50 rounded-lg p-4 backdrop-blur-sm">
+                <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border mb-2 ${getCategoryColor(fetchedCategories.find(cat => cat.id === selectedImage.category)?.name || selectedImage.category)}`}>
                   {fetchedCategories.find(cat => cat.id === selectedImage.category)?.name || selectedImage.category}
                 </div>
-                <h3 className="text-xl font-bold mb-2">{selectedImage.title}</h3>
-                <p className="text-gray-300 text-sm mb-3">{selectedImage.description}</p>
+                <h3 className="text-lg font-bold mb-1">{selectedImage.title}</h3>
+                <p className="text-gray-300 text-sm mb-2">{selectedImage.description}</p>
                 <p className="text-xs text-gray-400">
                   {currentIndex + 1} de {filteredImages.length} fotos
                   {selectedCategory !== ALL_KEY && (
@@ -579,7 +586,7 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                   )}
                 </div>
                 <button 
-                  onClick={() => setShowAllImagesMobile(false)}
+                  onClick={closeMobileGallery}
                   className="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full p-2 transition-colors duration-300"
                 >
                   <X size={20} />
@@ -638,7 +645,7 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                   Clique em qualquer foto para visualizá-la em tamanho maior
                 </p>
                 <button
-                  onClick={() => setShowAllImagesMobile(false)}
+                  onClick={closeMobileGallery}
                   className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors duration-300"
                 >
                   Fechar Galeria
