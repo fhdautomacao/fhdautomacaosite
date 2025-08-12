@@ -87,7 +87,8 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
     setScrollPosition(window.scrollY)
     
     if (isMobile) {
-      // No mobile, apenas mostrar o modal com todas as fotos
+      // No mobile, ir para o header e mostrar o modal com todas as fotos
+      window.scrollTo(0, 0)
       setShowAllImagesMobile(true)
     } else {
       // No desktop, abrir o carrossel normalmente
