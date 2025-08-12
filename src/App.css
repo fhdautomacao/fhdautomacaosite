@@ -233,19 +233,19 @@
 /* WhatsApp Flutuante - Garantir que funcione no mobile */
 .whatsapp-floating {
   position: fixed !important;
-  bottom: 1rem !important;
-  right: 1rem !important;
-  z-index: 99999 !important;
+  bottom: 2rem !important;
+  right: 1.5rem !important;
+  z-index: 9999999 !important;
   pointer-events: auto !important;
   width: auto !important;
   height: auto !important;
+  left: auto !important;
+  top: auto !important;
 }
 
 .whatsapp-floating a {
-  position: fixed !important;
-  bottom: 1rem !important;
-  right: 1rem !important;
-  z-index: 99999 !important;
+  position: relative !important;
+  z-index: 9999999 !important;
   pointer-events: auto !important;
   width: auto !important;
   height: auto !important;
@@ -278,18 +278,18 @@
   .whatsapp-floating {
     bottom: 2rem !important;
     right: 1.5rem !important;
+    left: auto !important;
   }
   
   .whatsapp-floating a {
-    bottom: 2rem !important;
-    right: 1.5rem !important;
+    position: relative !important;
   }
 }
 
 /* Forçar posicionamento fixo */
 [class*="whatsapp"] {
   position: fixed !important;
-  z-index: 99999 !important;
+  z-index: 9999999 !important;
 }
 
 /* Garantir que não seja afetado por outros estilos */
@@ -300,4 +300,11 @@
 
 .whatsapp-floating {
   position: fixed !important;
+}
+
+/* Reset de posicionamento para garantir que fique no canto direito */
+.whatsapp-floating {
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
 }

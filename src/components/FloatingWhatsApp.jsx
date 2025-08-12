@@ -21,10 +21,13 @@ const FloatingWhatsApp = () => {
         position: 'fixed !important',
         bottom: '2rem',
         right: '1.5rem',
+        left: 'auto',
+        top: 'auto',
         zIndex: 9999999,
         pointerEvents: 'auto',
         width: 'auto',
-        height: 'auto'
+        height: 'auto',
+        transform: 'none'
       }}
     >
       <motion.a
@@ -36,7 +39,9 @@ const FloatingWhatsApp = () => {
         style={{
           position: 'relative',
           zIndex: 9999999,
-          pointerEvents: 'auto'
+          pointerEvents: 'auto',
+          width: 'auto',
+          height: 'auto'
         }}
         initial={{ opacity: 0, y: 24, scale: 0.9 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -67,7 +72,6 @@ const FloatingWhatsApp = () => {
             </svg>
           </div>
         </div>
-        <span className="sr-only">Abrir conversa no WhatsApp</span>
       </motion.a>
     </div>
   )
