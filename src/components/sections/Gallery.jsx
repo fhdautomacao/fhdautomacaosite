@@ -87,14 +87,11 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
     // Salvar a posição atual do scroll
     setScrollPosition(window.scrollY)
     setShowAllImages(true)
-    // No mobile, bloquear scroll e centralizar na tela
+    // No mobile, manter a posição atual do scroll para que o carrossel apareça centralizado
     if (isMobile) {
       console.log('📱 Configurando para mobile...')
-      // Bloquear scroll da página
-      document.body.style.overflow = 'hidden'
-      document.body.style.position = 'fixed'
-      document.body.style.width = '100%'
-      document.body.style.top = `-${window.scrollY}px`
+      // Não alterar o scroll - deixar onde está para que o carrossel apareça centralizado na viewport
+      // O carrossel vai aparecer exatamente onde o usuário está olhando
     } else {
       document.body.style.overflow = 'hidden'
     }
@@ -103,13 +100,8 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
   const closeCarousel = () => {
     setShowAllImages(false)
     if (isMobile) {
-      // Restaurar scroll no mobile
-      const scrollY = document.body.style.top
-      document.body.style.position = ''
-      document.body.style.width = ''
-      document.body.style.top = ''
-      document.body.style.overflow = ''
-      window.scrollTo(0, parseInt(scrollY || '0') * -1)
+      // No mobile, não alterar o scroll - manter onde está
+      console.log('📱 Fechando carrossel mobile...')
     } else {
       document.body.style.overflow = 'unset'
     }
@@ -402,7 +394,25 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
 
         {/* Carrossel Completo - Para Mobile e Desktop */}
         {showAllImages && (
-          <div className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-2 sm:p-4 animate-fade-in overflow-hidden">
+          <div 
+            className={`fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-2 sm:p-4 animate-fade-in overflow-hidden ${isMobile ? 'gallery-carousel-mobile-fixed' : ''}`}
+            style={isMobile ? {
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100vh',
+              zIndex: 99999,
+              background: 'rgba(0, 0, 0, 0.95)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1rem',
+              overflow: 'hidden'
+            } : {}}
+          >
             {console.log('🎨 Renderizando carrossel...', { showAllImages, isMobile })}
             <div className="relative w-full h-full max-w-7xl flex flex-col">
               {/* Header */}
