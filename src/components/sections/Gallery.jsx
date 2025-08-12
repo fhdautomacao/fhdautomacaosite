@@ -15,6 +15,7 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
   const [showAllImages, setShowAllImages] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [scrollPosition, setScrollPosition] = useState(0)
+  const [showAllImagesMobile, setShowAllImagesMobile] = useState(false)
   const IMAGES_LIMIT = 8
   const { categories: fetchedCategoriesHook, loading: loadingCategoriesHook, error: categoriesErrorHook } = useGalleryCategories({ initialData: galleryCategories, enabled: !galleryCategories })
   const fetchedCategories = galleryCategories || fetchedCategoriesHook
@@ -35,7 +36,6 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
 
   // Monitorar mudanças no showAllImages
   useEffect(() => {
-    console.log('🔄 showAllImages mudou:', showAllImages)
   }, [showAllImages])
 
   useEffect(() => {
@@ -83,16 +83,22 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
   }
 
   const openCarousel = () => {
-    console.log('🚀 Abrindo carrossel...', { isMobile, showAllImages })
     // Salvar a posição atual do scroll
     setScrollPosition(window.scrollY)
-    setShowAllImages(true)
-    // No mobile, manter a posição atual do scroll para que o carrossel apareça centralizado
+    
     if (isMobile) {
-      console.log('📱 Configurando para mobile...')
-      // Não alterar o scroll - deixar onde está para que o carrossel apareça centralizado na viewport
-      // O carrossel vai aparecer exatamente onde o usuário está olhando
+      // No mobile, alternar entre mostrar todas as fotos ou apenas as primeiras
+      if (showAllImagesMobile) {
+        // Se já está mostrando todas, voltar para as primeiras
+        setShowAllImagesMobile(false)
+      } else {
+        // Se não está mostrando todas, ir para o header e mostrar todas
+        window.scrollTo(0, 0)
+        setShowAllImagesMobile(true)
+      }
     } else {
+      // No desktop, abrir o carrossel normalmente
+      setShowAllImages(true)
       document.body.style.overflow = 'hidden'
     }
   }
@@ -101,7 +107,6 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
     setShowAllImages(false)
     if (isMobile) {
       // No mobile, não alterar o scroll - manter onde está
-      console.log('📱 Fechando carrossel mobile...')
     } else {
       document.body.style.overflow = 'unset'
     }
@@ -219,8 +224,11 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                 </div>
               )
             } else {
-              // Mostrar apenas as primeiras 8 imagens
-              const imagesToShow = filteredImages.slice(0, IMAGES_LIMIT)
+              // No mobile, mostrar todas as fotos se showAllImagesMobile for true
+              // No desktop, mostrar apenas as primeiras 8 imagens
+              const imagesToShow = isMobile && showAllImagesMobile 
+                ? filteredImages 
+                : filteredImages.slice(0, IMAGES_LIMIT)
               
               return imagesToShow.map((image, index) => {
                 return (
@@ -290,14 +298,13 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
           <div className="text-center mb-16 animate-fade-in-up">
             <button
               onClick={() => {
-                console.log('🔘 Botão clicado!', { isMobile, filteredImagesLength: filteredImages.length })
                 openCarousel()
               }}
               className="group bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 mx-auto"
             >
               <span>
                 {isMobile 
-                  ? `Ver todas as ${filteredImages.length} fotos` 
+                  ? (showAllImagesMobile ? 'Ocultar fotos extras' : `Ver todas as ${filteredImages.length} fotos`)
                   : `Ver todas as ${filteredImages.length} fotos`
                 }
               </span>
@@ -392,28 +399,11 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
           </div>
         )}
 
-        {/* Carrossel Completo - Para Mobile e Desktop */}
-        {showAllImages && (
+        {/* Carrossel Completo - Apenas para Desktop */}
+        {showAllImages && !isMobile && (
           <div 
-            className={`fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-2 sm:p-4 animate-fade-in overflow-hidden ${isMobile ? 'gallery-carousel-mobile-fixed' : ''}`}
-            style={isMobile ? {
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              width: '100vw',
-              height: '100vh',
-              zIndex: 99999,
-              background: 'rgba(0, 0, 0, 0.95)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '1rem',
-              overflow: 'hidden'
-            } : {}}
+            className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-2 sm:p-4 animate-fade-in overflow-hidden"
           >
-            {console.log('🎨 Renderizando carrossel...', { showAllImages, isMobile })}
             <div className="relative w-full h-full max-w-7xl flex flex-col">
               {/* Header */}
               <div className="flex items-center justify-between mb-4 sm:mb-6 text-white">
