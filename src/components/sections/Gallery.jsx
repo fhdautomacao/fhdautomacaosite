@@ -67,14 +67,12 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
 
   const openCarousel = () => {
     setShowAllImages(true)
-    // Bloquear scroll da página principal
-    document.body.style.overflow = 'hidden'
+    // O controle de scroll será feito pelo useEffect
   }
 
   const closeCarousel = () => {
     setShowAllImages(false)
-    // Restaurar scroll da página principal
-    document.body.style.overflow = 'unset'
+    // O controle de scroll será feito pelo useEffect
   }
 
   // Cleanup: restaurar scroll quando componente for desmontado
@@ -86,12 +84,41 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
 
   // Monitorar mudanças no estado showAllImages para controlar scroll
   useEffect(() => {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
     if (showAllImages) {
-      document.body.style.overflow = 'hidden'
+      // No mobile, usar position fixed para evitar problemas de scroll
+      if (isMobile) {
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+        document.body.style.top = `-${window.scrollY}px`;
+      } else {
+        document.body.style.overflow = 'hidden';
+      }
     } else {
-      document.body.style.overflow = 'unset'
+      // Restaurar scroll
+      if (isMobile) {
+        const scrollY = document.body.style.top;
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.body.style.top = '';
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      } else {
+        document.body.style.overflow = 'unset';
+      }
     }
-  }, [showAllImages])
+
+    // Cleanup
+    return () => {
+      if (isMobile) {
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.body.style.top = '';
+      } else {
+        document.body.style.overflow = 'unset';
+      }
+    };
+  }, [showAllImages]);
 
   const nextImage = () => {
     const nextIndex = (currentIndex + 1) % filteredImages.length
@@ -294,8 +321,8 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
 
         {/* Modal */}
         {selectedImage && (
-          <div className="fixed inset-0 bg-white z-[9990] flex items-center justify-center p-4 animate-fade-in">
-            <div className="relative max-w-6xl w-full">
+          <div className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-4 animate-fade-in overflow-hidden gallery-container">
+            <div className="relative max-w-6xl w-full h-full flex flex-col justify-center">
               {/* Close Button */}
               <button 
                 onClick={closeModal}
@@ -322,40 +349,40 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                 </>
               )}
 
-                             {/* Image */}
-               <div className="rounded-2xl aspect-video flex items-center justify-center shadow-2xl overflow-hidden">
-                 <img 
-                   src={selectedImage.image_url} 
-                   alt={selectedImage.title} 
-                   className="w-full h-full object-contain"
-                   onError={(e) => {
-                     // Ignorar erros de cookies do Cloudflare - são normais e não afetam a funcionalidade
-                     if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {
-                       console.log('ℹ️ Erro de cookie Cloudflare ignorado - normal para imagens do Supabase')
-                       return
-                     }
-                     
-                     console.error('❌ Erro ao carregar imagem no modal:', {
-                       title: selectedImage.title,
-                       url: selectedImage.image_url
-                     })
-                   }}
-                 />
-               </div>
+              {/* Image */}
+              <div className="rounded-2xl aspect-video flex items-center justify-center shadow-2xl overflow-hidden max-h-[70vh]">
+                <img 
+                  src={selectedImage.image_url} 
+                  alt={selectedImage.title} 
+                  className="w-full h-full object-contain gallery-image"
+                  onError={(e) => {
+                    // Ignorar erros de cookies do Cloudflare - são normais e não afetam a funcionalidade
+                    if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {
+                      console.log('ℹ️ Erro de cookie Cloudflare ignorado - normal para imagens do Supabase')
+                      return
+                    }
+                    
+                    console.error('❌ Erro ao carregar imagem no modal:', {
+                      title: selectedImage.title,
+                      url: selectedImage.image_url
+                    })
+                  }}
+                />
+              </div>
 
               {/* Image Info */}
-              <div className="text-black mt-6 text-center">
+              <div className="text-white mt-6 text-center">
                 <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border mb-4 ${getCategoryColor(fetchedCategories.find(cat => cat.id === selectedImage.category)?.name || selectedImage.category)}`}>
                   {fetchedCategories.find(cat => cat.id === selectedImage.category)?.name || selectedImage.category}
                 </div>
-                <h3 className="text-3xl font-bold mb-3">{selectedImage.title}</h3>
-                <p className="text-gray-300 text-lg mb-4">{selectedImage.description}</p>
-                                 <p className="text-sm text-gray-400">
-                   {currentIndex + 1} de {filteredImages.length} fotos
-                   {selectedCategory !== ALL_KEY && (
-                     <span> em {fetchedCategories.find(cat => cat.id === selectedCategory)?.name || selectedCategory}</span>
-                   )}
-                 </p>
+                <h3 className="text-2xl sm:text-3xl font-bold mb-3">{selectedImage.title}</h3>
+                <p className="text-gray-300 text-base sm:text-lg mb-4">{selectedImage.description}</p>
+                <p className="text-sm text-gray-400">
+                  {currentIndex + 1} de {filteredImages.length} fotos
+                  {selectedCategory !== ALL_KEY && (
+                    <span> em {fetchedCategories.find(cat => cat.id === selectedCategory)?.name || selectedCategory}</span>
+                  )}
+                </p>
               </div>
             </div>
           </div>
@@ -363,7 +390,7 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
 
         {/* Carrossel Completo */}
         {showAllImages && (
-          <div className="fixed inset-0 bg-black/95 z-[9991] flex items-center justify-center p-2 sm:p-4 animate-fade-in">
+          <div className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-2 sm:p-4 animate-fade-in overflow-hidden gallery-container">
             <div className="relative w-full h-full max-w-7xl flex flex-col">
               {/* Header */}
               <div className="flex items-center justify-between mb-4 sm:mb-6 text-white">
@@ -383,71 +410,71 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                 </button>
               </div>
 
-                             {/* Grid de Imagens */}
-               <div className="flex-1 overflow-y-auto">
-                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4">
-                   {filteredImages.map((image, index) => (
-                     <div 
-                       key={image.id}
-                       className="group cursor-pointer overflow-hidden rounded-lg sm:rounded-xl aspect-square shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105"
-                       onClick={() => {
-                         setSelectedImage(image)
-                         setCurrentIndex(index)
-                         setShowAllImages(false)
-                       }}
-                     >
-                       <div className="relative h-full bg-gray-800">
-                         <img 
-                           src={image.image_url} 
-                           alt={image.title} 
-                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                           onError={(e) => {
-                             // Ignorar erros de cookies do Cloudflare - são normais e não afetam a funcionalidade
-                             if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {
-                               console.log('ℹ️ Erro de cookie Cloudflare ignorado - normal para imagens do Supabase')
-                               return
-                             }
-                             
-                             console.error('❌ Erro ao carregar imagem no carrossel:', {
-                               title: image.title,
-                               url: image.image_url
-                             })
-                           }}
-                         />
-                         
-                         {/* Category Badge */}
-                         <div className={`absolute top-1 sm:top-2 left-1 sm:left-2 px-1 sm:px-2 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(fetchedCategories.find(cat => cat.id === image.category)?.name || image.category)} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
-                           {fetchedCategories.find(cat => cat.id === image.category)?.name || image.category}
-                         </div>
-                         
-                         {/* Overlay */}
-                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end">
-                           <div className="p-2 sm:p-3 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                             <h3 className="font-bold text-xs sm:text-sm mb-1">{image.title}</h3>
-                             <p className="text-xs opacity-90 line-clamp-2">{image.description}</p>
-                           </div>
-                         </div>
-                         
-                         {/* Hover Effect */}
-                         <div className="absolute inset-0 bg-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                       </div>
-                     </div>
-                   ))}
-                 </div>
-               </div>
+              {/* Grid de Imagens */}
+              <div className="flex-1 overflow-y-auto -webkit-overflow-scrolling-touch gallery-scroll gallery-modal">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 pb-4">
+                  {filteredImages.map((image, index) => (
+                    <div 
+                      key={image.id}
+                      className="group cursor-pointer overflow-hidden rounded-lg sm:rounded-xl aspect-square shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105"
+                      onClick={() => {
+                        setSelectedImage(image)
+                        setCurrentIndex(index)
+                        setShowAllImages(false)
+                      }}
+                    >
+                      <div className="relative h-full bg-gray-800">
+                        <img 
+                          src={image.image_url} 
+                          alt={image.title} 
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110 gallery-image"
+                          onError={(e) => {
+                            // Ignorar erros de cookies do Cloudflare - são normais e não afetam a funcionalidade
+                            if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {
+                              console.log('ℹ️ Erro de cookie Cloudflare ignorado - normal para imagens do Supabase')
+                              return
+                            }
+                            
+                            console.error('❌ Erro ao carregar imagem no carrossel:', {
+                              title: image.title,
+                              url: image.image_url
+                            })
+                          }}
+                        />
+                        
+                        {/* Category Badge */}
+                        <div className={`absolute top-1 sm:top-2 left-1 sm:left-2 px-1 sm:px-2 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(fetchedCategories.find(cat => cat.id === image.category)?.name || image.category)} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
+                          {fetchedCategories.find(cat => cat.id === image.category)?.name || image.category}
+                        </div>
+                        
+                        {/* Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end">
+                          <div className="p-2 sm:p-3 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                            <h3 className="font-bold text-xs sm:text-sm mb-1">{image.title}</h3>
+                            <p className="text-xs opacity-90 line-clamp-2">{image.description}</p>
+                          </div>
+                        </div>
+                        
+                        {/* Hover Effect */}
+                        <div className="absolute inset-0 bg-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-                              {/* Footer com Botão Fechar */}
-               <div className="mt-4 sm:mt-6 text-center text-white">
-                 <p className="text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4 px-2">
-                   Clique em qualquer imagem para visualizá-la em tamanho maior
-                 </p>
-                 <button
-                   onClick={closeCarousel}
-                   className="bg-gray-700 hover:bg-gray-600 text-white font-semibold px-4 sm:px-6 py-2 rounded-lg transition-colors duration-300 text-sm sm:text-base"
-                 >
-                   Fechar Galeria
-                 </button>
-               </div>
+              {/* Footer com Botão Fechar */}
+              <div className="mt-4 sm:mt-6 text-center text-white">
+                <p className="text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4 px-2">
+                  Clique em qualquer imagem para visualizá-la em tamanho maior
+                </p>
+                <button
+                  onClick={closeCarousel}
+                  className="bg-gray-700 hover:bg-gray-600 text-white font-semibold px-4 sm:px-6 py-2 rounded-lg transition-colors duration-300 text-sm sm:text-base"
+                >
+                  Fechar Galeria
+                </button>
+              </div>
             </div>
           </div>
         )}

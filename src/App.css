@@ -211,3 +211,51 @@
 .animate-scroll-infinite:hover {
   animation-play-state: paused;
 }
+
+/* ==== Estilos específicos para Galeria Mobile ==== */
+@media (max-width: 768px) {
+  /* Melhorar scroll no modal da galeria */
+  .gallery-modal {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  /* Prevenir zoom em imagens */
+  .gallery-image {
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Melhorar performance de scroll */
+  .gallery-scroll {
+    will-change: scroll-position;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prevenir bounce no iOS */
+  .gallery-container {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ==== Animações específicas para mobile ==== */
+@media (max-width: 768px) {
+  .animate-fade-in {
+    animation: fadeInMobile 0.3s ease-out forwards;
+  }
+  
+  @keyframes fadeInMobile {
+    from { 
+      opacity: 0; 
+      transform: scale(0.95);
+    }
+    to { 
+      opacity: 1; 
+      transform: scale(1);
+    }
+  }
+}
