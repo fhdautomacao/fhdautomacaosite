@@ -1,19 +1,33 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { createPortal } from 'react-dom'
 
 const FloatingWhatsApp = () => {
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const phone = '5519998652144'
   const message = 'Olá! Vim pelo site e gostaria de um orçamento.'
 
   const href = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
 
-  return (
+  const whatsAppButton = (
     <motion.a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Conversar no WhatsApp"
-      className="fixed right-4 bottom-4 md:right-6 md:bottom-6 z-50"
+      className="fixed right-4 bottom-4 md:right-6 md:bottom-6 z-[9999] !fixed"
+      style={{
+        position: 'fixed !important',
+        zIndex: 99999,
+        bottom: '1rem',
+        right: '1rem',
+        pointerEvents: 'auto'
+      }}
       initial={{ opacity: 0, y: 24, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
@@ -25,7 +39,7 @@ const FloatingWhatsApp = () => {
         </span>
 
         {/* Botão circular com ícone */}
-        <div className="relative w-[52px] h-[52px] md:w-[60px] md:h-[60px] rounded-full shadow-lg bg-[#25D366] flex items-center justify-center transition-transform hover:scale-110 active:scale-95">
+        <div className="relative w-[52px] h-[52px] md:w-[60px] md:h-[60px] rounded-full shadow-lg bg-[#25D366] flex items-center justify-center transition-transform hover:scale-110 active:scale-95 pointer-events-auto">
           {/* Ícone WhatsApp com traço clássico (bolha + fone) */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -44,6 +58,11 @@ const FloatingWhatsApp = () => {
       <span className="sr-only">Abrir conversa no WhatsApp</span>
     </motion.a>
   )
+
+  // Usar portal para renderizar no body apenas após o componente estar montado
+  if (!mounted) return null
+  
+  return createPortal(whatsAppButton, document.body)
 }
 
 export default FloatingWhatsApp

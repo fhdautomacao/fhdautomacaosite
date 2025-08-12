@@ -25,52 +25,6 @@ const Contact = ({ servicesData = null }) => {
     message: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [cfToken, setCfToken] = useState(null)
-
-  useEffect(() => {
-    // Renderizar Turnstile sem alterar o layout visual (invisível)
-    const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY
-    if (!siteKey) return
-
-    const scriptId = 'cf-turnstile-script'
-    if (!document.getElementById(scriptId)) {
-      const s = document.createElement('script')
-      s.id = scriptId
-      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
-      s.async = true
-      document.head.appendChild(s)
-    }
-
-    const containerId = 'cf-turnstile-container'
-    let container = document.getElementById(containerId)
-    if (!container) {
-      container = document.createElement('div')
-      container.id = containerId
-      container.style.display = 'none'
-      document.body.appendChild(container)
-    }
-
-    const render = () => {
-      if (!window.turnstile) return
-      try {
-        window.turnstile.render('#' + containerId, {
-          sitekey: siteKey,
-          callback: (token) => setCfToken(token),
-          'response-field': false,
-          size: 'invisible'
-        })
-      } catch {}
-    }
-
-    const i = setInterval(() => {
-      if (window.turnstile) {
-        clearInterval(i)
-        render()
-      }
-    }, 100)
-
-    return () => clearInterval(i)
-  }, [])
   const [submitStatus, setSubmitStatus] = useState(null)
 
   const handleInputChange = (e) => {
@@ -87,15 +41,6 @@ const Contact = ({ servicesData = null }) => {
     setSubmitStatus(null)
 
     try {
-      // Verificar Turnstile (se configurado)
-      let verified = true
-      // Endpoint de verificação removido; manter como permitido quando não houver Turnstile
-
-      if (!verified) {
-        setSubmitStatus('error')
-        setIsSubmitting(false)
-        return
-      }
 
       await contactAPI.sendMessage(formData)
       setSubmitStatus('success')

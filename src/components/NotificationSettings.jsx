@@ -133,14 +133,7 @@ const NotificationSettings = () => {
     try {
       console.log('🔄 Forçando atualização da página...')
       
-      // Limpar cookies problemáticos do Cloudflare
-      const cookiesToRemove = ['__cf_bm', '__cf_clearance', 'cf_clearance']
-      cookiesToRemove.forEach(cookieName => {
-        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
-        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname}`
-        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname}`
-      })
-      console.log('🧹 Cookies do Cloudflare removidos')
+
       
       // Limpar cache do navegador
       if ('caches' in window) {

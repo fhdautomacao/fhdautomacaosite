@@ -159,28 +159,7 @@
         }, 3000)
       })
       
-      // Limpar cookies problemáticos do Cloudflare
-      function clearProblematicCookies() {
-        const cookiesToRemove = [
-          '__cf_bm',
-          '__cf_clearance',
-          'cf_clearance'
-        ]
-        
-        cookiesToRemove.forEach(cookieName => {
-          // Remover cookie do domínio atual
-          document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
-          document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname}`
-          document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname}`
-        })
-        
-        console.log('🧹 Cookies problemáticos do Cloudflare removidos')
-      }
-      
-      // Executar limpeza de cookies após carregamento
-      window.addEventListener('load', function() {
-        setTimeout(clearProblematicCookies, 1000)
-      })
+
     </script>
   </head>
   <body>

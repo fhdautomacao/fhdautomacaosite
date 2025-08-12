@@ -341,33 +341,33 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
 
         {/* Carrossel Completo */}
         {showAllImages && (
-          <div className="fixed inset-0 bg-black/95 z-[9991] flex items-center justify-center p-4 animate-fade-in">
-            <div className="relative max-w-7xl w-full h-full flex flex-col">
+          <div className="fixed inset-0 bg-black/95 z-[9991] flex items-center justify-center p-2 sm:p-4 animate-fade-in">
+            <div className="relative w-full h-full max-w-7xl flex flex-col">
               {/* Header */}
-              <div className="flex items-center justify-between mb-6 text-white">
-                <h2 className="text-2xl font-bold">
+              <div className="flex items-center justify-between mb-4 sm:mb-6 text-white">
+                <h2 className="text-lg sm:text-2xl font-bold">
                   Galeria Completa - {filteredImages.length} fotos
                   {selectedCategory !== ALL_KEY && (
-                    <span className="text-blue-400 ml-2">
+                    <span className="text-blue-400 ml-1 sm:ml-2 text-sm sm:text-base">
                       ({fetchedCategories.find(cat => cat.id === selectedCategory)?.name || selectedCategory})
                     </span>
                   )}
                 </h2>
                 <button 
                   onClick={closeCarousel}
-                  className="text-white hover:text-gray-300 bg-black/50 rounded-full p-3 transition-colors duration-300"
+                  className="text-white hover:text-gray-300 bg-black/50 rounded-full p-2 sm:p-3 transition-colors duration-300"
                 >
-                  <X size={24} />
+                  <X size={20} className="sm:w-6 sm:h-6" />
                 </button>
               </div>
 
                              {/* Grid de Imagens */}
                <div className="flex-1 overflow-y-auto">
-                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4">
                    {filteredImages.map((image, index) => (
                      <div 
                        key={image.id}
-                       className="group cursor-pointer overflow-hidden rounded-xl aspect-square shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105"
+                       className="group cursor-pointer overflow-hidden rounded-lg sm:rounded-xl aspect-square shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105"
                        onClick={() => {
                          setSelectedImage(image)
                          setCurrentIndex(index)
@@ -382,14 +382,14 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                          />
                          
                          {/* Category Badge */}
-                         <div className={`absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(fetchedCategories.find(cat => cat.id === image.category)?.name || image.category)} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
+                         <div className={`absolute top-1 sm:top-2 left-1 sm:left-2 px-1 sm:px-2 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(fetchedCategories.find(cat => cat.id === image.category)?.name || image.category)} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
                            {fetchedCategories.find(cat => cat.id === image.category)?.name || image.category}
                          </div>
                          
                          {/* Overlay */}
                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end">
-                           <div className="p-3 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                             <h3 className="font-bold text-sm mb-1">{image.title}</h3>
+                           <div className="p-2 sm:p-3 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                             <h3 className="font-bold text-xs sm:text-sm mb-1">{image.title}</h3>
                              <p className="text-xs opacity-90 line-clamp-2">{image.description}</p>
                            </div>
                          </div>
@@ -403,13 +403,13 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                </div>
 
                               {/* Footer com Botão Fechar */}
-               <div className="mt-6 text-center text-white">
-                 <p className="text-sm text-gray-400 mb-4">
+               <div className="mt-4 sm:mt-6 text-center text-white">
+                 <p className="text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4 px-2">
                    Clique em qualquer imagem para visualizá-la em tamanho maior
                  </p>
                  <button
                    onClick={closeCarousel}
-                   className="bg-gray-700 hover:bg-gray-600 text-white font-semibold px-6 py-2 rounded-lg transition-colors duration-300"
+                   className="bg-gray-700 hover:bg-gray-600 text-white font-semibold px-4 sm:px-6 py-2 rounded-lg transition-colors duration-300 text-sm sm:text-base"
                  >
                    Fechar Galeria
                  </button>
