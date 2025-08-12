@@ -163,16 +163,16 @@ const Products = ({ productsData = null, productCategories = null }) => {
           <p className="text-gray-600">
             {filteredProducts.length === products.length && !searchTerm ? (
               // Quando não há filtros aplicados
-              t('products.showingAll', 'Mostrando todos os {total} produtos', { total: products.length })
+              `Mostrando todos os ${products.length} produtos`
             ) : (
               // Quando há filtros aplicados
               <>
-                {t('products.resultCount', 'Mostrando {shown} de {total} produtos', { shown: filteredProducts.length, total: products.length })}
+                {`Mostrando ${filteredProducts.length} de ${products.length} produtos`}
                 {selectedCategory !== ALL_KEY && (
-                  <span> {t('products.inCategory','na categoria')} <span className="font-semibold text-blue-600">"{fetchedCategories.find(cat => cat.id === selectedCategory)?.name || selectedCategory}"</span></span>
+                  <span> na categoria <span className="font-semibold text-blue-600">"{fetchedCategories.find(cat => cat.id === selectedCategory)?.name || selectedCategory}"</span></span>
                 )}
                 {searchTerm && (
-                  <span> {t('products.forTerm','para')} <span className="font-semibold text-blue-600">"{searchTerm}"</span></span>
+                  <span> para <span className="font-semibold text-blue-600">"{searchTerm}"</span></span>
                 )}
               </>
             )}
@@ -180,32 +180,32 @@ const Products = ({ productsData = null, productCategories = null }) => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 mb-16">
           {filteredProducts.map((product, index) => (
             <div 
               key={index}
               className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden hover:-translate-y-2 hover:scale-105 animate-fade-in-up"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className="bg-white h-40 md:h-48 flex items-center justify-center relative overflow-hidden border border-gray-200">
-                {product.image_url ? (
-                  <img 
-                    src={product.image_url} 
-                    alt={product.name}
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 bg-white"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
-                    }}
-                  />
-                ) : null}
+                             <div className="bg-white h-48 md:h-56 flex items-center justify-center relative overflow-hidden border border-gray-200">
+                 {product.image_url ? (
+                   <img 
+                     src={product.image_url} 
+                     alt={product.name}
+                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 bg-white"
+                     onError={(e) => {
+                       e.target.style.display = 'none';
+                       e.target.nextSibling.style.display = 'flex';
+                     }}
+                   />
+                 ) : null}
                 <div className={`text-gray-400 text-4xl md:text-6xl group-hover:scale-105 transition-transform duration-300 ${product.image_url ? 'hidden' : 'flex'}`}>
                   ⚙️
                 </div>
                 <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               
-              <div className="p-4 md:p-6">
+                             <div className="p-5 md:p-7">
                 <div className={`inline-block px-2 md:px-3 py-1 rounded-full text-xs font-semibold mb-3 border ${getCategoryColor(fetchedCategories.find(cat => cat.id === product.category)?.name || product.category)}`}>
                   {fetchedCategories.find(cat => cat.id === product.category)?.name || product.category}
                 </div>
