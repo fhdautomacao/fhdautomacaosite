@@ -14,6 +14,7 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
   const [loadingImages, setLoadingImages] = useState(!galleryItemsData)
   const [showAllImages, setShowAllImages] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [scrollPosition, setScrollPosition] = useState(0)
   const IMAGES_LIMIT = 8
   const { categories: fetchedCategoriesHook, loading: loadingCategoriesHook, error: categoriesErrorHook } = useGalleryCategories({ initialData: galleryCategories, enabled: !galleryCategories })
   const fetchedCategories = galleryCategories || fetchedCategoriesHook
@@ -77,16 +78,25 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
   }
 
   const openCarousel = () => {
+    // Salvar a posição atual do scroll
+    setScrollPosition(window.scrollY)
     setShowAllImages(true)
-    // No mobile, não precisamos controlar scroll pois o carrossel ocupa toda a tela
-    if (!isMobile) {
+    // No mobile, fazer scroll para o topo para que o carrossel apareça corretamente
+    if (isMobile) {
+      window.scrollTo(0, 0)
+    } else {
       document.body.style.overflow = 'hidden'
     }
   }
 
   const closeCarousel = () => {
     setShowAllImages(false)
-    if (!isMobile) {
+    if (isMobile) {
+      // No mobile, restaurar a posição de scroll para onde estava antes
+      setTimeout(() => {
+        window.scrollTo(0, scrollPosition)
+      }, 100)
+    } else {
       document.body.style.overflow = 'unset'
     }
   }
