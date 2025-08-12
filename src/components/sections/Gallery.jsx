@@ -13,7 +13,7 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
   const [images, setImages] = useState(galleryItemsData || [])
   const [loadingImages, setLoadingImages] = useState(!galleryItemsData)
   const [showAllImages, setShowAllImages] = useState(false)
-  const IMAGES_LIMIT = 6
+  const IMAGES_LIMIT = 9
   const { categories: fetchedCategoriesHook, loading: loadingCategoriesHook, error: categoriesErrorHook } = useGalleryCategories({ initialData: galleryCategories, enabled: !galleryCategories })
   const fetchedCategories = galleryCategories || fetchedCategoriesHook
   const loadingCategories = galleryCategories ? false : loadingCategoriesHook
@@ -417,10 +417,12 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                 </div>
                 <h3 className="text-3xl font-bold mb-3">{selectedImage.title}</h3>
                 <p className="text-gray-300 text-lg mb-4">{selectedImage.description}</p>
-                <p className="text-sm text-gray-400">
-                  {currentIndex + 1} de {filteredImages.length} fotos
-                  {selectedCategory !== 'Todos' && ` em ${selectedCategory}`}
-                </p>
+                                 <p className="text-sm text-gray-400">
+                   {currentIndex + 1} de {filteredImages.length} fotos
+                   {selectedCategory !== ALL_KEY && (
+                     <span> em {fetchedCategories.find(cat => cat.id === selectedCategory)?.name || selectedCategory}</span>
+                   )}
+                 </p>
               </div>
             </div>
           </div>
@@ -448,53 +450,59 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                 </button>
               </div>
 
-              {/* Grid de Imagens */}
-              <div className="flex-1 overflow-y-auto">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {filteredImages.map((image, index) => (
-                    <div 
-                      key={image.id}
-                      className="group cursor-pointer overflow-hidden rounded-xl aspect-square shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105"
-                      onClick={() => {
-                        setSelectedImage(image)
-                        setCurrentIndex(index)
-                        setShowAllImages(false)
-                      }}
-                    >
-                      <div className="relative h-full bg-gray-800">
-                        <img 
-                          src={image.image_url} 
-                          alt={image.title} 
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                        />
-                        
-                        {/* Category Badge */}
-                        <div className={`absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(fetchedCategories.find(cat => cat.id === image.category)?.name || image.category)} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
-                          {fetchedCategories.find(cat => cat.id === image.category)?.name || image.category}
-                        </div>
-                        
-                        {/* Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end">
-                          <div className="p-3 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                            <h3 className="font-bold text-sm mb-1">{image.title}</h3>
-                            <p className="text-xs opacity-90 line-clamp-2">{image.description}</p>
-                          </div>
-                        </div>
-                        
-                        {/* Hover Effect */}
-                        <div className="absolute inset-0 bg-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                             {/* Grid de Imagens */}
+               <div className="flex-1 overflow-y-auto">
+                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                   {filteredImages.map((image, index) => (
+                     <div 
+                       key={image.id}
+                       className="group cursor-pointer overflow-hidden rounded-xl aspect-square shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105"
+                       onClick={() => {
+                         setSelectedImage(image)
+                         setCurrentIndex(index)
+                         setShowAllImages(false)
+                       }}
+                     >
+                       <div className="relative h-full bg-gray-800">
+                         <img 
+                           src={image.image_url} 
+                           alt={image.title} 
+                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                         />
+                         
+                         {/* Category Badge */}
+                         <div className={`absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(fetchedCategories.find(cat => cat.id === image.category)?.name || image.category)} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
+                           {fetchedCategories.find(cat => cat.id === image.category)?.name || image.category}
+                         </div>
+                         
+                         {/* Overlay */}
+                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end">
+                           <div className="p-3 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                             <h3 className="font-bold text-sm mb-1">{image.title}</h3>
+                             <p className="text-xs opacity-90 line-clamp-2">{image.description}</p>
+                           </div>
+                         </div>
+                         
+                         {/* Hover Effect */}
+                         <div className="absolute inset-0 bg-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               </div>
 
-              {/* Footer */}
-              <div className="mt-6 text-center text-white">
-                <p className="text-sm text-gray-400">
-                  Clique em qualquer imagem para visualizá-la em tamanho maior
-                </p>
-              </div>
+                              {/* Footer com Botão Fechar */}
+               <div className="mt-6 text-center text-white">
+                 <p className="text-sm text-gray-400 mb-4">
+                   Clique em qualquer imagem para visualizá-la em tamanho maior
+                 </p>
+                 <button
+                   onClick={closeCarousel}
+                   className="bg-gray-700 hover:bg-gray-600 text-white font-semibold px-6 py-2 rounded-lg transition-colors duration-300"
+                 >
+                   Fechar Galeria
+                 </button>
+               </div>
             </div>
           </div>
         )}
