@@ -12,6 +12,8 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
   const [selectedCategory, setSelectedCategory] = useState(ALL_KEY)
   const [images, setImages] = useState(galleryItemsData || [])
   const [loadingImages, setLoadingImages] = useState(!galleryItemsData)
+  const [showAllImages, setShowAllImages] = useState(false)
+  const IMAGES_LIMIT = 6
   const { categories: fetchedCategoriesHook, loading: loadingCategoriesHook, error: categoriesErrorHook } = useGalleryCategories({ initialData: galleryCategories, enabled: !galleryCategories })
   const fetchedCategories = galleryCategories || fetchedCategoriesHook
   const loadingCategories = galleryCategories ? false : loadingCategoriesHook
@@ -130,6 +132,14 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
     setSelectedImage(null)
   }
 
+  const openCarousel = () => {
+    setShowAllImages(true)
+  }
+
+  const closeCarousel = () => {
+    setShowAllImages(false)
+  }
+
   const nextImage = () => {
     const nextIndex = (currentIndex + 1) % filteredImages.length
     setCurrentIndex(nextIndex)
@@ -236,8 +246,8 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
           </div>
         </div>
 
-        {/* Gallery Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-16">
+                {/* Gallery Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
           {(() => {
             console.log('🎨 Renderizando grid da galeria')
             console.log('📊 Estado do grid:', {
@@ -261,76 +271,92 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                 </div>
               )
             } else {
-              console.log(`✅ Renderizando ${filteredImages.length} imagens`)
-              return filteredImages.map((image, index) => {
-                console.log(`🖼️ Renderizando imagem ${index + 1}/${filteredImages.length}:`, {
+              // Mostrar apenas as primeiras 6 imagens
+              const imagesToShow = filteredImages.slice(0, IMAGES_LIMIT)
+              console.log(`✅ Renderizando ${imagesToShow.length} imagens (limitado a ${IMAGES_LIMIT})`)
+              
+              return imagesToShow.map((image, index) => {
+                console.log(`🖼️ Renderizando imagem ${index + 1}/${imagesToShow.length}:`, {
                   id: image.id,
                   title: image.title,
                   image_url: image.image_url,
                   category: image.category
                 })
                 return (
-              <div 
-                key={image.id}
-                className="group cursor-pointer overflow-hidden rounded-2xl aspect-square shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:scale-105 animate-fade-in-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
-                onClick={() => openModal(image, index)}
-              >
-              <div className="relative h-full bg-gray-100">
-                                 <img 
-                   src={image.image_url} 
-                   alt={image.title} 
-                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                   style={{ minHeight: '200px' }}
-                   onLoad={() => {
-                     console.log('✅ Imagem carregada com sucesso:', {
-                       title: image.title,
-                       url: image.image_url,
-                       naturalWidth: event.target.naturalWidth,
-                       naturalHeight: event.target.naturalHeight
-                     })
-                   }}
-                   onError={(e) => {
-                     console.error('❌ Erro ao carregar imagem:', {
-                       title: image.title,
-                       url: image.image_url,
-                       error: e.target.error,
-                       naturalWidth: e.target.naturalWidth,
-                       naturalHeight: e.target.naturalHeight,
-                       currentSrc: e.target.currentSrc
-                     })
-                     console.error('🔍 Stack trace do erro:', new Error().stack)
-                     e.target.style.display = 'none'
-                     // Mostrar placeholder de erro
-                     const placeholder = document.createElement('div')
-                     placeholder.className = 'absolute inset-0 flex items-center justify-center bg-gray-200 text-gray-500 text-4xl'
-                     placeholder.innerHTML = '📷'
-                     e.target.parentNode.appendChild(placeholder)
-                   }}
-                 />
-                
-                {/* Category Badge */}
-                <div className={`absolute top-3 left-3 px-2 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(fetchedCategories.find(cat => cat.id === image.category)?.name || image.category)} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
-                  {fetchedCategories.find(cat => cat.id === image.category)?.name || image.category}
-                </div>
-                
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end">
-                  <div className="p-4 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                    <h3 className="font-bold text-sm mb-1">{image.title}</h3>
-                    <p className="text-xs opacity-90 line-clamp-2">{image.description}</p>
+                  <div 
+                    key={image.id}
+                    className="group cursor-pointer overflow-hidden rounded-2xl aspect-square shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:scale-105 animate-fade-in-up"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                    onClick={() => openModal(image, index)}
+                  >
+                    <div className="relative h-full bg-gray-100">
+                      <img 
+                        src={image.image_url} 
+                        alt={image.title} 
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        style={{ minHeight: '200px' }}
+                        onLoad={() => {
+                          console.log('✅ Imagem carregada com sucesso:', {
+                            title: image.title,
+                            url: image.image_url,
+                            naturalWidth: event.target.naturalWidth,
+                            naturalHeight: event.target.naturalHeight
+                          })
+                        }}
+                        onError={(e) => {
+                          console.error('❌ Erro ao carregar imagem:', {
+                            title: image.title,
+                            url: image.image_url,
+                            error: e.target.error,
+                            naturalWidth: e.target.naturalWidth,
+                            naturalHeight: e.target.naturalHeight,
+                            currentSrc: e.target.currentSrc
+                          })
+                          console.error('🔍 Stack trace do erro:', new Error().stack)
+                          e.target.style.display = 'none'
+                          // Mostrar placeholder de erro
+                          const placeholder = document.createElement('div')
+                          placeholder.className = 'absolute inset-0 flex items-center justify-center bg-gray-200 text-gray-500 text-4xl'
+                          placeholder.innerHTML = '📷'
+                          e.target.parentNode.appendChild(placeholder)
+                        }}
+                      />
+                      
+                      {/* Category Badge */}
+                      <div className={`absolute top-3 left-3 px-2 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(fetchedCategories.find(cat => cat.id === image.category)?.name || image.category)} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
+                        {fetchedCategories.find(cat => cat.id === image.category)?.name || image.category}
+                      </div>
+                      
+                      {/* Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end">
+                        <div className="p-4 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                          <h3 className="font-bold text-sm mb-1">{image.title}</h3>
+                          <p className="text-xs opacity-90 line-clamp-2">{image.description}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Hover Effect */}
+                      <div className="absolute inset-0 bg-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
                   </div>
-                </div>
-                
-                                 {/* Hover Effect */}
-                 <div className="absolute inset-0 bg-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-               </div>
-             </div>
-           )
-           })
-             }
-           })()}
+                )
+              })
+            }
+          })()}
         </div>
+
+        {/* Ver Tudo Button */}
+        {filteredImages.length > IMAGES_LIMIT && (
+          <div className="text-center mb-16 animate-fade-in-up">
+            <button
+              onClick={openCarousel}
+              className="group bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 mx-auto"
+            >
+              <span>Ver todas as {filteredImages.length} fotos</span>
+              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform duration-300" />
+            </button>
+          </div>
+        )}
 
         {/* No Results */}
         {filteredImages.length === 0 && (
@@ -394,6 +420,79 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                 <p className="text-sm text-gray-400">
                   {currentIndex + 1} de {filteredImages.length} fotos
                   {selectedCategory !== 'Todos' && ` em ${selectedCategory}`}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Carrossel Completo */}
+        {showAllImages && (
+          <div className="fixed inset-0 bg-black/95 z-[9991] flex items-center justify-center p-4 animate-fade-in">
+            <div className="relative max-w-7xl w-full h-full flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6 text-white">
+                <h2 className="text-2xl font-bold">
+                  Galeria Completa - {filteredImages.length} fotos
+                  {selectedCategory !== ALL_KEY && (
+                    <span className="text-blue-400 ml-2">
+                      ({fetchedCategories.find(cat => cat.id === selectedCategory)?.name || selectedCategory})
+                    </span>
+                  )}
+                </h2>
+                <button 
+                  onClick={closeCarousel}
+                  className="text-white hover:text-gray-300 bg-black/50 rounded-full p-3 transition-colors duration-300"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* Grid de Imagens */}
+              <div className="flex-1 overflow-y-auto">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {filteredImages.map((image, index) => (
+                    <div 
+                      key={image.id}
+                      className="group cursor-pointer overflow-hidden rounded-xl aspect-square shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105"
+                      onClick={() => {
+                        setSelectedImage(image)
+                        setCurrentIndex(index)
+                        setShowAllImages(false)
+                      }}
+                    >
+                      <div className="relative h-full bg-gray-800">
+                        <img 
+                          src={image.image_url} 
+                          alt={image.title} 
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        />
+                        
+                        {/* Category Badge */}
+                        <div className={`absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(fetchedCategories.find(cat => cat.id === image.category)?.name || image.category)} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
+                          {fetchedCategories.find(cat => cat.id === image.category)?.name || image.category}
+                        </div>
+                        
+                        {/* Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end">
+                          <div className="p-3 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                            <h3 className="font-bold text-sm mb-1">{image.title}</h3>
+                            <p className="text-xs opacity-90 line-clamp-2">{image.description}</p>
+                          </div>
+                        </div>
+                        
+                        {/* Hover Effect */}
+                        <div className="absolute inset-0 bg-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="mt-6 text-center text-white">
+                <p className="text-sm text-gray-400">
+                  Clique em qualquer imagem para visualizá-la em tamanho maior
                 </p>
               </div>
             </div>

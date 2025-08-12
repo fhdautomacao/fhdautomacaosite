@@ -57,10 +57,26 @@ const Products = ({ productsData = null, productCategories = null }) => {
     searchTerm
   })
 
+  // Função para remover acentos e normalizar texto
+  const normalizeText = (text) => {
+    return text
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+      .toLowerCase()
+      .trim()
+  }
+
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.features.some(feature => feature.toLowerCase().includes(searchTerm.toLowerCase()))
+    const normalizedSearchTerm = normalizeText(searchTerm)
+    const normalizedName = normalizeText(product.name)
+    const normalizedDescription = normalizeText(product.description)
+    
+    const matchesSearch = normalizedName.includes(normalizedSearchTerm) ||
+                         normalizedDescription.includes(normalizedSearchTerm) ||
+                         product.features.some(feature => 
+                           normalizeText(feature).includes(normalizedSearchTerm)
+                         )
+    
     const matchesCategory = selectedCategory === ALL_KEY || product.category === selectedCategory
     return matchesSearch && matchesCategory
   })
@@ -237,27 +253,27 @@ const Products = ({ productsData = null, productCategories = null }) => {
                   ))}
                 </div>
                 
-                                 {/* Price and CTA */}
-                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                   <span className="text-sm font-semibold text-blue-600">{product.price}</span>
-                   <div className="flex items-center space-x-3">
-                     {product.image_url && (
-                       <button 
-                         className="group/photo flex items-center space-x-1 text-gray-600 hover:text-blue-600 font-semibold text-sm transition-colors duration-300"
-                         onClick={() => openImageModal(product)}
-                       >
-                         <span>Abrir foto</span>
-                       </button>
-                     )}
-                     <button 
-                       className="group/btn flex items-center space-x-1 text-blue-600 hover:text-blue-700 font-semibold text-sm transition-colors duration-300"
-                       onClick={() => window.location.href = '/orcamento'}
-                     >
-                       <span>{t('products.consult','Consultar')}</span>
-                       <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform duration-300" />
-                     </button>
-                   </div>
-                 </div>
+                                                   {/* Price and CTA */}
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <span className="text-sm font-semibold text-blue-600">{product.price}</span>
+                    <div className="flex items-center justify-center flex-1">
+                      {product.image_url && (
+                        <button 
+                          className="group/photo flex items-center space-x-1 text-gray-600 hover:text-blue-600 font-semibold text-sm transition-colors duration-300"
+                          onClick={() => openImageModal(product)}
+                        >
+                          <span>Abrir foto</span>
+                        </button>
+                      )}
+                    </div>
+                    <button 
+                      className="group/btn flex items-center space-x-1 text-blue-600 hover:text-blue-700 font-semibold text-sm transition-colors duration-300"
+                      onClick={() => window.location.href = '/orcamento'}
+                    >
+                      <span>{t('products.consult','Consultar')}</span>
+                      <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform duration-300" />
+                    </button>
+                  </div>
               </div>
             </div>
           ))}
