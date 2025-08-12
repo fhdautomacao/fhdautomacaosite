@@ -20,17 +20,21 @@ const FloatingWhatsApp = () => {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Conversar no WhatsApp"
-      className="fixed right-4 bottom-4 md:right-6 md:bottom-6 z-[9999] !fixed"
+      className="whatsapp-floating fixed right-4 bottom-4 md:right-6 md:bottom-6 z-[99999]"
       style={{
         position: 'fixed !important',
         zIndex: 99999,
         bottom: '1rem',
         right: '1rem',
-        pointerEvents: 'auto'
+        pointerEvents: 'auto',
+        width: 'auto',
+        height: 'auto'
       }}
       initial={{ opacity: 0, y: 24, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.95 }}
     >
       <div className="group relative">
         {/* Tooltip simples em telas médias+ */}
@@ -39,7 +43,7 @@ const FloatingWhatsApp = () => {
         </span>
 
         {/* Botão circular com ícone */}
-        <div className="relative w-[52px] h-[52px] md:w-[60px] md:h-[60px] rounded-full shadow-lg bg-[#25D366] flex items-center justify-center transition-transform hover:scale-110 active:scale-95 pointer-events-auto">
+        <div className="relative w-[52px] h-[52px] md:w-[60px] md:h-[60px] rounded-full shadow-2xl bg-[#25D366] flex items-center justify-center transition-all duration-300 hover:shadow-3xl pointer-events-auto">
           {/* Ícone WhatsApp com traço clássico (bolha + fone) */}
           <svg
             xmlns="http://www.w3.org/2000/svg"

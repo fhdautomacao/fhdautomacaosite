@@ -229,3 +229,55 @@
     }
   }
 }
+
+/* WhatsApp Flutuante - Garantir que funcione no mobile */
+.whatsapp-floating {
+  position: fixed !important;
+  bottom: 1rem !important;
+  right: 1rem !important;
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+}
+
+.whatsapp-floating a {
+  position: fixed !important;
+  bottom: 1rem !important;
+  right: 1rem !important;
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+}
+
+/* Garantir que o botão seja clicável no mobile */
+.whatsapp-floating button,
+.whatsapp-floating a {
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Animações suaves */
+.whatsapp-floating {
+  transition: all 0.3s ease !important;
+}
+
+/* Sombra mais pronunciada para melhor visibilidade */
+.whatsapp-floating .shadow-2xl {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Hover effects */
+.whatsapp-floating:hover {
+  transform: scale(1.05) !important;
+}
+
+/* Mobile específico */
+@media (max-width: 768px) {
+  .whatsapp-floating {
+    bottom: 1.5rem !important;
+    right: 1.5rem !important;
+  }
+  
+  .whatsapp-floating a {
+    bottom: 1.5rem !important;
+    right: 1.5rem !important;
+  }
+}
