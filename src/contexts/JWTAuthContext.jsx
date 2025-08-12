@@ -202,8 +202,6 @@ export const JWTAuthProvider = ({ children }) => {
   // Função para verificar token
   const verifyToken = useCallback(async (authToken) => {
     try {
-      console.log('🔍 Verificando token na URL:', `${API_BASE_URL}/auth?action=verify`)
-      
       const response = await fetch(`${API_BASE_URL}/auth?action=verify`, {
         method: 'POST',
         headers: {
@@ -213,13 +211,7 @@ export const JWTAuthProvider = ({ children }) => {
         }
       })
 
-      console.log('📡 Resposta da verificação:', {
-        status: response.status,
-        ok: response.ok
-      })
-
       const data = await response.json()
-      console.log('📄 Dados da resposta:', data)
 
       if (!response.ok) {
         console.error('❌ Erro na resposta:', data.error)
@@ -227,7 +219,6 @@ export const JWTAuthProvider = ({ children }) => {
       }
 
       const isValid = data.success && data.data.valid
-      console.log('✅ Token válido:', isValid)
       return isValid
     } catch (error) {
       console.error('❌ Erro na verificação do token:', error)

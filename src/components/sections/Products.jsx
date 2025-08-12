@@ -24,7 +24,6 @@ const Products = ({ productsData = null, productCategories = null }) => {
   useEffect(() => {
     // Se productsData foi passado como prop, usar ele
     if (productsData) {
-      console.log('📦 Products: Usando productsData da prop:', productsData.length)
       setProducts(productsData)
       setLoadingProducts(false)
       return
@@ -33,7 +32,6 @@ const Products = ({ productsData = null, productCategories = null }) => {
     // Se não, buscar do API
     const fetchProducts = async () => {
       try {
-        console.log('📦 Products: Buscando produtos da API...')
         const data = await productsAPI.getAll()
         setProducts(data)
       } catch (error) {
@@ -51,15 +49,7 @@ const Products = ({ productsData = null, productCategories = null }) => {
   const usedCategories = fetchedCategories.filter(cat => usedCategoryIds.includes(cat.id))
   const allCategories = [{ id: ALL_KEY, label: t('common.all','Todos') }, ...usedCategories.map(cat => ({ id: cat.id, label: cat.name }))]
 
-  // Debug logs
-  console.log('🔍 Debug Products:', {
-    totalProducts: products.length,
-    usedCategoryIds,
-    usedCategories: usedCategories.map(c => ({ id: c.id, name: c.name })),
-    allCategories: allCategories.map(c => ({ id: c.id, label: c.label })),
-    selectedCategory,
-    searchTerm
-  })
+
 
   // Função para remover acentos e normalizar texto
   const normalizeText = (text) => {
@@ -85,10 +75,7 @@ const Products = ({ productsData = null, productCategories = null }) => {
     return matchesSearch && matchesCategory
   })
 
-  console.log('🔍 Filtered Products:', {
-    filteredCount: filteredProducts.length,
-    products: filteredProducts.map(p => ({ id: p.id, name: p.name, category: p.category }))
-  })
+
 
   const getCategoryColor = (categoryName) => {
     const colors = {

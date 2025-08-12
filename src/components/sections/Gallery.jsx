@@ -20,17 +20,7 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
   const categoriesError = galleryCategories ? null : categoriesErrorHook
 
   useEffect(() => {
-    console.log('🔄 Gallery useEffect executado')
-    console.log('📊 Estado atual:', {
-      galleryItemsData: galleryItemsData?.length || 0,
-      images: images.length,
-      loadingImages,
-      selectedCategory
-    })
-    
     if (galleryItemsData) {
-      console.log('📷 Gallery: Usando galleryItemsData da prop:', galleryItemsData.length)
-      console.log('📷 Gallery: Dados recebidos:', galleryItemsData)
       setImages(galleryItemsData)
       setLoadingImages(false)
       return
@@ -38,46 +28,13 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
     
     const fetchGalleryItems = async () => {
       try {
-        console.log('📷 Gallery: Buscando imagens da API...')
         const data = await galleryAPI.getAll()
-        console.log('📷 Gallery: Imagens carregadas da API:', data.length)
-        console.log('📷 Gallery: Dados completos:', data)
-        
-        // Verificar URLs das imagens
-        if (data.length > 0) {
-          console.log('🔍 Verificando URLs das imagens:')
-          data.forEach((item, index) => {
-            console.log(`  ${index + 1}. ${item.title}: ${item.image_url}`)
-            console.log(`     - ID: ${item.id}`)
-            console.log(`     - Category: ${item.category}`)
-            console.log(`     - Is Active: ${item.is_active}`)
-            
-            // Testar se a URL é válida
-            if (item.image_url) {
-              const img = new Image()
-              img.onload = () => console.log(`✅ Imagem ${item.title} carregada com sucesso`)
-              img.onerror = () => console.error(`❌ Erro ao carregar imagem ${item.title}: ${item.image_url}`)
-              img.src = item.image_url
-            } else {
-              console.warn(`⚠️ Imagem ${item.title} não tem URL`)
-            }
-          })
-        } else {
-          console.warn('⚠️ Nenhuma imagem retornada da API')
-        }
-        
         setImages(data)
-        console.log('✅ Estado images atualizado com:', data.length, 'imagens')
       } catch (error) {
         console.error('❌ Gallery: Erro ao buscar imagens:', error)
-        console.error('❌ Detalhes do erro:', {
-          message: error.message,
-          stack: error.stack
-        })
         setImages([])
       } finally {
         setLoadingImages(false)
-        console.log('✅ Loading finalizado')
       }
     }
     fetchGalleryItems()
@@ -85,43 +42,19 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
   }, [galleryItemsData])
 
   // Obter apenas as categorias que realmente existem nas imagens
-  console.log('🔍 Processando categorias...')
-  console.log('📊 Imagens disponíveis:', images.map(img => ({ id: img.id, title: img.title, category: img.category })))
-  
   const usedCategoryIds = [...new Set(images.map(img => img.category))]
-  console.log('📊 IDs de categorias usadas:', usedCategoryIds)
-  
   const usedCategories = fetchedCategories.filter(cat => usedCategoryIds.includes(cat.id))
-  console.log('📊 Categorias filtradas:', usedCategories.map(c => ({ id: c.id, name: c.name })))
-  
   const allCategories = [{ id: ALL_KEY, label: t('common.all','Todos') }, ...usedCategories.map(cat => ({ id: cat.name, label: cat.name }))]
-  console.log('📊 Todas as categorias:', allCategories.map(c => ({ id: c.id, label: c.label })))
 
   const filteredImages = selectedCategory === ALL_KEY 
     ? images 
     : images.filter(img => {
         const categoryObject = fetchedCategories.find(cat => cat.id === img.category)
         const matches = categoryObject && categoryObject.name === selectedCategory
-        console.log(`🔍 Verificando imagem ${img.title}:`, {
-          imgCategory: img.category,
-          categoryObject: categoryObject?.name,
-          selectedCategory,
-          matches
-        })
         return matches
       })
 
-  // Debug logs para verificar o estado
-  console.log('🔍 Gallery Debug Final:', {
-    totalImages: images.length,
-    selectedCategory,
-    ALL_KEY,
-    usedCategoryIds,
-    usedCategories: usedCategories.map(c => ({ id: c.id, name: c.name })),
-    allCategories: allCategories.map(c => ({ id: c.id, label: c.label })),
-    filteredImagesCount: filteredImages.length,
-    filteredImages: filteredImages.map(img => ({ id: img.id, title: img.title, category: img.category }))
-  })
+
 
   const openModal = (image, index) => {
     setSelectedImage(image)
@@ -186,22 +119,11 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
     return colors[categoryName] || 'bg-gray-100 text-gray-800 border-gray-200'
   }
 
-  console.log('🎨 Gallery: Renderizando componente')
-  console.log('📊 Estado de renderização:', {
-    loadingImages,
-    loadingCategories,
-    categoriesError: categoriesError?.message,
-    imagesCount: images.length,
-    selectedCategory
-  })
-
   if (loadingImages || loadingCategories) {
-    console.log('⏳ Gallery: Mostrando loading...')
     return <div className="text-center py-20">{t('gallery.loading','Carregando galeria...')}</div>
   }
 
   if (categoriesError) {
-    console.log('❌ Gallery: Erro nas categorias:', categoriesError.message)
     return <div className="text-center py-20 text-red-500">Erro ao carregar categorias: {categoriesError.message}</div>
   }
 
@@ -245,14 +167,7 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                              {allCategories.map((category, index) => (
                  <button
                    key={index}
-                   onClick={() => {
-                     console.log('🔘 Categoria clicada:', {
-                       categoryId: category.id,
-                       categoryLabel: category.label,
-                       previousSelected: selectedCategory
-                     })
-                     setSelectedCategory(category.id)
-                   }}
+                   onClick={() => setSelectedCategory(category.id)}
                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-105 ${
                      selectedCategory === category.id
                        ? 'bg-blue-600 text-white shadow-lg'
@@ -269,17 +184,7 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                 {/* Gallery Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
           {(() => {
-            console.log('🎨 Renderizando grid da galeria')
-            console.log('📊 Estado do grid:', {
-              filteredImagesLength: filteredImages.length,
-              imagesLength: images.length,
-              selectedCategory,
-              loadingImages,
-              loadingCategories
-            })
-            
             if (filteredImages.length === 0) {
-              console.log('⚠️ Nenhuma imagem para renderizar')
               return (
                 <div className="col-span-full text-center py-8">
                   <div className="text-4xl mb-4">🔍</div>
@@ -291,17 +196,10 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                 </div>
               )
             } else {
-              // Mostrar apenas as primeiras 6 imagens
+              // Mostrar apenas as primeiras 8 imagens
               const imagesToShow = filteredImages.slice(0, IMAGES_LIMIT)
-              console.log(`✅ Renderizando ${imagesToShow.length} imagens (limitado a ${IMAGES_LIMIT})`)
               
               return imagesToShow.map((image, index) => {
-                console.log(`🖼️ Renderizando imagem ${index + 1}/${imagesToShow.length}:`, {
-                  id: image.id,
-                  title: image.title,
-                  image_url: image.image_url,
-                  category: image.category
-                })
                 return (
                   <div 
                     key={image.id}
@@ -315,14 +213,7 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                         alt={image.title} 
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                         style={{ minHeight: '200px' }}
-                        onLoad={() => {
-                          console.log('✅ Imagem carregada com sucesso:', {
-                            title: image.title,
-                            url: image.image_url,
-                            naturalWidth: event.target.naturalWidth,
-                            naturalHeight: event.target.naturalHeight
-                          })
-                        }}
+
                         onError={(e) => {
                           console.error('❌ Erro ao carregar imagem:', {
                             title: image.title,

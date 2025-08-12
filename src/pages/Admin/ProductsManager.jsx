@@ -147,7 +147,7 @@ const ProductsManager = () => {
         throw error
       }
       
-      console.log('✅ Produtos carregados com sucesso:', data?.length || 0)
+
       setProducts(data)
     } catch (error) {
       console.error("Erro ao carregar produtos:", error)

@@ -3,8 +3,6 @@ import { supabase } from '../lib/supabase'
 export const productsAPI = {
   // Buscar todos os produtos
   async getAll() {
-    console.log('🔍 productsAPI.getAll(): Iniciando busca...')
-    
     const { data, error } = await supabase
       .from('products')
       .select('*')
@@ -15,7 +13,6 @@ export const productsAPI = {
       throw error
     }
     
-    console.log('✅ Produtos carregados:', data?.length || 0)
     return data
   },
 
