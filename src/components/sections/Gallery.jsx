@@ -414,7 +414,7 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                       className="group cursor-pointer overflow-hidden rounded-lg sm:rounded-xl aspect-square shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105"
                       onClick={() => {
                         if (isMobile) {
-                          // No mobile, abrir o modal do carrossel
+                          // No mobile, abrir o modal do carrossel sem alterar o scroll
                           setSelectedImage(image)
                           setCurrentIndex(index)
                           setShowAllImages(false)
@@ -484,8 +484,8 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
 
         {/* Modal para Mobile - Quando clica em uma imagem do carrossel */}
         {isMobile && selectedImage && (
-          <div className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-4 animate-fade-in overflow-hidden">
-            <div className="relative w-full h-full flex flex-col justify-center">
+          <div className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-4 animate-fade-in overflow-hidden gallery-modal-mobile">
+            <div className="relative w-full h-full flex flex-col justify-center items-center gallery-modal-content">
               {/* Close Button */}
               <button 
                 onClick={closeModal}
@@ -512,29 +512,31 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                 </>
               )}
 
-              {/* Image */}
-              <div className="flex items-center justify-center shadow-2xl overflow-hidden max-h-[80vh]">
-                <img 
-                  src={selectedImage.image_url} 
-                  alt={selectedImage.title} 
-                  className="w-full h-full object-contain"
-                  onError={(e) => {
-                    // Ignorar erros de cookies do Cloudflare - são normais e não afetam a funcionalidade
-                    if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {
-                      console.log('ℹ️ Erro de cookie Cloudflare ignorado - normal para imagens do Supabase')
-                      return
-                    }
-                    
-                    console.error('❌ Erro ao carregar imagem no modal mobile:', {
-                      title: selectedImage.title,
-                      url: selectedImage.image_url
-                    })
-                  }}
-                />
+              {/* Image Container - Centralizado */}
+              <div className="flex-1 flex items-center justify-center w-full max-w-full">
+                <div className="w-full h-full flex items-center justify-center">
+                  <img 
+                    src={selectedImage.image_url} 
+                    alt={selectedImage.title} 
+                    className="max-w-full max-h-full object-contain gallery-image"
+                    onError={(e) => {
+                      // Ignorar erros de cookies do Cloudflare - são normais e não afetam a funcionalidade
+                      if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {
+                        console.log('ℹ️ Erro de cookie Cloudflare ignorado - normal para imagens do Supabase')
+                        return
+                      }
+                      
+                      console.error('❌ Erro ao carregar imagem no modal mobile:', {
+                        title: selectedImage.title,
+                        url: selectedImage.image_url
+                      })
+                    }}
+                  />
+                </div>
               </div>
 
-              {/* Image Info */}
-              <div className="text-white mt-4 text-center">
+              {/* Image Info - Fixo na parte inferior */}
+              <div className="text-white mt-4 text-center w-full">
                 <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border mb-3 ${getCategoryColor(fetchedCategories.find(cat => cat.id === selectedImage.category)?.name || selectedImage.category)}`}>
                   {fetchedCategories.find(cat => cat.id === selectedImage.category)?.name || selectedImage.category}
                 </div>
