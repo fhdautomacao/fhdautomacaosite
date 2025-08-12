@@ -4,9 +4,20 @@ import { createPortal } from 'react-dom'
 
 const FloatingWhatsApp = () => {
   const [mounted, setMounted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   
   useEffect(() => {
     setMounted(true)
+    
+    // Detectar se é mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
   const phone = '5519998652144'
@@ -16,9 +27,10 @@ const FloatingWhatsApp = () => {
 
   const whatsAppButton = (
     <div
+      id="whatsapp-floating-button"
       className="whatsapp-floating"
       style={{
-        position: 'fixed !important',
+        position: 'fixed',
         bottom: '2rem',
         right: '1.5rem',
         left: 'auto',
@@ -27,7 +39,16 @@ const FloatingWhatsApp = () => {
         pointerEvents: 'auto',
         width: 'auto',
         height: 'auto',
-        transform: 'none'
+        transform: 'none',
+        // Forçar posicionamento no mobile
+        ...(isMobile && {
+          position: 'fixed !important',
+          bottom: '2rem !important',
+          right: '1.5rem !important',
+          left: 'auto !important',
+          top: 'auto !important',
+          zIndex: '9999999 !important'
+        })
       }}
     >
       <motion.a
@@ -41,7 +62,12 @@ const FloatingWhatsApp = () => {
           zIndex: 9999999,
           pointerEvents: 'auto',
           width: 'auto',
-          height: 'auto'
+          height: 'auto',
+          // Forçar no mobile
+          ...(isMobile && {
+            position: 'relative !important',
+            zIndex: '9999999 !important'
+          })
         }}
         initial={{ opacity: 0, y: 24, scale: 0.9 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
