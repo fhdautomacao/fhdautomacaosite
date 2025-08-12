@@ -42,6 +42,30 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
     }
   }, [])
 
+  // Cleanup: restaurar scroll quando componente for desmontado
+  useEffect(() => {
+    return () => {
+      if (!isMobile) {
+        document.body.style.overflow = 'unset'
+      }
+    }
+  }, [isMobile])
+
+  // Bloquear scroll quando modal mobile estiver aberto
+  useEffect(() => {
+    if (isMobile && selectedImage) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+      document.body.style.top = `-${window.scrollY}px`
+    } else if (isMobile) {
+      document.body.style.overflow = 'unset'
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.style.top = ''
+    }
+  }, [isMobile, selectedImage])
+
   useEffect(() => {
     if (galleryItemsData) {
       setImages(galleryItemsData)
@@ -304,39 +328,74 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
           </div>
         )}
 
-        {/* Modal Individual para Desktop e Mobile (agora unificado na lógica) */}
+        {/* Modal Individual para Desktop e Mobile */}
         {selectedImage && (
-          <div className="fixed inset-0 bg-black/95 z-[99999] flex items-center justify-center p-2 animate-fade-in overflow-hidden">
+          <div 
+            className="fixed inset-0 bg-black/95 z-[99999] flex items-center justify-center overflow-hidden"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100vh',
+              zIndex: 99999,
+              backgroundColor: 'rgba(0, 0, 0, 0.95)'
+            }}
+          >
             <div className="relative w-full h-full flex flex-col justify-center items-center">
+              {/* Close Button */}
               <button 
                 onClick={closeModal}
                 className="absolute top-4 right-4 text-white hover:text-gray-300 z-10 bg-black/50 rounded-full p-3 transition-colors duration-300"
+                style={{ zIndex: 100000 }}
               >
                 <X size={24} />
               </button>
 
+              {/* Navigation Buttons */}
               {filteredImages.length > 1 && (
                 <>
                   <button 
                     onClick={prevImage}
                     className="absolute left-2 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black/50 rounded-full p-3 transition-colors duration-300"
+                    style={{ zIndex: 100000 }}
                   >
                     <ChevronLeft size={28} />
                   </button>
                   <button 
                     onClick={nextImage}
                     className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black/50 rounded-full p-3 transition-colors duration-300"
+                    style={{ zIndex: 100000 }}
                   >
                     <ChevronRight size={28} />
                   </button>
                 </>
               )}
 
-              <div className="w-full h-full flex items-center justify-center px-4 py-16">
+              {/* Image Container - Ocupa toda a tela */}
+              <div 
+                className="w-full h-full flex items-center justify-center"
+                style={{
+                  width: '100vw',
+                  height: '100vh',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '1rem'
+                }}
+              >
                 <img 
                   src={selectedImage.image_url} 
                   alt={selectedImage.title} 
-                  className="max-w-full max-h-full object-contain rounded-lg"
+                  className="max-w-full max-h-full object-contain"
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    objectFit: 'contain',
+                    borderRadius: '0.5rem'
+                  }}
                   onError={(e) => {
                     if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {
                       return
@@ -349,7 +408,11 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
                 />
               </div>
 
-              <div className="absolute bottom-4 left-4 right-4 text-white text-center bg-black/50 rounded-lg p-4 backdrop-blur-sm">
+              {/* Image Info - Fixo na parte inferior */}
+              <div 
+                className="absolute bottom-4 left-4 right-4 text-white text-center bg-black/50 rounded-lg p-4 backdrop-blur-sm"
+                style={{ zIndex: 100000 }}
+              >
                 <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border mb-2 ${getCategoryColor(fetchedCategories.find(cat => cat.id === selectedImage.category)?.name || selectedImage.category)}`}>
                   {fetchedCategories.find(cat => cat.id === selectedImage.category)?.name || selectedImage.category}
                 </div>
@@ -365,6 +428,8 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
             </div>
           </div>
         )}
+
+
 
         {/* Carrossel Completo - Apenas para Desktop */}
         {showAllImages && !isMobile && (
