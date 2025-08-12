@@ -13,7 +13,7 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
   const [images, setImages] = useState(galleryItemsData || [])
   const [loadingImages, setLoadingImages] = useState(!galleryItemsData)
   const [showAllImages, setShowAllImages] = useState(false)
-  const IMAGES_LIMIT = 9
+  const IMAGES_LIMIT = 8
   const { categories: fetchedCategoriesHook, loading: loadingCategoriesHook, error: categoriesErrorHook } = useGalleryCategories({ initialData: galleryCategories, enabled: !galleryCategories })
   const fetchedCategories = galleryCategories || fetchedCategoriesHook
   const loadingCategories = galleryCategories ? false : loadingCategoriesHook

@@ -3,6 +3,7 @@ import { Search, Filter, Package, ArrowRight, CheckCircle, X } from 'lucide-reac
 import { productsAPI } from '../../api/products'
 import { useProductCategories } from '../../hooks/useCategories'
 import { useI18n } from '@/i18n/index.jsx'
+import { useMobileDetection } from '../../hooks/useMobileDetection'
 
 const Products = ({ productsData = null, productCategories = null }) => {
   const [searchTerm, setSearchTerm] = useState("")
@@ -12,6 +13,9 @@ const Products = ({ productsData = null, productCategories = null }) => {
   const [products, setProducts] = useState(productsData || [])
   const [loadingProducts, setLoadingProducts] = useState(!productsData)
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [showAllProducts, setShowAllProducts] = useState(false)
+  const { isMobile } = useMobileDetection()
+  const MOBILE_PRODUCTS_LIMIT = 6
   const { categories: fetchedCategoriesHook, loading: loadingCategoriesHook, error: categoriesErrorHook } = useProductCategories({ initialData: productCategories, enabled: !productCategories })
   const fetchedCategories = productCategories || fetchedCategoriesHook
   const loadingCategories = productCategories ? false : loadingCategoriesHook
@@ -105,6 +109,14 @@ const Products = ({ productsData = null, productCategories = null }) => {
 
   const closeImageModal = () => {
     setSelectedProduct(null)
+  }
+
+  const openAllProducts = () => {
+    setShowAllProducts(true)
+  }
+
+  const closeAllProducts = () => {
+    setShowAllProducts(false)
   }
 
   if (loadingProducts || loadingCategories) {
@@ -205,8 +217,14 @@ const Products = ({ productsData = null, productCategories = null }) => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 mb-16">
-          {filteredProducts.map((product, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 mb-8">
+          {(() => {
+            // Determinar quantos produtos mostrar baseado no dispositivo
+            const productsToShow = isMobile && !showAllProducts 
+              ? filteredProducts.slice(0, MOBILE_PRODUCTS_LIMIT)
+              : filteredProducts
+
+            return productsToShow.map((product, index) => (
             <div 
               key={index}
               className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden hover:-translate-y-2 hover:scale-105 animate-fade-in-up"
@@ -274,10 +292,37 @@ const Products = ({ productsData = null, productCategories = null }) => {
                       <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform duration-300" />
                     </button>
                   </div>
-              </div>
-            </div>
-          ))}
-        </div>
+                             </div>
+             </div>
+           ))
+           })()}
+         </div>
+
+         {/* Ver Todos os Produtos Button (Mobile) */}
+         {isMobile && filteredProducts.length > MOBILE_PRODUCTS_LIMIT && !showAllProducts && (
+           <div className="text-center mb-16 animate-fade-in-up">
+             <button
+               onClick={openAllProducts}
+               className="group bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 mx-auto"
+             >
+               <span>Ver todos os {filteredProducts.length} produtos</span>
+               <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform duration-300" />
+             </button>
+           </div>
+         )}
+
+         {/* Botão Voltar (Mobile) */}
+         {isMobile && showAllProducts && (
+           <div className="text-center mb-16 animate-fade-in-up">
+             <button
+               onClick={closeAllProducts}
+               className="group bg-gray-600 hover:bg-gray-700 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 mx-auto"
+             >
+               <span>Voltar aos primeiros {MOBILE_PRODUCTS_LIMIT} produtos</span>
+               <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform duration-300 rotate-180" />
+             </button>
+           </div>
+         )}
 
         {/* No Results */}
         {filteredProducts.length === 0 && (
