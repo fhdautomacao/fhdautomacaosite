@@ -115,29 +115,65 @@ const Clients = ({ clientsData = null, enableTyping = true }) => {
           </p>
         </div>
 
-        {/* Client Logos Grid */}
+        {/* Client Logos Carousel */}
         <div className="mb-20 animate-fade-in-up">
           <h3 className="text-2xl font-bold text-gray-800 text-center mb-12">
             {t('clients.gridTitle','Empresas que confiam em nosso trabalho')}
           </h3>
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            {clients.map((client, index) => (
-              <div 
-                key={index}
-                className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 flex flex-col items-center justify-center hover:-translate-y-2 hover:scale-105 animate-fade-in-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="text-4xl mb-3 group-hover:scale-125 transition-transform duration-300">
-                  {client.logo}
+          
+          {/* Carrossel Infinito */}
+          <div className="relative overflow-hidden">
+            <div className="flex animate-scroll-infinite">
+              {/* Primeira sequência de logos */}
+              {clients.map((client, index) => (
+                <div 
+                  key={`first-${index}`}
+                  className="flex-shrink-0 mx-8 group"
+                >
+                  <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 flex items-center justify-center hover:-translate-y-2 hover:scale-105 h-24 w-32">
+                    {client.logo_url ? (
+                      <img 
+                        src={client.logo_url} 
+                        alt={client.name}
+                        className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-300"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div className={`text-2xl group-hover:scale-110 transition-transform duration-300 ${client.logo_url ? 'hidden' : 'flex'}`}>
+                      🏭
+                    </div>
+                  </div>
                 </div>
-                <div className="text-xs text-gray-600 text-center font-medium mb-1">
-                  {client.name}
+              ))}
+              
+              {/* Segunda sequência de logos (duplicada para efeito infinito) */}
+              {clients.map((client, index) => (
+                <div 
+                  key={`second-${index}`}
+                  className="flex-shrink-0 mx-8 group"
+                >
+                  <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 flex items-center justify-center hover:-translate-y-2 hover:scale-105 h-24 w-32">
+                    {client.logo_url ? (
+                      <img 
+                        src={client.logo_url} 
+                        alt={client.name}
+                        className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-300"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div className={`text-2xl group-hover:scale-110 transition-transform duration-300 ${client.logo_url ? 'hidden' : 'flex'}`}>
+                      🏭
+                    </div>
+                  </div>
                 </div>
-                <div className="text-xs text-blue-600 font-semibold">
-                  {client.sector}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 

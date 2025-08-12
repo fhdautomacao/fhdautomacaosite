@@ -134,11 +134,31 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
 
   const openCarousel = () => {
     setShowAllImages(true)
+    // Bloquear scroll da página principal
+    document.body.style.overflow = 'hidden'
   }
 
   const closeCarousel = () => {
     setShowAllImages(false)
+    // Restaurar scroll da página principal
+    document.body.style.overflow = 'unset'
   }
+
+  // Cleanup: restaurar scroll quando componente for desmontado
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [])
+
+  // Monitorar mudanças no estado showAllImages para controlar scroll
+  useEffect(() => {
+    if (showAllImages) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+  }, [showAllImages])
 
   const nextImage = () => {
     const nextIndex = (currentIndex + 1) % filteredImages.length
