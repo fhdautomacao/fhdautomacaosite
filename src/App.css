@@ -212,104 +212,370 @@
   animation-play-state: paused;
 }
 
-/* ==== Estilos específicos para Galeria Mobile ==== */
-@media (max-width: 768px) {
-  /* Melhorar scroll no modal da galeria */
-  .gallery-modal {
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+/* ==== ESTILOS MELHORADOS PARA GALERIA MOBILE ==== */
+
+/* Carrossel Overlay - Base */
+.gallery-carousel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+/* Container Principal do Carrossel */
+.gallery-carousel-container {
+  width: 100%;
+  height: 100%;
+  max-width: 100vw;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header do Carrossel */
+.gallery-carousel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Conteúdo Principal do Carrossel */
+.gallery-carousel-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 1rem;
+}
+
+/* Footer do Carrossel */
+.gallery-carousel-footer {
+  padding: 1rem;
+  text-align: center;
+  flex-shrink: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Grid Base */
+.gallery-grid {
+  display: grid;
+  gap: 1rem;
+  padding-bottom: 1rem;
+}
+
+/* Grid Desktop */
+.gallery-grid-desktop {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+/* Grid Mobile - Otimizado */
+.gallery-grid-mobile {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+/* Item da Galeria */
+.gallery-item {
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  aspect-ratio: 1;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gallery-item:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.3);
+}
+
+/* Container do Item */
+.gallery-item-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #374151;
+}
+
+/* Imagem do Item */
+.gallery-item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.gallery-item:hover .gallery-item-image {
+  transform: scale(1.05);
+}
+
+/* Badge da Categoria */
+.gallery-item-badge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gallery-item:hover .gallery-item-badge {
+  opacity: 1;
+}
+
+/* Overlay do Item */
+.gallery-item-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 50%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  align-items: flex-end;
+}
+
+.gallery-item:hover .gallery-item-overlay {
+  opacity: 1;
+}
+
+/* Informações do Item */
+.gallery-item-info {
+  padding: 0.75rem;
+  color: white;
+  transform: translateY(0.5rem);
+  transition: transform 0.3s ease;
+}
+
+.gallery-item:hover .gallery-item-info {
+  transform: translateY(0);
+}
+
+/* Título do Item */
+.gallery-item-title {
+  font-weight: 700;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+  line-height: 1.2;
+}
+
+/* Descrição do Item */
+.gallery-item-description {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.3;
+}
+
+/* Efeito Hover */
+.gallery-item-hover {
+  position: absolute;
+  inset: 0;
+  background: rgba(59, 130, 246, 0.2);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gallery-item:hover .gallery-item-hover {
+  opacity: 1;
+}
+
+/* Modal Mobile */
+.gallery-modal-mobile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+/* Conteúdo do Modal Mobile */
+.gallery-modal-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* Container da Imagem no Modal */
+.gallery-modal-image-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Imagem no Modal Mobile */
+.gallery-modal-image {
+  max-width: 100%;
+  max-height: 70vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 0.5rem;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Informações no Modal Mobile */
+.gallery-modal-info {
+  text-align: center;
+  width: 100%;
+  max-width: 100%;
+  padding: 0 1rem;
+  flex-shrink: 0;
+}
+
+/* ==== MEDIA QUERIES ESPECÍFICAS ==== */
+
+/* Mobile Portrait */
+@media (max-width: 480px) {
+  .gallery-carousel-header {
+    padding: 0.75rem;
   }
   
-  /* Prevenir zoom em imagens */
-  .gallery-image {
-    touch-action: manipulation;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+  .gallery-carousel-content {
+    padding: 0.75rem;
   }
   
-  /* Melhorar performance de scroll */
-  .gallery-scroll {
-    will-change: scroll-position;
-    -webkit-overflow-scrolling: touch;
+  .gallery-carousel-footer {
+    padding: 0.75rem;
   }
   
-  /* Prevenir bounce no iOS */
-  .gallery-container {
-    overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
+  .gallery-grid-mobile {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
   }
   
-  /* Modal mobile otimizado */
-  .gallery-modal-mobile {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 1rem;
+  .gallery-item-title {
+    font-size: 0.75rem;
   }
   
-  .gallery-modal-mobile img {
-    max-width: 100%;
-    max-height: 70vh;
-    object-fit: contain;
-    border-radius: 0.5rem;
+  .gallery-item-description {
+    font-size: 0.625rem;
   }
   
-  /* Centralizar conteúdo do modal */
-  .gallery-modal-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    gap: 1rem;
-  }
-  
-  /* Carrossel centralizado na viewport */
-  .gallery-carousel-mobile {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 9999;
-    background: rgba(0, 0, 0, 0.95);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-  }
-  
-  /* Garantir que o carrossel ocupe toda a viewport */
-  .gallery-carousel-container {
-    width: 100%;
-    height: 100%;
-    max-width: 100vw;
-    max-height: 100vh;
-    display: flex;
-    flex-direction: column;
+  .gallery-modal-image {
+    max-height: 60vh;
   }
 }
 
-/* ==== Animações específicas para mobile ==== */
-@media (max-width: 768px) {
-  .animate-fade-in {
-    animation: fadeInMobile 0.3s ease-out forwards;
+/* Mobile Landscape */
+@media (max-width: 768px) and (orientation: landscape) {
+  .gallery-grid-mobile {
+    grid-template-columns: repeat(3, 1fr);
   }
   
-  @keyframes fadeInMobile {
-    from { 
-      opacity: 0; 
-      transform: scale(0.95);
-    }
-    to { 
-      opacity: 1; 
-      transform: scale(1);
-    }
+  .gallery-modal-image {
+    max-height: 80vh;
   }
 }
+
+/* Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .gallery-grid-desktop {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+/* Desktop Large */
+@media (min-width: 1025px) {
+  .gallery-grid-desktop {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+/* ==== MELHORIAS DE PERFORMANCE ==== */
+
+/* Otimização de scroll para iOS */
+@supports (-webkit-overflow-scrolling: touch) {
+  .gallery-carousel-content {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Prevenção de zoom em dispositivos touch */
+@media (hover: none) and (pointer: coarse) {
+  .gallery-item-image,
+  .gallery-modal-image {
+    touch-action: manipulation;
+  }
+}
+
+/* Animações reduzidas para dispositivos com preferência */
+@media (prefers-reduced-motion: reduce) {
+  .gallery-item,
+  .gallery-item-image,
+  .gallery-item-overlay,
+  .gallery-item-info,
+  .gallery-item-hover,
+  .gallery-item-badge {
+    transition: none;
+  }
+  
+  .animate-fade-in {
+    animation: none;
+  }
+}
+
+/* ==== ESTILOS PARA ACESSIBILIDADE ==== */
+
+/* Foco visível para navegação por teclado */
+.gallery-item:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Alto contraste */
+@media (prefers-contrast: high) {
+  .gallery-item-overlay {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, transparent 60%);
+  }
+  
+  .gallery-carousel-overlay,
+  .gallery-modal-mobile {
+    background: rgba(0, 0, 0, 0.98);
+  }
+}
+
