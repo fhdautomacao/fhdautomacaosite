@@ -161,12 +161,20 @@ const Products = ({ productsData = null, productCategories = null }) => {
         {/* Results Counter */}
         <div className="mb-8 animate-fade-in">
           <p className="text-gray-600">
-            {t('products.resultCount', 'Mostrando {shown} de {total} produtos', { shown: filteredProducts.length, total: products.length })}
-            {selectedCategory !== ALL_KEY && (
-              <span> {t('products.inCategory','na categoria')} <span className="font-semibold text-blue-600">"{selectedCategory}"</span></span>
-            )}
-            {searchTerm && (
-              <span> {t('products.forTerm','para')} <span className="font-semibold text-blue-600">"{searchTerm}"</span></span>
+            {filteredProducts.length === products.length && !searchTerm ? (
+              // Quando não há filtros aplicados
+              t('products.showingAll', 'Mostrando todos os {total} produtos', { total: products.length })
+            ) : (
+              // Quando há filtros aplicados
+              <>
+                {t('products.resultCount', 'Mostrando {shown} de {total} produtos', { shown: filteredProducts.length, total: products.length })}
+                {selectedCategory !== ALL_KEY && (
+                  <span> {t('products.inCategory','na categoria')} <span className="font-semibold text-blue-600">"{fetchedCategories.find(cat => cat.id === selectedCategory)?.name || selectedCategory}"</span></span>
+                )}
+                {searchTerm && (
+                  <span> {t('products.forTerm','para')} <span className="font-semibold text-blue-600">"{searchTerm}"</span></span>
+                )}
+              </>
             )}
           </p>
         </div>
@@ -184,14 +192,14 @@ const Products = ({ productsData = null, productCategories = null }) => {
                   <img 
                     src={product.image_url} 
                     alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 bg-white"
                     onError={(e) => {
                       e.target.style.display = 'none';
                       e.target.nextSibling.style.display = 'flex';
                     }}
                   />
                 ) : null}
-                <div className={`text-gray-400 text-4xl md:text-6xl group-hover:scale-110 transition-transform duration-300 ${product.image_url ? 'hidden' : 'flex'}`}>
+                <div className={`text-gray-400 text-4xl md:text-6xl group-hover:scale-105 transition-transform duration-300 ${product.image_url ? 'hidden' : 'flex'}`}>
                   ⚙️
                 </div>
                 <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
