@@ -44,6 +44,8 @@ const HomePage = () => {
           clients: cls?.length || 0
         })
         
+        console.log('🔍 HomePage: Clientes recebidos:', cls)
+        
         console.log('🔍 HomePage: Produtos recebidos:', prods)
         
         if (!isCancelled) {

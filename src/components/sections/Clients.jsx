@@ -11,10 +11,19 @@ const Clients = ({ clientsData = null, enableTyping = true }) => {
   const [typedText, setTypedText] = useState('')
 
   useEffect(() => {
-    if (clientsData) return
+    console.log('🔍 Clients: clientsData recebido:', clientsData)
+    if (clientsData) {
+      console.log('🔍 Clients: Usando clientsData da prop:', clientsData.length)
+      setClients(clientsData)
+      setLoading(false)
+      return
+    }
+    
+    console.log('🔍 Clients: Buscando clientes da API...')
     const fetchClients = async () => {
       try {
         const data = await clientsAPI.getAll()
+        console.log('🔍 Clients: Dados da API:', data)
         setClients(data)
       } catch (error) {
         console.error('Erro ao carregar clientes:', error)
@@ -92,6 +101,8 @@ const Clients = ({ clientsData = null, enableTyping = true }) => {
 
 
 
+  console.log('🔍 Clients: Renderizando componente com', clients.length, 'clientes')
+  
   return (
     <section id="clientes" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 relative overflow-hidden">
       {/* Background Elements */}
@@ -116,66 +127,83 @@ const Clients = ({ clientsData = null, enableTyping = true }) => {
         </div>
 
         {/* Client Logos Carousel */}
-        <div className="mb-20 animate-fade-in-up">
-          <h3 className="text-2xl font-bold text-gray-800 text-center mb-12">
-            {t('clients.gridTitle','Empresas que confiam em nosso trabalho')}
-          </h3>
-          
-          {/* Carrossel Infinito */}
-          <div className="relative overflow-hidden">
-            <div className="flex animate-scroll-infinite">
-              {/* Primeira sequência de logos */}
-              {clients.map((client, index) => (
-                <div 
-                  key={`first-${index}`}
-                  className="flex-shrink-0 mx-8 group"
-                >
-                  <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 flex items-center justify-center hover:-translate-y-2 hover:scale-105 h-24 w-32">
-                    {client.logo_url ? (
-                      <img 
-                        src={client.logo_url} 
-                        alt={client.name}
-                        className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-300"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
-                      />
-                    ) : null}
-                    <div className={`text-2xl group-hover:scale-110 transition-transform duration-300 ${client.logo_url ? 'hidden' : 'flex'}`}>
-                      🏭
+        {clients && clients.length > 0 ? (
+          <div className="mb-20 animate-fade-in-up">
+            <h3 className="text-2xl font-bold text-gray-800 text-center mb-12">
+              {t('clients.gridTitle','Empresas que confiam em nosso trabalho')}
+            </h3>
+            
+            {/* Carrossel Infinito */}
+            <div className="relative overflow-hidden">
+              <div className="flex animate-scroll-infinite">
+                {/* Primeira sequência de logos */}
+                {clients.map((client, index) => (
+                  <div 
+                    key={`first-${index}`}
+                    className="flex-shrink-0 mx-8 group"
+                  >
+                    <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 flex items-center justify-center hover:-translate-y-2 hover:scale-105 h-24 w-32">
+                      {client.logo_url ? (
+                        <img 
+                          src={client.logo_url} 
+                          alt={client.name}
+                          className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-300"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className={`text-2xl group-hover:scale-110 transition-transform duration-300 ${client.logo_url ? 'hidden' : 'flex'}`}>
+                        🏭
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-              
-              {/* Segunda sequência de logos (duplicada para efeito infinito) */}
-              {clients.map((client, index) => (
-                <div 
-                  key={`second-${index}`}
-                  className="flex-shrink-0 mx-8 group"
-                >
-                  <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 flex items-center justify-center hover:-translate-y-2 hover:scale-105 h-24 w-32">
-                    {client.logo_url ? (
-                      <img 
-                        src={client.logo_url} 
-                        alt={client.name}
-                        className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-300"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
-                      />
-                    ) : null}
-                    <div className={`text-2xl group-hover:scale-110 transition-transform duration-300 ${client.logo_url ? 'hidden' : 'flex'}`}>
-                      🏭
+                ))}
+                
+                {/* Segunda sequência de logos (duplicada para efeito infinito) */}
+                {clients.map((client, index) => (
+                  <div 
+                    key={`second-${index}`}
+                    className="flex-shrink-0 mx-8 group"
+                  >
+                    <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 flex items-center justify-center hover:-translate-y-2 hover:scale-105 h-24 w-32">
+                      {client.logo_url ? (
+                        <img 
+                          src={client.logo_url} 
+                          alt={client.name}
+                          className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-300"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className={`text-2xl group-hover:scale-110 transition-transform duration-300 ${client.logo_url ? 'hidden' : 'flex'}`}>
+                        🏭
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="mb-20 animate-fade-in-up">
+            <h3 className="text-2xl font-bold text-gray-800 text-center mb-12">
+              {t('clients.gridTitle','Empresas que confiam em nosso trabalho')}
+            </h3>
+            <div className="text-center py-8">
+              <div className="text-4xl mb-4">🏭</div>
+              <p className="text-gray-600">
+                {loading ? 'Carregando clientes...' : 'Nenhum cliente encontrado'}
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                Total de clientes: {clients?.length || 0}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Stats Section */}
         <div className="mb-20 animate-fade-in-up">
