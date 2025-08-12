@@ -70,13 +70,11 @@ const DynamicSEO = ({ pageName, fallbackData = {} }) => {
         const isDevWithoutAPI = import.meta.env.DEV && !import.meta.env.VITE_SUPABASE_URL
         
         if (isDevWithoutAPI) {
-          console.log('🔧 [DynamicSEO] Modo desenvolvimento: usando dados de fallback')
           setSeoData(getFallbackData(pageName))
           return
         }
         
         // Tentar buscar dados da API
-        console.log('🌐 [DynamicSEO] Tentando buscar dados da API...')
         const response = await fetch(`/api/seo-settings?page_name=${pageName}`)
         
         // Verificar se a resposta é JSON válido
@@ -102,19 +100,11 @@ const DynamicSEO = ({ pageName, fallbackData = {} }) => {
         const result = await response.json()
         
         if (result.success && result.data) {
-          console.log('✅ [DynamicSEO] Dados obtidos da API com sucesso!')
-          console.log('📊 [DynamicSEO] Título da API:', result.data.title)
           setSeoData(result.data)
         } else {
-          console.warn('⚠️ [DynamicSEO] API não retornou dados válidos, usando fallback')
           setSeoData(getFallbackData(pageName))
         }
       } catch (error) {
-        console.error('❌ [DynamicSEO] Erro ao carregar dados de SEO:', error)
-        console.error('🔍 [DynamicSEO] Tipo do erro:', error.name)
-        console.error('🔍 [DynamicSEO] Mensagem do erro:', error.message)
-        console.error('🔍 [DynamicSEO] Stack trace:', error.stack)
-        console.log('🔄 [DynamicSEO] Usando dados de fallback devido ao erro')
         setSeoData(getFallbackData(pageName))
       } finally {
         setLoading(false)

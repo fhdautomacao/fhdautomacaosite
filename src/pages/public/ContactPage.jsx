@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Phone, Mail, MapPin, Clock, Send, FileText, CheckCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import InteractiveMap from '@/components/InteractiveMap'
 
 const ContactPage = () => {
   const [isVisible, setIsVisible] = useState(false)
@@ -160,8 +161,8 @@ const ContactPage = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="bg-gray-200 h-64 rounded-lg flex items-center justify-center mb-6">
-                      <p className="text-gray-600">Mapa interativo será carregado aqui</p>
+                    <div className="h-64 rounded-lg mb-6 overflow-hidden">
+                      <InteractiveMap />
                     </div>
                     <div className="space-y-4">
                       <div className="flex items-start space-x-3">

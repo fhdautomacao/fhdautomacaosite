@@ -424,7 +424,7 @@ class SecurityManager {
         .delete()
         .lt('attempted_at', thirtyDaysAgo.toISOString())
 
-      console.log('Limpeza de dados antigos concluída')
+  
     } catch (error) {
       console.error('Erro na limpeza de dados antigos:', error)
     }
@@ -441,7 +441,7 @@ export const initializeSecurity = () => {
     securityManager.cleanupOldData()
   }, 24 * 60 * 60 * 1000)
 
-  console.log('Sistema de segurança inicializado')
+
 }
 
 export default securityManager

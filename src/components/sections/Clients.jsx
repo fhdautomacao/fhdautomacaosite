@@ -11,19 +11,15 @@ const Clients = ({ clientsData = null, enableTyping = true }) => {
   const [typedText, setTypedText] = useState('')
 
   useEffect(() => {
-    console.log('🔍 Clients: clientsData recebido:', clientsData)
     if (clientsData) {
-      console.log('🔍 Clients: Usando clientsData da prop:', clientsData.length)
       setClients(clientsData)
       setLoading(false)
       return
     }
     
-    console.log('🔍 Clients: Buscando clientes da API...')
     const fetchClients = async () => {
       try {
         const data = await clientsAPI.getAll()
-        console.log('🔍 Clients: Dados da API:', data)
         setClients(data)
       } catch (error) {
         console.error('Erro ao carregar clientes:', error)
@@ -101,7 +97,7 @@ const Clients = ({ clientsData = null, enableTyping = true }) => {
 
 
 
-  console.log('🔍 Clients: Renderizando componente com', clients.length, 'clientes')
+
   
   return (
     <section id="clientes" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 relative overflow-hidden">

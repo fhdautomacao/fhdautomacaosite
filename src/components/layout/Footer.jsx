@@ -29,7 +29,7 @@ const Footer = () => {
                     position: 'relative',
                     zIndex: 20
                   }}
-                  onLoad={() => console.log('Logo carregada com sucesso no Footer')}
+  
                   onError={(e) => {
                     console.error('Erro ao carregar logo no Footer:', e.target.src)
                     setLogoError(true)

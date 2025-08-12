@@ -58,9 +58,7 @@ export const JWTAuthProvider = ({ children }) => {
       isUser: isUser
     }
     
-    console.log('🔐 [PERMISSIONS] Verificando permissões para:', email)
-    console.log('🔐 [PERMISSIONS] É admin?', isAdmin)
-    console.log('🔐 [PERMISSIONS] Permissões:', permissions)
+
     
     setUserPermissions(permissions)
     return permissions
@@ -307,7 +305,7 @@ export const JWTAuthProvider = ({ children }) => {
     }
     
     try {
-      console.log('🚀 Iniciando autenticação JWT + Supabase...')
+  
       setLoading(true)
       isInitialized.current = true
       
@@ -317,16 +315,10 @@ export const JWTAuthProvider = ({ children }) => {
       const storedExpiresAt = localStorage.getItem('jwt_expires_at')
       const storedSupabaseSession = localStorage.getItem('supabase_session')
       
-      console.log('📦 Dados do localStorage:', {
-        hasToken: !!storedToken,
-        hasUser: !!storedUser,
-        hasExpiresAt: !!storedExpiresAt,
-        hasSupabaseSession: !!storedSupabaseSession,
-        tokenLength: storedToken ? storedToken.length : 0
-      })
+
       
       if (!storedToken || !storedUser || !storedExpiresAt) {
-        console.log('⚠️ Nenhum token JWT encontrado')
+
         setLoading(false)
         return
       }
@@ -334,16 +326,11 @@ export const JWTAuthProvider = ({ children }) => {
       const userData = JSON.parse(storedUser)
       const expiryDate = new Date(storedExpiresAt)
       
-      console.log('👤 Dados do usuário:', {
-        userId: userData.id,
-        email: userData.email,
-        expiryDate: expiryDate.toISOString(),
-        now: new Date().toISOString()
-      })
+
       
       // Verificar se o token expirou
       if (new Date() > expiryDate) {
-        console.log('❌ Token JWT expirado')
+
         logout()
         toast.error('Sessão expirada. Faça login novamente.')
         return
@@ -353,26 +340,26 @@ export const JWTAuthProvider = ({ children }) => {
       if (storedSupabaseSession) {
         try {
           const session = JSON.parse(storedSupabaseSession)
-          console.log('🔐 Restaurando sessão Supabase...')
+
           
           // Verificar se a sessão do Supabase ainda é válida
           const { data: { user }, error } = await supabase.auth.getUser()
           
           if (error || !user) {
-            console.log('⚠️ Sessão Supabase expirada, tentando renovar...')
+
             // Tentar renovar a sessão do Supabase
             const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
             
             if (refreshError || !refreshData.session) {
-              console.log('❌ Falha na renovação da sessão Supabase')
+
               // Continuar apenas com JWT, mas avisar o usuário
               toast.warning('Sessão do banco de dados expirada. Algumas operações podem não funcionar.')
             } else {
-              console.log('✅ Sessão Supabase renovada')
+
               localStorage.setItem('supabase_session', JSON.stringify(refreshData.session))
             }
           } else {
-            console.log('✅ Sessão Supabase válida')
+
           }
         } catch (error) {
           console.error('❌ Erro ao restaurar sessão Supabase:', error)
@@ -383,30 +370,27 @@ export const JWTAuthProvider = ({ children }) => {
       const timeUntilExpiry = expiryDate.getTime() - new Date().getTime()
       const fiveMinutes = 5 * 60 * 1000
       
-      console.log('⏰ Tempo até expiração:', {
-        timeUntilExpiry: timeUntilExpiry / 1000 / 60, // em minutos
-        fiveMinutes: fiveMinutes / 1000 / 60
-      })
+
       
       if (timeUntilExpiry < fiveMinutes) {
-        console.log('⚠️ Token JWT próximo de expirar, tentando renovar...')
+
         const refreshed = await refreshToken(storedToken)
         
         if (!refreshed) {
-          console.log('❌ Falha na renovação do token')
+
           logout()
           toast.error('Sessão expirada. Faça login novamente.')
           return
         }
       } else {
-        console.log('🔍 Verificando validade do token...')
+
         // Verificar se o token ainda é válido
         const isValid = await verifyToken(storedToken)
         
-        console.log('✅ Resultado da verificação:', isValid)
+
         
         if (!isValid) {
-          console.log('❌ Token JWT inválido')
+
           logout()
           toast.error('Sessão inválida. Faça login novamente.')
           return
@@ -419,7 +403,7 @@ export const JWTAuthProvider = ({ children }) => {
         checkUserPermissions(userData.email)
       }
       
-      console.log('✅ Autenticação JWT + Supabase inicializada com sucesso')
+      
     } catch (error) {
       console.error('❌ Erro na inicialização da autenticação:', error)
       logout()

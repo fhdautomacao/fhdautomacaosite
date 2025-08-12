@@ -1,19 +1,16 @@
 import { supabase } from '../lib/supabase'
 
 export const clientsAPI = {
-  // Buscar todos os clientes
-  async getAll() {
-    console.log('🔍 clientsAPI.getAll(): Iniciando busca...')
-    const { data, error } = await supabase
-      .from('clients')
-      .select('*')
-      .order('display_order', { ascending: true })
-    
-    console.log('🔍 clientsAPI.getAll(): Resultado:', { data, error })
-    
-    if (error) throw error
-    return data
-  },
+                  // Buscar todos os clientes
+                async getAll() {
+                  const { data, error } = await supabase
+                    .from('clients')
+                    .select('*')
+                    .order('display_order', { ascending: true })
+                  
+                  if (error) throw error
+                  return data
+                },
 
   // Buscar cliente por ID
   async getById(id) {
