@@ -1,0 +1,181 @@
+[33mc935876[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m corrigindo problemas do cloudfire
+[33m2096c95[m tratamento de erros para o cloudfire
+[33mc7fffad[m remoção cloudfire
+[33m6841af9[m pequenas modificações
+[33m07f44f8[m ultimas implementações do site
+[33m165cadd[m pequenos ajustes
+[33m25e4eb1[m melhoria nos clientes
+[33mf2a333c[m carrosel de clientes
+[33mb76f8cd[m correção produtos mobile
+[33m0e7fa40[m carrossel
+[33mf21350f[m centralização do botão e criação de carrossel
+[33m1771d4d[m abrir modal
+[33me0b03d3[m melhoria em produtos
+[33m0ba30b8[m melhoria em produtos e log em galeria
+[33m6024916[m Ajuste para inserir imagem, no bucket de produtos
+[33meaaea81[m melhoria na tradução 02
+[33m822dcaf[m melhoria na tradução 02
+[33m5abc598[m melhoria na tradução
+[33m9a4b950[m Melhorias celular 02
+[33m5026875[m Melhorias celular
+[33ma0a1f9d[m correção robots
+[33m98b24fd[m Adicionando speed test
+[33m3670261[m Otmização
+[33m14acd35[m correção tabela produtos
+[33m8c8b8ac[m restaurando as coisas
+[33m91f0c0c[m resolvendo problemas de token 12
+[33mc1e91a7[m resolvendo problemas de token 11
+[33m1db7bb4[m resolvendo problemas de token 10
+[33m7f820c4[m resolvendo problemas de token 09
+[33m6920364[m resolvendo problemas de token 08
+[33m258936e[m resolvendo problemas de token 07
+[33mc59d1b3[m resolvendo problemas de token 06
+[33m8c7427b[m resolvendo problemas de token 05
+[33m1a77e3b[m resolvendo problemas de token 04
+[33m83a733c[m resolvendo problemas de token 03
+[33mb4e51d1[m resolvendo problemas de token 02
+[33m56d2637[m resolvendo problemas de token
+[33mafffce2[m Subindo atualização da página de login
+[33m8b8e7a6[m  Implementar sistema JWT completo para autenticação admin
+[33mef0b51a[m  Corrigir autenticação admin na API Route
+[33mffce0ef[m  Implementar proteção CORS segura na API Route seo-settings
+[33mf58d859[m CORS
+[33m1362ff7[m site pronto corrigido erro no deploy
+[33m8d8ccb2[m site pronto
+[33m6279edd[m melhoras Ui/UX
+[33mf6e9a12[m melhorias gerais
+[33m450ab1e[m fix(server): usar ESM no server.js e padronizar variáveis de ambiente do Supabase
+[33mb85f40d[m teste SEO
+[33md859e3f[m teste SEO
+[33m6ddbc0d[m teste SEO
+[33mbe9fee6[m teste SEO
+[33m1cb2c81[m grande atualização
+[33ma1d8c4c[m melhorias de ui
+[33m92c29a9[m correção 2
+[33m32e8b53[m correção 2
+[33m8bd0f6a[m correção 2
+[33m935093e[m correção 2
+[33m62e545d[m correção 2
+[33m36efb5b[m correção 2
+[33mceb8931[m correção 3
+[33mc787142[m correção 3
+[33m484885f[m correção 3
+[33mfc90756[m correção 2
+[33m9074f89[m modificações mobile
+[33m4b39795[m modificações mobile
+[33m4db152c[m correção
+[33m88b7b6f[m correção
+[33m66df957[m correção 2
+[33m9d14df9[m correção 2
+[33m62e2d9e[m correção 2
+[33m4e8b898[m correção 2
+[33m6787afb[m correção
+[33m3e588f7[m  Atualizar README com documentação completa e profissional
+[33m8a1e88c[m  Reorganização completa do projeto: APIs, documentação e limpeza
+[33ma79aa33[m Atualizações
+[33m8e659a7[m Atualização 2
+[33m487f30b[m Atualização
+[33mf689ef2[m Atualização
+[33mb4dd932[m Atualização
+[33md51adcf[m Show specific database error details instead of generic message
+[33me6fd096[m Add detailed logging for database update debugging
+[33m7459742[m Fix: Atualizar banco de dados após upload e corrigir exclusão de comprovantes
+[33m511f402[m Fix: Adicionar funcionalidade de exclusão de comprovantes e melhorar layout
+[33m5f20bcc[m atualização 2
+[33mbb1483e[m Fix: Usar Service Role Key para contornar RLS e corrigir upload
+[33m3264b07[m atualização
+[33m9531b2f[m Fix: Simplificar upload para usar bucket arquivos como na galeria
+[33ma55510b[m Fix: Usar bucket arquivos consistente e adicionar logs para debug do storage
+[33mbac65d0[m atualização
+[33me21aa30[m Fix: Implementar upload simulado e processar resposta corretamente
+[33m944d76d[m Fix: Permitir acesso sem autenticação para desenvolvimento e adicionar logs detalhados
+[33m2453f21[m Fix: Corrigir autenticação para funcionar com web e mobile - Suportar sessão Supabase e token via header
+[33m517408b[m Fix: Corrigir erro de upload de comprovantes - Implementar API simplificada sem multer
+[33m55150d7[m funcionalidade 2
+[33m330f3ac[m funcionalidade
+[33m46153cf[m funcionalidade
+[33mc87d871[m Atualizações
+[33m4afe0d0[m atualização
+[33m5612877[m Corrigir variáveis de ambiente para usar VITE_ prefix
+[33m967351f[m Adicionar headers corretos para JavaScript e CSS
+[33m1e4bab3[m Corrigir URL do servidor e configuração de assets estáticos
+[33m07e0863[m Simplificar vercel.json para focar nas APIs essenciais
+[33mde458b9[m Adicionar APIs na raiz para compatibilidade com Vercel
+[33mcb5b9a4[m subindo atualizações
+[33m2513110[m Melhorar debug do logo e adicionar logs de carregamento
+[33m0a25cff[m Fix Supabase client initialization in serverless functions
+[33mbe50c87[m Move APIs to root level for Vercel compatibility
+[33m31e0d26[m Fix Vercel configuration to support serverless APIs
+[33mae1db0f[m Add test API to debug mobile login issue
+[33m4d9d8a2[m Fix logo loading issues and update mobile app server URL
+[33m46cf0a1[m Clean up project structure - Remove unnecessary files and directories
+[33m2b1c03c[m Fix Vite configuration for Vercel deployment and MIME types
+[33me6bb93c[m Fix vercel.json for Vite project configuration
+[33m54b7a9d[m Fix vercel.json configuration for Next.js deployment
+[33m6c4abef[m first commit
+[33mf437e21[m ajuste das telas
+[33ma8b9ec7[m Remove unused imports
+[33ma5f0fc1[m Fix gray screen issue - simplify initialization and add test screen
+[33mb01392e[m Disable auto-release to avoid permission issues
+[33m533db98[m Add Android resources (themes, drawables) and fix manifest issues
+[33m0861a85[m Fix android:exported requirements for Android 12+
+[33m558f45d[m Update Kotlin and Android Gradle Plugin versions for compatibility
+[33mcf83eef[m Add test directory to fix CI/CD workflow
+[33md93d4bb[m Fix flutter_local_notifications compatibility issue
+[33m9d0b65a[m correção
+[33m4477f6f[m site e apk
+[33m772ce24[m favicomn
+[33m3bc71e7[m ajutess
+[33mc4c70a6[m ajustes
+[33mc6f10a1[m ajuste
+[33mf6f62ab[m sidebar
+[33mb7cf1b2[m notificações
+[33m926e289[m notificações
+[33m648eaec[m muitas modificações
+[33m3fda270[m Atualização boletos
+[33m7a01380[m alertas
+[33mc52bc7c[m Dashboard
+[33m35f7a08[m Dashboard
+[33me9b39eb[m divisão de lucros
+[33mc658603[m teste
+[33me813af5[m Correção boletos
+[33m44324be[m atualização divisão de lucros
+[33m098f430[m divisão de lucros
+[33m933bf43[m tratamento de erros
+[33m8c8206d[m empresas
+[33m26ff2d0[m teste 02
+[33m179108c[m teste
+[33m30aa92d[m teste
+[33mb3753ce[m gerenciamento de boletos
+[33ma0cd107[m melhorias 02
+[33m4205a96[m melhorias
+[33m8a27772[m página de orçamento cliente e adm
+[33m8321e4f[m alterando fundo
+[33me567bd9[m atualizando a imagem
+[33mc9ceb3b[m arrumando a casa
+[33m4efb55c[m Fix Vercel deployment configuration
+[33m528c739[m correção upload de fotos
+[33m771bf51[m categorias da api
+[33mb5728f9[m remoção de dados mocados
+[33m9975b50[m arrumando inicio
+[33me01eaa6[m correção nossos serviços
+[33m402b2b2[m modificando o arquivo de pasta
+[33m76e7c22[m pesquisa do google v2
+[33md77d7b0[m pesquisa do google
+[33mf93dc2e[m Atualizações para o google
+[33m18971e2[m nossos serviços no BD 2
+[33mba3443c[m nossos serviços no BD
+[33mf7c272a[m fundo das fotos
+[33m011283a[m tirando fundo azul
+[33m0227954[m visualizar as fotos
+[33mfa94065[m teste galeria
+[33mccb390c[m pagina not found
+[33m912d7fd[m Atualização da estrutura
+[33mb82c5d1[m Atualização da estrutura
+[33m0a26913[m Atualização da estrutura
+[33m70a5255[m puxar do BD
+[33m2d2037e[m teste maneger
+[33mfc461a5[m ajuste clientesManeger
+[33m63e6916[m ajuste deploy
+[33m15f37e1[m teste
+[33m2ae0dec[m correçã
