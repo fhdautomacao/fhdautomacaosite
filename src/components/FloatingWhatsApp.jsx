@@ -1,88 +1,82 @@
 import React, { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 const FloatingWhatsApp = () => {
   const [mounted, setMounted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   
   useEffect(() => {
     setMounted(true)
     
-    // Criar o botão diretamente no DOM
-    const createWhatsAppButton = () => {
-      // Remover botão existente se houver
-      const existingButton = document.getElementById('whatsapp-floating-button')
-      if (existingButton) {
-        existingButton.remove()
+    // Detectar se é mobile
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 768
+      setIsMobile(mobile)
+      
+      // CORREÇÃO: Remover transform do HTML no mobile para permitir position: fixed
+      if (mobile) {
+        const htmlStyle = window.getComputedStyle(document.documentElement)
+        if (htmlStyle.transform !== 'none') {
+          console.log('🔧 WhatsApp: Removendo transform do HTML no mobile')
+          document.documentElement.style.transform = 'none'
+          document.documentElement.style.transformOrigin = 'initial'
+        }
       }
-      
-      const phone = '5519998652144'
-      const message = 'Olá! Vim pelo site e gostaria de um orçamento.'
-      const href = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-      
-      // Criar o elemento
-      const button = document.createElement('div')
-      button.id = 'whatsapp-floating-button'
-      button.className = 'whatsapp-floating'
-      
-      // Aplicar estilos inline
-      Object.assign(button.style, {
-        position: 'fixed',
-        bottom: '2rem',
-        right: '1.5rem',
-        left: 'auto',
-        top: 'auto',
-        zIndex: '9999999',
-        pointerEvents: 'auto',
-        width: 'auto',
-        height: 'auto',
-        transform: 'none'
-      })
-      
-      // HTML do botão
-      button.innerHTML = `
-        <a href="${href}" target="_blank" rel="noopener noreferrer" 
-           style="display: block; position: relative; z-index: 9999999; pointer-events: auto;">
-          <div class="group relative">
-            <div class="relative w-[52px] h-[52px] md:w-[60px] md:h-[60px] rounded-full shadow-2xl bg-[#25D366] flex items-center justify-center transition-all duration-300 hover:shadow-3xl pointer-events-auto">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" 
-                   class="w-9 h-9 md:w-10 md:h-10 drop-shadow" 
-                   style="shape-rendering: geometricPrecision;">
-                <g transform="translate(16 16) translate(1 1.2) scale(0.86) translate(-16 -16)">
-                  <path fill="#FFFFFF" d="M19.11 17.18c-.27-.14-1.61-.8-1.86-.89c-.25-.09-.43-.14-.62.14c-.18.27-.71.89-.87 1.07c-.16.18-.32.2-.59.07c-.27-.14-1.12-.41-2.13-1.28c-.79-.7-1.32-1.56-1.47-1.83c-.16-.27-.02-.42.12-.56c.12-.12.27-.32.41-.48c.14-.16.18-.27.27-.45c.09-.18.05-.34-.02-.48c-.07-.14-.62-1.49-.85-2.05c-.22-.53-.45-.46-.62-.46c-.16 0-.34-.02-.52-.02s-.48.07-.73.34c-.25.27-.96.94-.96 2.29s.99 2.66 1.13 2.84c.14.18 1.95 2.98 4.72 4.17c.66.29 1.17.46 1.57.59c.66.21 1.26.18 1.74.11c.53-.08 1.61-.66 1.84-1.3c.23-.64.23-1.19.16-1.3c-.07-.11-.23-.18-.5-.32"/>
-                </g>
-                <path fill="#FFFFFF" d="M16 3C9.383 3 4 8.383 4 15c0 2.103.593 4.066 1.617 5.742L4 29l8.434-1.58C14.05 28.423 15 28.61 16 28.61c6.617 0 12-5.383 12-12S22.617 3 16 3m0 22.61c-.84 0-1.66-.14-2.42-.41l-.52-.19l-4.99.93l.95-4.88l-.2-.5C7.25 19.3 7 17.98 7 16.61C7 11.88 10.88 8 15.61 8S24.22 11.88 24.22 16.61S20.34 25.61 16 25.61"/>
-              </svg>
-            </div>
-          </div>
-        </a>
-      `
-      
-      // Adicionar ao body
-      document.body.appendChild(button)
-      
-      console.log('🔧 WhatsApp Button Created:', {
-        element: button,
-        styles: button.style,
-        position: button.style.position,
-        bottom: button.style.bottom,
-        right: button.style.right
-      })
-      
-      return button
     }
     
-    // Criar o botão
-    const button = createWhatsAppButton()
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
     
-    // Cleanup
     return () => {
-      if (button && button.parentNode) {
-        button.parentNode.removeChild(button)
-      }
+      window.removeEventListener('resize', checkMobile)
     }
   }, [])
   
-  // Não renderizar nada no React, o botão é criado diretamente no DOM
-  return null
+  if (!mounted) {
+    return null
+  }
+
+  // Estilos do botão do WhatsApp
+  const buttonStyles = {
+    position: 'fixed',
+    bottom: isMobile ? '15px' : '20px',
+    right: isMobile ? '15px' : '20px',
+    width: isMobile ? '55px' : '60px',
+    height: isMobile ? '55px' : '60px',
+    backgroundColor: '#25D366',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+    fontSize: isMobile ? '24px' : '28px',
+    cursor: 'pointer',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+    zIndex: 999999,
+    textDecoration: 'none',
+    transition: 'all 0.3s ease',
+  }
+
+  // Renderizar diretamente no body usando Portal
+  return createPortal(
+    <a 
+      href="https://wa.me/5511917352023" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      style={buttonStyles}
+      title="WhatsApp"
+    >
+      <svg 
+        width="24" 
+        height="24" 
+        viewBox="0 0 24 24" 
+        fill="currentColor"
+      >
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+      </svg>
+    </a>,
+    document.body
+  )
 }
 
 export default FloatingWhatsApp

@@ -55,14 +55,14 @@ const Gallery = ({ galleryItemsData = null, galleryCategories = null }) => {
   useEffect(() => {
     if (isMobile && selectedImage) {
       document.body.style.overflow = 'hidden'
-      document.body.style.position = 'fixed'
-      document.body.style.width = '100%'
-      document.body.style.top = `-${window.scrollY}px`
+      // REMOVIDO: document.body.style.position = 'fixed' - isso quebra position: fixed de outros elementos
+      // REMOVIDO: document.body.style.width = '100%'
+      // REMOVIDO: document.body.style.top = `-${window.scrollY}px`
     } else if (isMobile) {
       document.body.style.overflow = 'unset'
-      document.body.style.position = ''
-      document.body.style.width = ''
-      document.body.style.top = ''
+      // REMOVIDO: document.body.style.position = ''
+      // REMOVIDO: document.body.style.width = ''
+      // REMOVIDO: document.body.style.top = ''
     }
   }, [isMobile, selectedImage])
 
