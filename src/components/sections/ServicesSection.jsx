@@ -149,7 +149,15 @@ const ServicesSection = ({ servicesData = null, serviceCategories = null }) => {
                 <div className="mb-4">
                   {getServiceIcon(service.icon, service.category)}
                 </div>
-                <CardTitle className="text-xl">{name}</CardTitle>
+                <CardTitle className="text-xl">
+                  <a 
+                    href={`/servico/${service.slug || slug}`}
+                    className="hover:text-blue-600 transition-colors duration-300"
+                    title={`Ver detalhes do serviço ${name}`}
+                  >
+                    {name}
+                  </a>
+                </CardTitle>
                 <CardDescription className="text-gray-600">
                   {description}
                 </CardDescription>

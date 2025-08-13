@@ -2,21 +2,38 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://fhdautomacaoindustrialapp.vercel.app/sitemap.xml
+Sitemap: https://fhdautomacao.com.br/sitemap.xml
 
 # Crawl-delay
 Crawl-delay: 1
 
-# Disallow admin areas (for future implementation)
-Disallow: /admin/
-Disallow: /api/
-Disallow: /*.json$
-
-# Allow important pages
-Allow: /
+# Permitir indexação de todas as páginas públicas
 Allow: /quem-somos
 Allow: /servicos
-Allow: /contato
+Allow: /produtos
 Allow: /clientes
+Allow: /contato
 Allow: /orcamento
+Allow: /servico/
+Allow: /produto/
+
+# Bloquear páginas administrativas
+Disallow: /admin-fhd
+Disallow: /admin-fhd/
+Disallow: /admin/
+Disallow: /login-admin
+Disallow: /admin/login
+Disallow: /api/
+
+# Bloquear arquivos desnecessários
+Disallow: /*.json$
+Disallow: /*.xml$
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/
+
+# Permitir recursos importantes
+Allow: /favicon.ico
+Allow: /logo.png
+Allow: /og-image.jpg
 

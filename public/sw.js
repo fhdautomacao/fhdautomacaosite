@@ -111,7 +111,7 @@ self.addEventListener('push', (event) => {
     badge: '/logo.png',
     vibrate: [200, 100, 200],
     data: {
-      url: '/admin-fhd'
+      url: '/' // Redirecionar para página inicial em vez da área de administração
     },
     actions: [
       {
@@ -164,11 +164,11 @@ self.addEventListener('notificationclick', (event) => {
       type: 'window',
       includeUncontrolled: true
     }).then((clientList) => {
-      const url = event.notification.data?.url || '/admin-fhd'
+      const url = event.notification.data?.url || '/' // Redirecionar para página inicial
       
       // Verificar se já existe uma aba aberta
       for (const client of clientList) {
-        if (client.url.includes('admin-fhd') && 'focus' in client) {
+        if (client.url.includes(window.location.origin) && 'focus' in client) {
           return client.focus()
         }
       }

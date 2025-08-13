@@ -74,7 +74,7 @@ const QuotationNotification = ({ variant = 'floating' }) => {
             <Button 
               size="sm" 
               className="text-xs"
-              onClick={() => window.location.href = '/admin-fhd'}
+              onClick={() => window.location.href = '/'}
             >
               <FileText className="w-3 h-3 mr-1" />
               Ver Orçamentos
@@ -120,7 +120,7 @@ const QuotationNotification = ({ variant = 'floating' }) => {
                 <Button 
                   size="sm" 
                   className="text-xs"
-                  onClick={() => window.location.href = '/admin-fhd'}
+                  onClick={() => window.location.href = '/'}
                 >
                   <FileText className="w-3 h-3 mr-1" />
                   Ver Orçamentos

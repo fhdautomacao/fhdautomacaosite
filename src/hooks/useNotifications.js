@@ -69,7 +69,7 @@ export const useNotifications = () => {
         badge: '/logo.png',
         vibrate: [300, 100, 300],
         data: {
-          url: '/admin-fhd',
+          url: '/', // Redirecionar para página inicial em vez da área de administração
           section: 'bills',
           type: 'overdue'
         },
@@ -112,7 +112,7 @@ export const useNotifications = () => {
         badge: '/logo.png',
         vibrate: [200, 100, 200],
         data: {
-          url: '/admin-fhd',
+          url: '/', // Redirecionar para página inicial em vez da área de administração
           section: 'quotations',
           type: 'new'
         },
@@ -176,7 +176,7 @@ export const useNotifications = () => {
         badge: '/logo.png',
         vibrate,
         data: {
-          url: '/admin-fhd',
+          url: '/', // Redirecionar para página inicial em vez da área de administração
           section: 'profit-sharing',
           type
         },
@@ -210,7 +210,7 @@ export const useNotifications = () => {
         badge: '/logo.png',
         vibrate: [200, 100, 200],
         data: {
-          url: '/admin-fhd'
+          url: '/' // Redirecionar para página inicial em vez da área de administração
         },
         ...options
       })

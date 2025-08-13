@@ -214,7 +214,7 @@ class PushNotificationService {
         icon: '/logo.png',
         badge: '/logo.png',
         data: {
-          url: '/admin-fhd'
+          url: '/' // Redirecionar para página inicial em vez da área de administração
         },
         // Vibração mais suave para mobile
         vibrate: isMobileDevice ? [100, 50, 100] : [200, 100, 200],

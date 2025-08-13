@@ -1,4 +1,7 @@
 import DynamicSEO from '@/components/common/DynamicSEO'
+import OrganizationSchema from '@/components/common/OrganizationSchema'
+import FAQSchema from '@/components/common/FAQSchema'
+import LocalBusinessSchema from '@/components/common/LocalBusinessSchema'
 import Hero from '@/components/sections/HeroImproved'
 import About from '@/components/sections/AboutImproved'
 import ServicesSection from '@/components/sections/ServicesSection'
@@ -59,6 +62,9 @@ const HomePage = () => {
   return (
     <>
       <DynamicSEO pageName="home" />
+      <OrganizationSchema />
+      <FAQSchema />
+      <LocalBusinessSchema />
       
       <main>
         <Hero />

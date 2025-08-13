@@ -247,7 +247,13 @@ const Products = ({ productsData = null, productCategories = null }) => {
                 </div>
                 
                 <h3 className="text-base md:text-lg font-bold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors duration-300">
-                  {product.name}
+                  <a 
+                    href={`/produto/${product.slug || product.id}`}
+                    className="hover:text-blue-600 transition-colors duration-300"
+                    title={`Ver detalhes do ${product.name}`}
+                  >
+                    {product.name}
+                  </a>
                 </h3>
                 
                 <p className="text-gray-600 text-sm leading-relaxed mb-4">

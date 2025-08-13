@@ -1,6 +1,44 @@
 import { supabase } from '../lib/supabase'
+import { generateSitemap, generateRobotsTxt } from '@/utils/sitemap'
 
+// Endpoint para gerar sitemap dinâmico
 export const seoAPI = {
+  // Gerar sitemap XML
+  generateSitemap: async () => {
+    try {
+      const sitemapXml = await generateSitemap()
+      return {
+        success: true,
+        data: sitemapXml,
+        contentType: 'application/xml'
+      }
+    } catch (error) {
+      console.error('Erro ao gerar sitemap:', error)
+      return {
+        success: false,
+        error: 'Erro ao gerar sitemap'
+      }
+    }
+  },
+
+  // Gerar robots.txt
+  generateRobotsTxt: () => {
+    try {
+      const robotsTxt = generateRobotsTxt()
+      return {
+        success: true,
+        data: robotsTxt,
+        contentType: 'text/plain'
+      }
+    } catch (error) {
+      console.error('Erro ao gerar robots.txt:', error)
+      return {
+        success: false,
+        error: 'Erro ao gerar robots.txt'
+      }
+    }
+  },
+
   // Buscar configurações SEO por página
   async getByPage(pagePath) {
     const { data, error } = await supabase
