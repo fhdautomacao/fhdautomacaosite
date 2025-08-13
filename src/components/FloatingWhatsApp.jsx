@@ -36,6 +36,10 @@ const FloatingWhatsApp = () => {
     return null
   }
 
+  // Mensagem pré-definida para o WhatsApp
+  const message = encodeURIComponent(`Olá, tudo bem?
+Vim pelo site, gostaria de conversar a respeito dos seus serviços e produtos.`)
+
   // Estilos do botão do WhatsApp
   const buttonStyles = {
     position: 'fixed',
@@ -60,7 +64,7 @@ const FloatingWhatsApp = () => {
   // Renderizar diretamente no body usando Portal
   return createPortal(
     <a 
-      href="https://wa.me/5511917352023" 
+      href={`https://wa.me/5511917352023?text=${message}`}
       target="_blank" 
       rel="noopener noreferrer"
       style={buttonStyles}
