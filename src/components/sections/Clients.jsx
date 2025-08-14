@@ -136,7 +136,60 @@ const Clients = ({ clientsData = null, enableTyping = true }) => {
                 {clients.map((client, index) => (
                   <div 
                     key={`first-${index}`}
-                    className="flex-shrink-0 mx-8 group"
+                    className="flex-shrink-0 flex-basis-auto mx-4 md:mx-8 group"
+                    style={{ flex: '0 0 auto' }}
+                  >
+                    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-2xl transition-all duration-500 flex items-center justify-center hover:-translate-y-2 hover:scale-105 h-20 md:h-24 w-24 md:w-32">
+                      {client.logo_url ? (
+                        <img 
+                          src={client.logo_url} 
+                          alt={client.name}
+                          className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-300"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className={`text-xl md:text-2xl group-hover:scale-110 transition-transform duration-300 ${client.logo_url ? 'hidden' : 'flex'}`}>
+                        🏭
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Segunda sequência de logos (duplicada para efeito infinito) */}
+                {clients.map((client, index) => (
+                  <div 
+                    key={`second-${index}`}
+                    className="flex-shrink-0 flex-basis-auto mx-4 md:mx-8 group"
+                    style={{ flex: '0 0 auto' }}
+                  >
+                    <div className="bg-white rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-2xl transition-all duration-500 flex items-center justify-center hover:-translate-y-2 hover:scale-105 h-20 md:h-24 w-24 md:w-32">
+                      {client.logo_url ? (
+                        <img 
+                          src={client.logo_url} 
+                          alt={client.name}
+                          className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-300"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className={`text-xl md:text-2xl group-hover:scale-110 transition-transform duration-300 ${client.logo_url ? 'hidden' : 'flex'}`}>
+                        🏭
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Terceira sequência de logos (apenas desktop) */}
+                {clients.map((client, index) => (
+                  <div 
+                    key={`third-${index}`}
+                    className="hidden md:flex flex-shrink-0 flex-basis-auto mx-8 group"
+                    style={{ flex: '0 0 auto' }}
                   >
                     <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 flex items-center justify-center hover:-translate-y-2 hover:scale-105 h-24 w-32">
                       {client.logo_url ? (
@@ -156,12 +209,65 @@ const Clients = ({ clientsData = null, enableTyping = true }) => {
                     </div>
                   </div>
                 ))}
-                
-                {/* Segunda sequência de logos (duplicada para efeito infinito) */}
+
+                {/* Quarta sequência de logos (apenas desktop) */}
                 {clients.map((client, index) => (
                   <div 
-                    key={`second-${index}`}
-                    className="flex-shrink-0 mx-8 group"
+                    key={`fourth-${index}`}
+                    className="hidden md:flex flex-shrink-0 flex-basis-auto mx-8 group"
+                    style={{ flex: '0 0 auto' }}
+                  >
+                    <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 flex items-center justify-center hover:-translate-y-2 hover:scale-105 h-24 w-32">
+                      {client.logo_url ? (
+                        <img 
+                          src={client.logo_url} 
+                          alt={client.name}
+                          className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-300"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className={`text-2xl group-hover:scale-110 transition-transform duration-300 ${client.logo_url ? 'hidden' : 'flex'}`}>
+                        🏭
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Quinta sequência de logos (apenas desktop) */}
+                {clients.map((client, index) => (
+                  <div 
+                    key={`fifth-${index}`}
+                    className="hidden md:flex flex-shrink-0 flex-basis-auto mx-8 group"
+                    style={{ flex: '0 0 auto' }}
+                  >
+                    <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 flex items-center justify-center hover:-translate-y-2 hover:scale-105 h-24 w-32">
+                      {client.logo_url ? (
+                        <img 
+                          src={client.logo_url} 
+                          alt={client.name}
+                          className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-300"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className={`text-2xl group-hover:scale-110 transition-transform duration-300 ${client.logo_url ? 'hidden' : 'flex'}`}>
+                        🏭
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Sexta sequência de logos (apenas desktop) */}
+                {clients.map((client, index) => (
+                  <div 
+                    key={`sixth-${index}`}
+                    className="hidden md:flex flex-shrink-0 flex-basis-auto mx-8 group"
+                    style={{ flex: '0 0 auto' }}
                   >
                     <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 flex items-center justify-center hover:-translate-y-2 hover:scale-105 h-24 w-32">
                       {client.logo_url ? (

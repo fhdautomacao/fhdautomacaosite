@@ -191,13 +191,8 @@ const Contact = ({ servicesData = null }) => {
           {/* Contact Information */}
           <div className="space-y-8">
             <div>
-              <div className="flex items-center justify-between mb-6">
+              <div className="mb-6">
                 <h3 className="text-2xl font-bold text-gray-800">Informações de Contato</h3>
-                {isMobile && (
-                  <div className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-                    Toque para abrir
-                  </div>
-                )}
               </div>
               
               <div className="space-y-6">

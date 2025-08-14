@@ -3,7 +3,6 @@ import { Search, Filter, Package, ArrowRight, CheckCircle, X } from 'lucide-reac
 import { productsAPI } from '../../api/products'
 import { useProductCategories } from '../../hooks/useCategories'
 import { useI18n } from '@/i18n/index.jsx'
-import { useMobileDetection } from '../../hooks/useMobileDetection'
 
 const Products = ({ productsData = null, productCategories = null }) => {
   const [searchTerm, setSearchTerm] = useState("")
@@ -14,12 +13,25 @@ const Products = ({ productsData = null, productCategories = null }) => {
   const [loadingProducts, setLoadingProducts] = useState(!productsData)
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [showAllProducts, setShowAllProducts] = useState(false)
-  const { isMobile } = useMobileDetection()
-  const MOBILE_PRODUCTS_LIMIT = 6
+  const [isMobile, setIsMobile] = useState(false)
+  const MOBILE_PRODUCTS_LIMIT = 4
   const { categories: fetchedCategoriesHook, loading: loadingCategoriesHook, error: categoriesErrorHook } = useProductCategories({ initialData: productCategories, enabled: !productCategories })
   const fetchedCategories = productCategories || fetchedCategoriesHook
   const loadingCategories = productCategories ? false : loadingCategoriesHook
   const categoriesError = productCategories ? null : categoriesErrorHook
+
+  // Detectar se é mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 768
+      setIsMobile(mobile)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     // Se productsData foi passado como prop, usar ele
@@ -104,6 +116,11 @@ const Products = ({ productsData = null, productCategories = null }) => {
 
   const closeAllProducts = () => {
     setShowAllProducts(false)
+    // Scroll suave para o título da seção
+    const productsSection = document.getElementById('produtos')
+    if (productsSection) {
+      productsSection.scrollIntoView({ behavior: 'smooth' })
+    }
   }
 
   if (loadingProducts || loadingCategories) {
@@ -129,7 +146,7 @@ const Products = ({ productsData = null, productCategories = null }) => {
             <Package className="mr-2" size={20} />
             <span className="font-semibold">{t('products.badge','Linha Completa de Produtos')}</span>
           </div>
-          <h2 className="text-5xl font-bold text-gray-800 mb-6 bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+          <h2 id="produtos" className="text-5xl font-bold text-gray-800 mb-6 bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
             {t('products.title','Nossos Produtos')}
           </h2>
           <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
@@ -217,12 +234,12 @@ const Products = ({ productsData = null, productCategories = null }) => {
               className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden hover:-translate-y-2 hover:scale-105 animate-fade-in-up"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-                             <div className="bg-white h-48 md:h-56 flex items-center justify-center relative overflow-hidden border border-gray-200">
+                             <div className="bg-white h-48 md:h-56 flex items-center justify-center relative overflow-hidden border border-gray-200 p-2">
                  {product.image_url ? (
                    <img 
                      src={product.image_url} 
                      alt={product.name}
-                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 bg-white"
+                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 bg-white"
                      onError={(e) => {
                        // Ignorar erros de cookies do Cloudflare - são normais e não afetam a funcionalidade
                        if (e.target.error && e.target.error.message && e.target.error.message.includes('__cf_bm')) {

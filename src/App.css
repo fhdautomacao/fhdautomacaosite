@@ -200,16 +200,33 @@
 /* ==== Carrossel Infinito para Logos de Clientes ==== */
 @keyframes scroll-infinite {
   0% { transform: translateX(0); }
+  100% { transform: translateX(-16.666%); }
+}
+
+@keyframes scroll-infinite-mobile {
+  0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
 
 .animate-scroll-infinite {
-  animation: scroll-infinite 30s linear infinite;
+  animation: scroll-infinite 12s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
-/* Pausa a animação no hover */
-.animate-scroll-infinite:hover {
-  animation-play-state: paused;
+/* Versão mobile - apenas 2 sequências */
+@media (max-width: 768px) {
+  .animate-scroll-infinite {
+    animation: scroll-infinite-mobile 8s linear infinite;
+  }
+}
+
+/* Pausa a animação no hover (apenas desktop) */
+@media (min-width: 769px) {
+  .animate-scroll-infinite:hover {
+    animation-play-state: paused;
+  }
 }
 
 /* ==== Animações específicas para mobile ==== */

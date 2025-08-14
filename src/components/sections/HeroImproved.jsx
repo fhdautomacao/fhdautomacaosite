@@ -450,12 +450,12 @@ const Hero = () => {
                         borderColor: tileGradients.desktop[item.color]?.border || 'rgba(255,255,255,0.18)'
                       } : undefined}
                     >
-                      <motion.div
-                        whileHover={{ rotate: 360 }}
-                        transition={{ duration: 0.5 }}
-                      >
-                        <item.icon className={`text-slate-800 drop-shadow mb-2 ${desktopIconColorByColor[item.color] || ''}`} size={20} />
-                      </motion.div>
+                                             <motion.div
+                         whileHover={{ rotate: 15, scale: 1.1 }}
+                         transition={{ duration: 0.3, ease: "easeOut" }}
+                       >
+                         <item.icon className={`text-slate-800 drop-shadow mb-2 ${desktopIconColorByColor[item.color] || ''}`} size={20} />
+                       </motion.div>
                       <div className="text-slate-700 md:text-white font-medium md:font-semibold text-xs md:text-sm">{
                         item.title
                       }</div>

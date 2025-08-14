@@ -7,7 +7,10 @@ export const useMobileDetection = () => {
     const checkMobile = () => {
       const userAgent = navigator.userAgent || navigator.vendor || window.opera
       const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i
-      setIsMobile(mobileRegex.test(userAgent))
+      const isMobileUserAgent = mobileRegex.test(userAgent)
+      const isMobileScreen = window.innerWidth <= 768
+      
+      setIsMobile(isMobileUserAgent || isMobileScreen)
     }
 
     checkMobile()
