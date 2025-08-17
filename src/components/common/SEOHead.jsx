@@ -5,7 +5,7 @@ const SEOHead = ({
   description, 
   keywords, 
   canonical, 
-  ogImage = "https://fhdautomacao.com.br/og-image.jpg",
+  ogImage = "https://www.fhdautomacaoindustrial.com.br/og-image.jpg",
   structuredData 
 }) => {
   const defaultTitle = "FHD Automação Industrial - Soluções Hidráulicas e Pneumáticas"
@@ -29,7 +29,7 @@ const SEOHead = ({
       <meta property="og:title" content={finalTitle} />
       <meta property="og:description" content={finalDescription} />
       <meta property="og:type" content="website" />
-      <meta property="og:url" content={canonical || "https://fhdautomacao.com.br"} />
+      <meta property="og:url" content={canonical || "https://www.fhdautomacaoindustrial.com.br"} />
       <meta property="og:image" content={ogImage} />
       <meta property="og:site_name" content="FHD Automação Industrial" />
       <meta property="og:locale" content="pt_BR" />

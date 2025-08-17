@@ -20,6 +20,9 @@ const corsOptions = {
       'https://fhdautomacaoindustrialapp.vercel.app', // Nova produção
       'https://fhdautomacaoindustrialapp.vercel.app/admin', // Nova admin produção
       'https://fhdautomacaoindustrialapp.vercel.app/admin/*', // Nova admin subpáginas
+      'https://www.fhdautomacaoindustrial.com.br', // Novo domínio principal
+      'https://www.fhdautomacaoindustrial.com.br/admin', // Novo domínio admin
+      'https://www.fhdautomacaoindustrial.com.br/admin/*', // Novo domínio admin subpáginas
       process.env.NEXT_PUBLIC_APP_URL, // URL da app configurada no env
       process.env.NEXT_PUBLIC_APP_URL + '/admin', // Admin da app
       process.env.NEXT_PUBLIC_APP_URL + '/admin/*', // Admin subpáginas da app

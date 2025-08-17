@@ -22,6 +22,12 @@ export const URLS_CONFIG = {
       main: 'https://fhdautomacaoindustrialapp.vercel.app',
       admin: 'https://fhdautomacaoindustrialapp.vercel.app/admin',
       api: 'https://fhdautomacaoindustrialapp.vercel.app/api'
+    },
+    // Novo domínio principal
+    domain: {
+      main: 'https://www.fhdautomacaoindustrial.com.br',
+      admin: 'https://www.fhdautomacaoindustrial.com.br/admin',
+      api: 'https://www.fhdautomacaoindustrial.com.br/api'
     }
   }
 }
@@ -32,8 +38,8 @@ export const getMainUrl = () => {
     return URLS_CONFIG.development.frontend
   }
   
-  // Em produção, usar a nova URL como padrão
-  return URLS_CONFIG.production.new.main
+  // Em produção, usar o novo domínio como padrão
+  return URLS_CONFIG.production.domain.main
 }
 
 // Função para obter a URL da API baseada no ambiente
@@ -42,8 +48,8 @@ export const getApiUrl = () => {
     return URLS_CONFIG.development.api
   }
   
-  // Em produção, usar a nova URL da API como padrão
-  return URLS_CONFIG.production.new.api
+  // Em produção, usar o novo domínio da API como padrão
+  return URLS_CONFIG.production.domain.api
 }
 
 // Função para obter a URL admin baseada no ambiente
@@ -52,8 +58,8 @@ export const getAdminUrl = () => {
     return `${URLS_CONFIG.development.frontend}/admin`
   }
   
-  // Em produção, usar a nova URL admin como padrão
-  return URLS_CONFIG.production.new.admin
+  // Em produção, usar o novo domínio admin como padrão
+  return URLS_CONFIG.production.domain.admin
 }
 
 // Lista de todas as origens permitidas para CORS
@@ -70,6 +76,10 @@ export const getAllowedOrigins = () => {
     // Produção - URLs novas
     URLS_CONFIG.production.new.main,
     URLS_CONFIG.production.new.admin,
+    
+    // Produção - Novo domínio principal
+    URLS_CONFIG.production.domain.main,
+    URLS_CONFIG.production.domain.admin,
     
     // URLs do ambiente (se configuradas)
     import.meta.env.VITE_APP_URL,

@@ -22,10 +22,23 @@ const upload = multer({
 export default async function handler(req, res) {
   console.log('🚀 [UPLOAD] Requisição recebida:', req.method, req.url)
   
-  // Configurar CORS
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  // Configurar CORS mais seguro
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://fhd-automacao-industrial-bq67.vercel.app',
+    'https://fhdautomacaoindustrialapp.vercel.app',
+    'https://www.fhdautomacaoindustrial.com.br',
+    process.env.NEXT_PUBLIC_APP_URL
+  ].filter(Boolean)
+
+  const origin = req.headers.origin
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()

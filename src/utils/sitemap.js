@@ -51,7 +51,7 @@ export const generateSitemap = async () => {
     const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${allUrls.map(url => `  <url>
-    <loc>https://fhdautomacao.com.br${url.url}</loc>
+    <loc>https://www.fhdautomacaoindustrial.com.br${url.url}</loc>
     <lastmod>${url.lastmod || new Date().toISOString()}</lastmod>
     <changefreq>${url.changefreq}</changefreq>
     <priority>${url.priority}</priority>
@@ -71,7 +71,7 @@ export const generateRobotsTxt = () => {
 Allow: /
 
 # Sitemap
-Sitemap: https://fhdautomacao.com.br/sitemap.xml
+Sitemap: https://www.fhdautomacaoindustrial.com.br/sitemap.xml
 
 # Crawl-delay
 Crawl-delay: 1`
@@ -83,8 +83,8 @@ export const generateOrganizationSchema = () => {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "FHD Automação Industrial",
-    "url": "https://fhdautomacao.com.br",
-    "logo": "https://fhdautomacao.com.br/logo.png",
+    "url": "https://www.fhdautomacaoindustrial.com.br",
+    "logo": "https://www.fhdautomacaoindustrial.com.br/logo.png",
     "description": "Especialistas em automação industrial com mais de 10 anos de experiência. Oferecemos soluções completas para suas necessidades hidráulicas e pneumáticas.",
     "address": {
       "@type": "PostalAddress",

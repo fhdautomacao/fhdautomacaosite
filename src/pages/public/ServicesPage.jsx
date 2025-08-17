@@ -15,11 +15,20 @@ const ServicesPage = () => {
   const [typedText, setTypedText] = useState('')
   const fullText = 'Nossos Serviços'
 
-  // WhatsApp - mesmo comportamento do botão flutuante
+  // WhatsApp - configuração
   const whatsappPhone = '5519998652144'
-  const whatsappMessage = 'Olá! Vim pelo site e gostaria de um orçamento.'
-  const openWhatsApp = () => {
-    const href = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappMessage)}`
+  
+  // Função para abrir WhatsApp com mensagem personalizada
+  const openWhatsApp = (serviceName) => {
+    const message = `Olá, vim através do site e tenho interesse nos seus serviços de ${serviceName}`
+    const href = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`
+    window.open(href, '_blank', 'noopener,noreferrer')
+  }
+  
+  // Função para abrir WhatsApp genérico (usado nos botões do hero)
+  const openWhatsAppGeneric = () => {
+    const message = 'Olá! Vim pelo site e gostaria de um orçamento.'
+    const href = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`
     window.open(href, '_blank', 'noopener,noreferrer')
   }
 
@@ -202,7 +211,7 @@ const ServicesPage = () => {
                   size="lg" 
                   variant="outline" 
                   className="border-white !text-white bg-transparent hover:bg-white hover:!text-blue-900 button-glow"
-                  onClick={openWhatsApp}
+                  onClick={openWhatsAppGeneric}
                   aria-label="Falar com especialista no WhatsApp"
                 >
                   Falar com Especialista
@@ -271,7 +280,10 @@ const ServicesPage = () => {
                       </div>
                     )}
                     
-                    <Button className="w-full mt-6 bg-blue-600 hover:bg-blue-700 button-glow">
+                    <Button 
+                      className="w-full mt-6 bg-blue-600 hover:bg-blue-700 button-glow"
+                      onClick={() => openWhatsApp(name)}
+                    >
                       Saiba Mais
                     </Button>
                   </CardContent>
@@ -303,7 +315,7 @@ const ServicesPage = () => {
                 size="lg" 
                 variant="outline" 
                 className="border-white !text-white bg-transparent hover:bg-white hover:!text-blue-900 button-glow"
-                onClick={openWhatsApp}
+                onClick={openWhatsAppGeneric}
                 aria-label="Ligar para (19) 99865-2144 no WhatsApp"
               >
                 (19) 99865-2144

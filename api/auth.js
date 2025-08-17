@@ -305,10 +305,23 @@ export default async function handler(req, res) {
   console.log('📝 [AUTH] Body:', req.body)
   console.log('🔍 [AUTH] Query:', req.query)
   
-  // Configurar CORS básico
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  // Configurar CORS mais seguro
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://fhd-automacao-industrial-bq67.vercel.app',
+    'https://fhdautomacaoindustrialapp.vercel.app',
+    'https://www.fhdautomacaoindustrial.com.br',
+    process.env.NEXT_PUBLIC_APP_URL
+  ].filter(Boolean)
+
+  const origin = req.headers.origin
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
 
   // Responder a requisições OPTIONS
   if (req.method === 'OPTIONS') {

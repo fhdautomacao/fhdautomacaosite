@@ -4,8 +4,8 @@ export const organizationSchema = {
   "@type": "Organization",
   "name": "FHD Automação Industrial",
   "description": "Especialistas em automação industrial, hidráulica e pneumática",
-  "url": "https://fhdautomacao.com.br",
-  "logo": "https://fhdautomacao.com.br/logo.png",
+  "url": "https://www.fhdautomacaoindustrial.com.br",
+  "logo": "https://www.fhdautomacaoindustrial.com.br/logo.png",
   "foundingDate": "2013",
   "contactPoint": {
     "@type": "ContactPoint",
@@ -41,7 +41,7 @@ export const localBusinessSchema = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
   "name": "FHD Automação Industrial",
-  "image": "https://fhdautomacao.com.br/logo.png",
+  "image": "https://www.fhdautomacaoindustrial.com.br/logo.png",
   "telephone": "+55-19-99865-2144",
   "email": "comercial@fhdautomacao.com.br",
   "address": {
@@ -80,7 +80,7 @@ export const serviceSchema = (serviceName, description) => ({
   "provider": {
     "@type": "Organization",
     "name": "FHD Automação Industrial",
-    "url": "https://fhdautomacao.com.br"
+    "url": "https://www.fhdautomacaoindustrial.com.br"
   },
   "areaServed": {
     "@type": "Place",
@@ -148,7 +148,7 @@ export const generateMetaTags = (page) => {
 
 // URL Canonicalization
 export const getCanonicalUrl = (path) => {
-  const baseUrl = "https://fhdautomacao.com.br"
+  const baseUrl = "https://www.fhdautomacaoindustrial.com.br"
   return path === "/" ? baseUrl : `${baseUrl}${path}`
 }
 

@@ -17,6 +17,16 @@ const ServicesSection = ({ servicesData = null, serviceCategories = null }) => {
   const loadingCategories = serviceCategories ? false : loadingCategoriesHook
   const categoriesError = serviceCategories ? null : categoriesErrorHook
 
+  // WhatsApp - configuração
+  const whatsappPhone = '5519998652144'
+  
+  // Função para abrir WhatsApp com mensagem personalizada
+  const openWhatsApp = (serviceName) => {
+    const message = `Olá, vim através do site e tenho interesse nos seus serviços de ${serviceName}`
+    const href = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`
+    window.open(href, '_blank', 'noopener,noreferrer')
+  }
+
   // Função para buscar serviços do banco de dados
   const fetchServices = async () => {
     setLoadingServices(true)
@@ -150,13 +160,7 @@ const ServicesSection = ({ servicesData = null, serviceCategories = null }) => {
                   {getServiceIcon(service.icon, service.category)}
                 </div>
                 <CardTitle className="text-xl">
-                  <a 
-                    href={`/servico/${service.slug || slug}`}
-                    className="hover:text-blue-600 transition-colors duration-300"
-                    title={`Ver detalhes do serviço ${name}`}
-                  >
-                    {name}
-                  </a>
+                  {name}
                 </CardTitle>
                 <CardDescription className="text-gray-600">
                   {description}
@@ -181,7 +185,10 @@ const ServicesSection = ({ servicesData = null, serviceCategories = null }) => {
                   </div>
                 )}
                 
-                <Button className="w-full mt-6 bg-blue-600 hover:bg-blue-700">
+                <Button 
+                  className="w-full mt-6 bg-blue-600 hover:bg-blue-700"
+                  onClick={() => openWhatsApp(name)}
+                >
                   {t('services.learnMore','Saiba Mais')}
                 </Button>
               </CardContent>
