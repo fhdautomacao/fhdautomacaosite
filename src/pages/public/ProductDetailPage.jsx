@@ -41,10 +41,10 @@ const ProductDetailPage = () => {
     title: `${product.name} - FHD Automação Industrial`,
     description: product.description || `Conheça o ${product.name} da FHD Automação Industrial. ${product.name} com qualidade e garantia. Solicite orçamento.`,
     keywords: `${product.name}, ${product.category}, automação industrial, hidráulica, pneumática, FHD Automação, Sumaré SP`,
-    canonical_url: `https://fhdautomacao.com.br/produto/${product.slug}`,
+    canonical_url: `https://www.fhdautomacaoindustrial.com.br/produto/${product.slug}`,
     og_title: `${product.name} - FHD Automação Industrial`,
     og_description: product.description || `Conheça o ${product.name} da FHD Automação Industrial. Qualidade e garantia.`,
-    og_image: product.image_url || 'https://fhdautomacao.com.br/og-image.jpg',
+    og_image: product.image_url || 'https://www.fhdautomacaoindustrial.com.br/og-image.jpg',
     structured_data: {
       "@context": "https://schema.org",
       "@type": "Product",

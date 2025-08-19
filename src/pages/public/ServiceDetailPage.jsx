@@ -41,10 +41,10 @@ const ServiceDetailPage = () => {
     title: `${service.name} - FHD Automação Industrial`,
     description: service.description || `Conheça o serviço de ${service.name} da FHD Automação Industrial. ${service.name} com qualidade e garantia. Solicite orçamento.`,
     keywords: `${service.name}, ${service.category}, automação industrial, hidráulica, pneumática, manutenção, FHD Automação, Sumaré SP`,
-    canonical_url: `https://fhdautomacao.com.br/servico/${service.slug}`,
+    canonical_url: `https://www.fhdautomacaoindustrial.com.br/servico/${service.slug}`,
     og_title: `${service.name} - FHD Automação Industrial`,
     og_description: service.description || `Conheça o serviço de ${service.name} da FHD Automação Industrial. Qualidade e garantia.`,
-    og_image: service.image_url || 'https://fhdautomacao.com.br/og-image.jpg',
+    og_image: service.image_url || 'https://www.fhdautomacaoindustrial.com.br/og-image.jpg',
     structured_data: {
       "@context": "https://schema.org",
       "@type": "Service",

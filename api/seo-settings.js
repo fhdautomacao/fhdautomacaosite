@@ -216,12 +216,9 @@ const corsOptions = {
     const allowedOrigins = [
       'http://localhost:5173',
       'http://localhost:3000',
-      'https://fhd-automacao-industrial-bq67.vercel.app', // Produção antiga
-      'https://fhd-automacao-industrial-bq67.vercel.app/admin', // Admin produção antiga
-      'https://fhd-automacao-industrial-bq67.vercel.app/admin/*', // Admin subpáginas antiga
-      'https://fhdautomacaoindustrialapp.vercel.app', // Nova produção
-      'https://fhdautomacaoindustrialapp.vercel.app/admin', // Nova admin produção
-      'https://fhdautomacaoindustrialapp.vercel.app/admin/*', // Nova admin subpáginas
+      'https://www.fhdautomacaoindustrial.com.br', // Domínio principal
+      'https://www.fhdautomacaoindustrial.com.br/admin', // Admin domínio principal
+      'https://www.fhdautomacaoindustrial.com.br/admin/*', // Admin subpáginas domínio principal
       'https://www.fhdautomacaoindustrial.com.br', // Novo domínio principal
       'https://www.fhdautomacaoindustrial.com.br/admin', // Novo domínio admin
       'https://www.fhdautomacaoindustrial.com.br/admin/*', // Novo domínio admin subpáginas

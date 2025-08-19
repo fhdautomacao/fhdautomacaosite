@@ -82,10 +82,7 @@
       "src": "/sw.js",
       "dest": "/sw.js"
     },
-    {
-      "src": "/googlecf5c03dc1aaee19d.html",
-      "dest": "/googlecf5c03dc1aaee19d.html"
-    },
+
     {
       "src": "/logo_no_bg.png",
       "dest": "/logo_no_bg.png"

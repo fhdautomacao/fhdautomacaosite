@@ -23,11 +23,8 @@ Disallow: /admin-fhd/
 Disallow: /admin/
 Disallow: /login-admin
 Disallow: /admin/login
-Disallow: /api/
 
-# Bloquear arquivos desnecessários
-Disallow: /*.json$
-Disallow: /*.xml$
+# Bloquear APIs e arquivos sensíveis
 Disallow: /api/
 Disallow: /_next/
 Disallow: /static/
@@ -36,4 +33,6 @@ Disallow: /static/
 Allow: /favicon.ico
 Allow: /logo.png
 Allow: /og-image.jpg
+Allow: /sitemap.xml
+Allow: /robots.txt
 
