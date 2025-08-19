@@ -76,13 +76,12 @@
     },
     {
       "src": "/sitemap.xml",
-      "dest": "/sitemap.xml"
+      "dest": "/api/sitemap.js"
     },
     {
       "src": "/sw.js",
       "dest": "/sw.js"
     },
-
     {
       "src": "/logo_no_bg.png",
       "dest": "/logo_no_bg.png"
@@ -90,24 +89,6 @@
     {
       "src": "/image_white_background.png",
       "dest": "/image_white_background.png"
-    },
-    {
-      "src": "/(.*\\.js)",
-      "headers": {
-        "content-type": "application/javascript"
-      }
-    },
-    {
-      "src": "/(.*\\.css)",
-      "headers": {
-        "content-type": "text/css"
-      }
-    },
-    {
-      "src": "/assets/(.*)",
-      "headers": {
-        "cache-control": "public, max-age=31536000, immutable"
-      }
     },
     {
       "src": "/(.*\\.js)",
@@ -120,6 +101,12 @@
       "src": "/(.*\\.css)",
       "headers": {
         "content-type": "text/css",
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/assets/(.*)",
+      "headers": {
         "cache-control": "public, max-age=31536000, immutable"
       }
     },
