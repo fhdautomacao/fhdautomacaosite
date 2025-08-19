@@ -4,29 +4,3 @@ Allow: /
 # Sitemap
 Sitemap: https://www.fhdautomacaoindustrial.com.br/sitemap.xml
 
-# Bloquear páginas administrativas
-Disallow: /admin-fhd
-Disallow: /admin-fhd/
-Disallow: /admin/
-Disallow: /login-admin
-Disallow: /admin/login
-
-# Bloquear APIs sensíveis (mas permitir sitemap)
-Disallow: /api/auth
-Disallow: /api/bills
-Disallow: /api/clients
-Disallow: /api/dashboard
-Disallow: /api/quotations
-Disallow: /api/seo-settings
-Disallow: /api/upload
-Disallow: /api/notify-mobile
-Disallow: /api/og
-
-# Permitir sitemap especificamente
-Allow: /sitemap.xml
-Allow: /sitemap-static.xml
-Allow: /robots.txt
-Allow: /favicon.ico
-Allow: /logo.png
-Allow: /og-image.jpg
-
