@@ -12,14 +12,27 @@
         .loading { background-color: #fff3cd; border-color: #ffeaa7; }
         button { padding: 10px 20px; margin: 5px; cursor: pointer; }
         pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .diagnostic { background-color: #e2e3e5; border: 1px solid #d6d8db; padding: 15px; margin: 20px 0; border-radius: 5px; }
     </style>
 </head>
 <body>
     <h1>🧪 Teste de Sitemap - FHD Automação</h1>
     
+    <div class="diagnostic">
+        <h3>🔍 Diagnóstico Baseado no Google Search Console</h3>
+        <p><strong>Problema identificado:</strong> O Google não consegue buscar o sitemap</p>
+        <p><strong>Possíveis causas:</strong></p>
+        <ul>
+            <li>❌ Sitemap bloqueado pelo robots.txt</li>
+            <li>❌ URL incorreto (erro 404)</li>
+            <li>❌ Erro de servidor</li>
+            <li>❌ Headers incorretos</li>
+        </ul>
+    </div>
+    
     <div class="test">
-        <h3>1. Teste Sitemap Dinâmico</h3>
-        <button onclick="testSitemap('https://www.fhdautomacaoindustrial.com.br/sitemap.xml')">Testar Sitemap Dinâmico</button>
+        <h3>1. Teste Sitemap Principal</h3>
+        <button onclick="testSitemap('https://www.fhdautomacaoindustrial.com.br/sitemap.xml')">Testar Sitemap Principal</button>
         <div id="result1" class="loading">Clique no botão para testar...</div>
     </div>
 
@@ -33,6 +46,18 @@
         <h3>3. Teste Robots.txt</h3>
         <button onclick="testRobots()">Testar Robots.txt</button>
         <div id="result3" class="loading">Clique no botão para testar...</div>
+    </div>
+
+    <div class="test">
+        <h3>4. Teste Headers HTTP</h3>
+        <button onclick="testHeaders()">Testar Headers</button>
+        <div id="result4" class="loading">Clique no botão para testar...</div>
+    </div>
+
+    <div class="test">
+        <h3>5. Teste Página Principal</h3>
+        <button onclick="testMainPage()">Testar Página Principal</button>
+        <div id="result5" class="loading">Clique no botão para testar...</div>
     </div>
 
     <script>
@@ -99,6 +124,73 @@
                     resultDiv.className = 'error';
                     resultDiv.innerHTML = `
                         <strong>❌ Erro no Robots.txt!</strong><br>
+                        Status: ${response.status}
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `
+                    <strong>❌ Erro de Rede!</strong><br>
+                    ${error.message}
+                `;
+            }
+        }
+
+        async function testHeaders() {
+            const resultDiv = document.getElementById('result4');
+            resultDiv.className = 'loading';
+            resultDiv.innerHTML = 'Testando...';
+
+            try {
+                const response = await fetch('https://www.fhdautomacaoindustrial.com.br/sitemap.xml');
+                const headers = {};
+                
+                for (const [key, value] of response.headers.entries()) {
+                    headers[key] = value;
+                }
+
+                resultDiv.className = 'success';
+                resultDiv.innerHTML = `
+                    <strong>✅ Headers HTTP:</strong><br>
+                    Status: ${response.status}<br>
+                    <details>
+                        <summary>Ver todos os headers</summary>
+                        <pre>${JSON.stringify(headers, null, 2)}</pre>
+                    </details>
+                `;
+            } catch (error) {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `
+                    <strong>❌ Erro ao testar headers!</strong><br>
+                    ${error.message}
+                `;
+            }
+        }
+
+        async function testMainPage() {
+            const resultDiv = document.getElementById('result5');
+            resultDiv.className = 'loading';
+            resultDiv.innerHTML = 'Testando...';
+
+            try {
+                const response = await fetch('https://www.fhdautomacaoindustrial.com.br/');
+                const text = await response.text();
+
+                if (response.ok) {
+                    resultDiv.className = 'success';
+                    resultDiv.innerHTML = `
+                        <strong>✅ Página principal acessível!</strong><br>
+                        Status: ${response.status}<br>
+                        Tamanho: ${text.length} caracteres<br>
+                        <details>
+                            <summary>Ver título da página</summary>
+                            <pre>${text.match(/<title>(.*?)<\/title>/)?.[1] || 'Título não encontrado'}</pre>
+                        </details>
+                    `;
+                } else {
+                    resultDiv.className = 'error';
+                    resultDiv.innerHTML = `
+                        <strong>❌ Erro na página principal!</strong><br>
                         Status: ${response.status}
                     `;
                 }

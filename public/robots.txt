@@ -24,13 +24,14 @@ Disallow: /admin/
 Disallow: /login-admin
 Disallow: /admin/login
 
-# Bloquear APIs e arquivos sensíveis
+# Bloquear APIs e arquivos sensíveis (exceto sitemap)
 Disallow: /api/
 Disallow: /_next/
 Disallow: /static/
 
 # Permitir sitemap dinâmico
 Allow: /api/sitemap-simple.js
+Allow: /api/sitemap.js
 
 # Permitir recursos importantes
 Allow: /favicon.ico
