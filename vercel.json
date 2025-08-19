@@ -76,7 +76,7 @@
     },
     {
       "src": "/sitemap.xml",
-      "dest": "/api/sitemap.js"
+      "dest": "/api/sitemap-simple.js"
     },
     {
       "src": "/sitemap-static.xml",
@@ -84,6 +84,10 @@
       "headers": {
         "content-type": "application/xml"
       }
+    },
+    {
+      "src": "/test-sitemap.html",
+      "dest": "/test-sitemap.html"
     },
     {
       "src": "/sw.js",

@@ -29,6 +29,9 @@ Disallow: /api/
 Disallow: /_next/
 Disallow: /static/
 
+# Permitir sitemap dinâmico
+Allow: /api/sitemap-simple.js
+
 # Permitir recursos importantes
 Allow: /favicon.ico
 Allow: /logo.png
