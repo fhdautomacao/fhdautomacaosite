@@ -7,9 +7,13 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 
 export default async function handler(req, res) {
   try {
-    // Configurar headers para XML
-    res.setHeader('Content-Type', 'application/xml')
+    // Configurar headers para XML e SEO
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8')
     res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=3600')
+    res.setHeader('X-Robots-Tag', 'noindex')
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Methods', 'GET')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
     // URLs estáticas principais
     const staticUrls = [
@@ -69,16 +73,23 @@ export default async function handler(req, res) {
       }
     ]
 
-    // Buscar serviços ativos
+    // Buscar serviços ativos (com timeout)
     let serviceUrls = []
     try {
-      const { data: services } = await supabase
+      const servicesPromise = supabase
         .from('services')
         .select('slug, updated_at')
         .eq('is_active', true)
       
-      if (services) {
-        serviceUrls = services.map(service => ({
+      const servicesResult = await Promise.race([
+        servicesPromise,
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 5000)
+        )
+      ])
+      
+      if (servicesResult.data) {
+        serviceUrls = servicesResult.data.map(service => ({
           loc: `https://www.fhdautomacaoindustrial.com.br/servico/${service.slug}`,
           lastmod: service.updated_at ? new Date(service.updated_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
           changefreq: 'weekly',
@@ -86,19 +97,26 @@ export default async function handler(req, res) {
         }))
       }
     } catch (error) {
-      console.warn('Erro ao buscar serviços:', error)
+      console.warn('Erro ao buscar serviços (usando fallback):', error.message)
     }
 
-    // Buscar produtos ativos
+    // Buscar produtos ativos (com timeout)
     let productUrls = []
     try {
-      const { data: products } = await supabase
+      const productsPromise = supabase
         .from('products')
         .select('slug, updated_at')
         .eq('is_active', true)
       
-      if (products) {
-        productUrls = products.map(product => ({
+      const productsResult = await Promise.race([
+        productsPromise,
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 5000)
+        )
+      ])
+      
+      if (productsResult.data) {
+        productUrls = productsResult.data.map(product => ({
           loc: `https://www.fhdautomacaoindustrial.com.br/produto/${product.slug}`,
           lastmod: product.updated_at ? new Date(product.updated_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
           changefreq: 'weekly',
@@ -106,13 +124,13 @@ export default async function handler(req, res) {
         }))
       }
     } catch (error) {
-      console.warn('Erro ao buscar produtos:', error)
+      console.warn('Erro ao buscar produtos (usando fallback):', error.message)
     }
 
     // Combinar todas as URLs
     const allUrls = [...staticUrls, ...serviceUrls, ...productUrls]
 
-    // Gerar XML do sitemap
+    // Gerar XML do sitemap com formatação otimizada
     const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${allUrls.map(url => `  <url>
@@ -123,9 +141,26 @@ ${allUrls.map(url => `  <url>
   </url>`).join('\n')}
 </urlset>`
 
+    // Log para debug
+    console.log(`✅ Sitemap gerado com ${allUrls.length} URLs`)
+    console.log(`📅 Data atual: ${new Date().toISOString().split('T')[0]}`)
+
     res.status(200).send(sitemapXml)
   } catch (error) {
-    console.error('Erro ao gerar sitemap:', error)
-    res.status(500).send('Erro interno do servidor')
+    console.error('❌ Erro ao gerar sitemap:', error)
+    
+    // Fallback: sitemap básico em caso de erro
+    const fallbackXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.fhdautomacaoindustrial.com.br/</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>`
+    
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8')
+    res.status(200).send(fallbackXml)
   }
 }

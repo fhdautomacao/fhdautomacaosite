@@ -79,6 +79,13 @@
       "dest": "/api/sitemap.js"
     },
     {
+      "src": "/sitemap-static.xml",
+      "dest": "/sitemap-static.xml",
+      "headers": {
+        "content-type": "application/xml"
+      }
+    },
+    {
       "src": "/sw.js",
       "dest": "/sw.js"
     },
