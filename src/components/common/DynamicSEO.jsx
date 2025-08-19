@@ -9,9 +9,9 @@ const DynamicSEO = ({ pageName, fallbackData = {} }) => {
   const getFallbackData = (pageName) => {
     const fallbacks = {
       home: {
-        title: 'FHD Automação Industrial - Soluções Hidráulicas e Pneumáticas em Sumaré, SP',
-        description: 'FHD Automação Industrial oferece soluções completas em automação hidráulica e pneumática. Mais de 10 anos de experiência, 500+ projetos realizados e 98% de satisfação dos clientes em Sumaré, SP.',
-        keywords: 'FHD automação, automação industrial, hidráulica industrial, pneumática industrial, manutenção de máquinas, unidades hidráulicas, peças hidráulicas, Sumaré SP, São Paulo, automação hidráulica, automação pneumática, manutenção industrial, fabricação hidráulica, venda de peças hidráulicas, reparo de máquinas industriais',
+        title: 'FHD Automação - Especialistas em Automação Industrial | Sumaré, SP',
+        description: 'FHD Automação oferece soluções completas em automação industrial, hidráulica e pneumática. Mais de 10 anos de experiência, 500+ projetos realizados e 98% de satisfação dos clientes em Sumaré, SP.',
+        keywords: 'FHD automação, fhd automacao, automação industrial, hidráulica industrial, pneumática industrial, manutenção de máquinas, unidades hidráulicas, peças hidráulicas, Sumaré SP, São Paulo, automação hidráulica, automação pneumática, manutenção industrial, fabricação hidráulica, venda de peças hidráulicas, reparo de máquinas industriais',
         author: 'FHD Automação Industrial',
         og_title: 'FHD Automação Industrial - Soluções Hidráulicas e Pneumáticas em Sumaré, SP',
         og_description: 'Especialistas em automação industrial com mais de 10 anos de experiência. Oferecemos soluções completas para suas necessidades hidráulicas e pneumáticas em Sumaré, SP.',
