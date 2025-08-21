@@ -192,10 +192,10 @@ export const JWTAuthProvider = ({ children }) => {
     
     // Redirecionar para login apenas se o Router estiver pronto
     if (isRouterReady) {
-      navigate('/admin/login')
+      navigate('/login-admin')
     } else {
       // Fallback para window.location se o Router não estiver pronto
-      window.location.href = '/admin/login'
+      window.location.href = '/login-admin'
     }
   }, [navigate, isRouterReady])
 
@@ -296,7 +296,7 @@ export const JWTAuthProvider = ({ children }) => {
     }
     
     try {
-  
+      console.log('🚀 Iniciando verificação de autenticação...')
       setLoading(true)
       isInitialized.current = true
       
@@ -309,7 +309,7 @@ export const JWTAuthProvider = ({ children }) => {
 
       
       if (!storedToken || !storedUser || !storedExpiresAt) {
-
+        console.log('❌ Dados de autenticação não encontrados no localStorage')
         setLoading(false)
         return
       }
@@ -392,6 +392,8 @@ export const JWTAuthProvider = ({ children }) => {
         setToken(storedToken)
         setTokenExpiry(expiryDate)
         checkUserPermissions(userData.email)
+        
+        console.log('✅ Autenticação restaurada com sucesso:', userData.email)
       }
       
       
@@ -408,7 +410,7 @@ export const JWTAuthProvider = ({ children }) => {
     if (!isInitialized.current) {
       initializeAuth()
     }
-  }, []) // Removida dependência de initializeAuth
+  }, [initializeAuth]) // Adicionada dependência de initializeAuth
 
   // Verificar expiração do token periodicamente
   useEffect(() => {
@@ -454,7 +456,7 @@ export const JWTAuthProvider = ({ children }) => {
   }, [token])
 
   // Calcular isAuthenticated diretamente
-  const isAuthenticated = !!user && !!token && !isTokenExpired()
+  const isAuthenticated = !!user && !!token && !isTokenExpired() && !loading
 
   const value = {
     user,

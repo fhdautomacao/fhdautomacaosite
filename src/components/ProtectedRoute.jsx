@@ -4,7 +4,7 @@ import { useJWTAuth } from '@/contexts/JWTAuthContext'
 import { toast } from 'sonner'
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading, logout } = useJWTAuth()
+  const { isAuthenticated, loading, logout, user, token } = useJWTAuth()
   const navigate = useNavigate()
 
   // Status de autenticação
@@ -12,6 +12,15 @@ const ProtectedRoute = ({ children }) => {
     isAuthenticated,
     loading
   }
+
+  // Debug: Log do status de autenticação
+  console.log('🔍 ProtectedRoute Debug:', {
+    isAuthenticated,
+    loading,
+    hasUser: !!user,
+    hasToken: !!token,
+    userEmail: user?.email
+  })
 
   useEffect(() => {
     // Só verificar se não estiver carregando e não estiver autenticado
@@ -23,7 +32,7 @@ const ProtectedRoute = ({ children }) => {
       if (!sessionExpired) {
         localStorage.setItem('session_expired', 'true')
         logout()
-        navigate('/admin/login')
+        navigate('/login-admin')
         toast.error('Acesso negado. Faça login para continuar.')
       }
     }
