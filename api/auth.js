@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 
 // Configuração JWT
 const JWT_SECRET = process.env.JWT_SECRET || 'U3pZjijm9HvwB4T0uGvgXlazWT63+f2U701YmPc6i7umkChmBalYatFX+s1j/ERIbXcSWNjOqcZB5WdDWZqJzw=='
-const JWT_EXPIRES_IN = '5h'
+const JWT_EXPIRES_IN = '8h'
 
 // Configuração Supabase
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
@@ -148,8 +148,8 @@ async function handleLogin(req, res) {
     // Gerar token JWT personalizado
     const customToken = generateCustomToken(data.user)
     
-    // Calcular data de expiração (5 horas)
-    const expiresAt = new Date(Date.now() + (5 * 60 * 60 * 1000))
+    // Calcular data de expiração (8 horas)
+    const expiresAt = new Date(Date.now() + (8 * 60 * 60 * 1000))
 
     console.log('✅ [AUTH] Login bem-sucedido para:', data.user.email)
     
@@ -271,7 +271,7 @@ async function handleRefreshToken(req, res) {
     }
 
     const newToken = generateCustomToken(user)
-    const expiresAt = new Date(Date.now() + (5 * 60 * 60 * 1000))
+    const expiresAt = new Date(Date.now() + (8 * 60 * 60 * 1000))
 
     console.log('✅ [AUTH] Token renovado para:', user.email)
     

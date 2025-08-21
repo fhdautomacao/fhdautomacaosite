@@ -69,8 +69,6 @@ export const JWTAuthProvider = ({ children }) => {
     try {
       setLoading(true)
       
-      console.log('🔗 Tentando login na URL:', `${API_BASE_URL}/auth?action=login`)
-      
       const response = await fetch(`${API_BASE_URL}/auth?action=login`, {
         method: 'POST',
         headers: {
@@ -80,20 +78,12 @@ export const JWTAuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password })
       })
 
-      console.log('📡 Resposta do login:', {
-        status: response.status,
-        ok: response.ok,
-        statusText: response.statusText
-      })
-
       // Verificar se a resposta é JSON
       const contentType = response.headers.get('content-type')
-      console.log('📄 Content-Type da resposta:', contentType)
 
       let data
       try {
         const responseText = await response.text()
-        console.log('📄 Resposta bruta:', responseText)
         
         if (contentType && contentType.includes('application/json')) {
           data = JSON.parse(responseText)
@@ -101,7 +91,6 @@ export const JWTAuthProvider = ({ children }) => {
           throw new Error(`Resposta não é JSON válido. Content-Type: ${contentType}`)
         }
       } catch (parseError) {
-        console.error('❌ Erro ao fazer parse da resposta:', parseError)
         throw new Error('Erro na resposta do servidor. Verifique se a API está funcionando.')
       }
 
@@ -118,19 +107,16 @@ export const JWTAuthProvider = ({ children }) => {
         localStorage.setItem('jwt_expires_at', expiresAt)
         
         // Autenticar no Supabase Auth para contornar RLS
-        console.log('🔐 Autenticando no Supabase Auth...')
         const { data: supabaseData, error: supabaseError } = await supabase.auth.signInWithPassword({
           email,
           password
         })
 
         if (supabaseError) {
-          console.error('❌ Erro na autenticação Supabase:', supabaseError)
           throw new Error('Erro na autenticação do banco de dados')
         }
 
         if (supabaseData?.user) {
-          console.log('✅ Autenticação Supabase bem-sucedida:', supabaseData.user.email)
           // Salvar token de sessão do Supabase
           localStorage.setItem('supabase_session', JSON.stringify(supabaseData.session))
         }
@@ -144,13 +130,6 @@ export const JWTAuthProvider = ({ children }) => {
         const expiryDate = new Date(expiresAt)
         setTokenExpiry(expiryDate)
         
-        console.log('✅ Login JWT + Supabase bem-sucedido:', userData.email)
-        console.log('📅 Token Expiry Info:', {
-          expiresAt,
-          expiryDate: expiryDate.toISOString(),
-          now: new Date().toISOString(),
-          isValid: new Date() < expiryDate
-        })
         toast.success('Login realizado com sucesso!')
         
         return data.data
@@ -158,7 +137,6 @@ export const JWTAuthProvider = ({ children }) => {
         throw new Error(data.error || 'Erro no login')
       }
     } catch (error) {
-      console.error('❌ Erro no login JWT:', error)
       toast.error(error.message || 'Erro ao fazer login')
       throw error
     } finally {
@@ -170,16 +148,13 @@ export const JWTAuthProvider = ({ children }) => {
   const logout = useCallback(async () => {
     try {
       // Fazer logout do Supabase Auth
-      console.log('🔐 Fazendo logout do Supabase Auth...')
       const { error: supabaseError } = await supabase.auth.signOut()
       
       if (supabaseError) {
-        console.error('❌ Erro no logout Supabase:', supabaseError)
-      } else {
-        console.log('✅ Logout Supabase realizado')
+        console.error('Erro no logout Supabase:', supabaseError)
       }
     } catch (error) {
-      console.error('❌ Erro ao fazer logout do Supabase:', error)
+      console.error('Erro ao fazer logout do Supabase:', error)
     }
 
     // Limpar localStorage
@@ -194,7 +169,6 @@ export const JWTAuthProvider = ({ children }) => {
     setTokenExpiry(null)
     setUserPermissions({})
     
-    console.log('✅ Logout JWT + Supabase realizado')
     toast.success('Logout realizado com sucesso!')
     
     // Redirecionar para login apenas se o Router estiver pronto
@@ -221,14 +195,12 @@ export const JWTAuthProvider = ({ children }) => {
       const data = await response.json()
 
       if (!response.ok) {
-        console.error('❌ Erro na resposta:', data.error)
         throw new Error(data.error || 'Token inválido')
       }
 
       const isValid = data.success && data.data.valid
       return isValid
     } catch (error) {
-      console.error('❌ Erro na verificação do token:', error)
       return false
     }
   }, [API_BASE_URL])
@@ -264,13 +236,11 @@ export const JWTAuthProvider = ({ children }) => {
         setToken(newToken)
         setTokenExpiry(new Date(expiresAt))
         
-        console.log('✅ Token JWT renovado')
         return true
       } else {
         throw new Error(data.error || 'Erro na renovação do token')
       }
     } catch (error) {
-      console.error('❌ Erro na renovação do token:', error)
       return false
     }
   }, [API_BASE_URL])
@@ -281,9 +251,9 @@ export const JWTAuthProvider = ({ children }) => {
     
     const now = new Date()
     const timeUntilExpiry = tokenExpiry.getTime() - now.getTime()
-    const fiveMinutes = 5 * 60 * 1000 // 5 minutos
+    const tenMinutes = 10 * 60 * 1000 // 10 minutos (aumentado para dar mais tempo)
     
-    return timeUntilExpiry < fiveMinutes
+    return timeUntilExpiry < tenMinutes
   }, [tokenExpiry])
 
   // Função para verificar se o token expirou
@@ -291,28 +261,17 @@ export const JWTAuthProvider = ({ children }) => {
     if (!tokenExpiry) return true
     
     const now = new Date()
-    const expired = now > tokenExpiry
-    
-    console.log('🔍 Token Expiry Check:', {
-      now: now.toISOString(),
-      expiry: tokenExpiry.toISOString(),
-      expired,
-      timeUntilExpiry: tokenExpiry.getTime() - now.getTime()
-    })
-    
-    return expired
+    return now > tokenExpiry
   }, [tokenExpiry])
 
   // Função para inicializar autenticação
   const initializeAuth = useCallback(async () => {
     // Evitar inicialização múltipla
     if (isInitialized.current) {
-      console.log('🔄 Inicialização já em andamento, ignorando...')
       return
     }
     
     try {
-      console.log('🚀 Iniciando verificação de autenticação...')
       setLoading(true)
       isInitialized.current = true
       
@@ -325,7 +284,6 @@ export const JWTAuthProvider = ({ children }) => {
 
       
       if (!storedToken || !storedUser || !storedExpiresAt) {
-        console.log('❌ Dados de autenticação não encontrados no localStorage')
         setLoading(false)
         return
       }
@@ -373,18 +331,14 @@ export const JWTAuthProvider = ({ children }) => {
         }
       }
       
-      // Verificar se o token está próximo de expirar
+      // Verificar se o token está próximo de expirar (apenas se muito próximo)
       const timeUntilExpiry = expiryDate.getTime() - new Date().getTime()
-      const fiveMinutes = 5 * 60 * 1000
+      const oneMinute = 1 * 60 * 1000 // Apenas quando restar 1 minuto
       
-
-      
-      if (timeUntilExpiry < fiveMinutes) {
-
+      if (timeUntilExpiry < oneMinute) {
         const refreshed = await refreshToken(storedToken)
         
         if (!refreshed) {
-
           logout()
           toast.error('Sessão expirada. Faça login novamente.')
           return
@@ -408,13 +362,11 @@ export const JWTAuthProvider = ({ children }) => {
         setToken(storedToken)
         setTokenExpiry(expiryDate)
         checkUserPermissions(userData.email)
-        
-        console.log('✅ Autenticação restaurada com sucesso:', userData.email)
       }
       
       
     } catch (error) {
-      console.error('❌ Erro na inicialização da autenticação:', error)
+      console.error('Erro na inicialização da autenticação:', error)
       logout()
     } finally {
       setLoading(false)
@@ -434,23 +386,23 @@ export const JWTAuthProvider = ({ children }) => {
 
     const checkExpiry = () => {
       if (new Date() > tokenExpiry) {
-        console.log('❌ Token JWT expirado durante verificação periódica')
         logout()
         toast.error('Sessão expirada. Faça login novamente.')
         return
       }
 
       const timeUntilExpiry = tokenExpiry.getTime() - new Date().getTime()
-      const fiveMinutes = 5 * 60 * 1000
+      const twoMinutes = 2 * 60 * 1000 // Mudado para 2 minutos
       
-      if (timeUntilExpiry < fiveMinutes) {
-        console.log('⚠️ Token JWT próximo de expirar, renovando...')
+      if (timeUntilExpiry < twoMinutes) {
         refreshToken(token).then(refreshed => {
           if (!refreshed) {
-            console.log('❌ Falha na renovação automática do token')
             logout()
             toast.error('Sessão expirada. Faça login novamente.')
           }
+        }).catch(() => {
+          // Se houver erro na renovação, não fazer logout imediato
+          console.warn('Falha na renovação automática do token')
         })
       }
     }
@@ -472,16 +424,7 @@ export const JWTAuthProvider = ({ children }) => {
   }, [token])
 
   // Calcular isAuthenticated diretamente
-  const isAuthenticated = !!user && !!token && !loading // Temporariamente removido isTokenExpired() para debug
-  
-  // Debug: Log do cálculo de isAuthenticated
-  console.log('🔍 isAuthenticated Calculation:', {
-    hasUser: !!user,
-    hasToken: !!token,
-    tokenExpired: isTokenExpired(),
-    loading,
-    isAuthenticated
-  })
+  const isAuthenticated = !!user && !!token && !isTokenExpired() && !loading
 
   const value = {
     user,

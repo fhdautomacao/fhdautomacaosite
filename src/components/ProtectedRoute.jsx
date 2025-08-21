@@ -13,20 +13,11 @@ const ProtectedRoute = ({ children }) => {
     loading
   }
 
-  // Debug: Log do status de autenticação
-  console.log('🔍 ProtectedRoute Debug:', {
-    isAuthenticated,
-    loading,
-    hasUser: !!user,
-    hasToken: !!token,
-    userEmail: user?.email
-  })
+
 
   useEffect(() => {
     // Só verificar se não estiver carregando e não estiver autenticado
     if (!authStatus.loading && !authStatus.isAuthenticated) {
-      console.log('🚫 Acesso negado - usuário não autenticado')
-      
       // Evitar múltiplas chamadas de logout
       const sessionExpired = localStorage.getItem('session_expired')
       if (!sessionExpired) {

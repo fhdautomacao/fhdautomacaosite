@@ -13,35 +13,22 @@ import {
   User, 
   LogOut, 
   Shield, 
-  Clock, 
   Settings,
-  AlertTriangle,
   Eye,
   Bell
 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const AdminHeader = ({ onManageMenu, activeSection = 'dashboard' }) => {
-  const { user, logout, isTokenExpiringSoon, isTokenExpired } = useJWTAuth()
-  const [showExpiryWarning, setShowExpiryWarning] = useState(false)
+  const { user, logout } = useJWTAuth()
+
 
   const handleLogout = () => {
     logout()
     toast.success('Logout realizado com sucesso!')
   }
 
-  const formatExpiryTime = () => {
-    if (!user) return ''
-    
-    // Obter tempo restante do token (em produção, isso viria do token)
-    const now = new Date()
-    const expiry = new Date(now.getTime() + (4 * 60 * 60 * 1000)) // 4 horas restantes (aproximado)
-    const diff = expiry - now
-    const hours = Math.floor(diff / (1000 * 60 * 60))
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-    
-    return `${hours}h ${minutes}m`
-  }
+
 
   if (!user) return null
 
@@ -71,15 +58,7 @@ const AdminHeader = ({ onManageMenu, activeSection = 'dashboard' }) => {
 
         {/* Informações do usuário e ações */}
         <div className="flex items-center space-x-4 flex-1 justify-end">
-          {/* Aviso de expiração */}
-          {isTokenExpiringSoon() && (
-            <div className="flex items-center space-x-2 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <AlertTriangle className="h-4 w-4 text-yellow-600" />
-              <span className="text-sm text-yellow-800">
-                Sessão expira em {formatExpiryTime()}
-              </span>
-            </div>
-          )}
+
 
           {/* Botões de ação */}
           <Button variant="outline" size="sm" onClick={onManageMenu}>Gerenciar Menu</Button>
@@ -113,10 +92,7 @@ const AdminHeader = ({ onManageMenu, activeSection = 'dashboard' }) => {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               
-              <DropdownMenuItem className="flex items-center space-x-2">
-                <Clock className="h-4 w-4" />
-                <span>Sessão expira em {formatExpiryTime()}</span>
-              </DropdownMenuItem>
+
               
               <DropdownMenuItem className="flex items-center space-x-2">
                 <Settings className="h-4 w-4" />
