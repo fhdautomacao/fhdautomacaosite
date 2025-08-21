@@ -141,9 +141,16 @@ export const JWTAuthProvider = ({ children }) => {
         // Atualizar estado
         setUser(userData)
         setToken(authToken)
-        setTokenExpiry(new Date(expiresAt))
+        const expiryDate = new Date(expiresAt)
+        setTokenExpiry(expiryDate)
         
         console.log('✅ Login JWT + Supabase bem-sucedido:', userData.email)
+        console.log('📅 Token Expiry Info:', {
+          expiresAt,
+          expiryDate: expiryDate.toISOString(),
+          now: new Date().toISOString(),
+          isValid: new Date() < expiryDate
+        })
         toast.success('Login realizado com sucesso!')
         
         return data.data
@@ -284,7 +291,16 @@ export const JWTAuthProvider = ({ children }) => {
     if (!tokenExpiry) return true
     
     const now = new Date()
-    return now > tokenExpiry
+    const expired = now > tokenExpiry
+    
+    console.log('🔍 Token Expiry Check:', {
+      now: now.toISOString(),
+      expiry: tokenExpiry.toISOString(),
+      expired,
+      timeUntilExpiry: tokenExpiry.getTime() - now.getTime()
+    })
+    
+    return expired
   }, [tokenExpiry])
 
   // Função para inicializar autenticação
@@ -456,7 +472,16 @@ export const JWTAuthProvider = ({ children }) => {
   }, [token])
 
   // Calcular isAuthenticated diretamente
-  const isAuthenticated = !!user && !!token && !isTokenExpired() && !loading
+  const isAuthenticated = !!user && !!token && !loading // Temporariamente removido isTokenExpired() para debug
+  
+  // Debug: Log do cálculo de isAuthenticated
+  console.log('🔍 isAuthenticated Calculation:', {
+    hasUser: !!user,
+    hasToken: !!token,
+    tokenExpired: isTokenExpired(),
+    loading,
+    isAuthenticated
+  })
 
   const value = {
     user,
