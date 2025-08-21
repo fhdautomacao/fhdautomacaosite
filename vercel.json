@@ -64,11 +64,40 @@
     },
     {
       "src": "/logo.png",
-      "dest": "/logo.png"
+      "dest": "/logo.png",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
     },
     {
       "src": "/favicon.ico",
-      "dest": "/favicon.ico"
+      "dest": "/favicon.ico",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/favicon-16x16.png",
+      "dest": "/favicon-16x16.png",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "dest": "/favicon-32x32.png",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    },
+
+    {
+      "src": "/manifest.json",
+      "dest": "/manifest.json",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "public, max-age=31536000, immutable"
+      }
     },
     {
       "src": "/robots.txt",
@@ -103,6 +132,17 @@
     {
       "src": "/image_white_background.png",
       "dest": "/image_white_background.png"
+    },
+    {
+      "src": "/google1234567890.html",
+      "dest": "/google1234567890.html"
+    },
+    {
+      "src": "/.well-known/security.txt",
+      "dest": "/.well-known/security.txt",
+      "headers": {
+        "content-type": "text/plain"
+      }
     },
     {
       "src": "/(.*\\.js)",

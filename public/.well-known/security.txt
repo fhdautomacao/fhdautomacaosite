@@ -1,0 +1,4 @@
+Contact: mailto:comercial@fhdautomacao.com.br
+Expires: 2025-12-31T23:59:59.000Z
+Preferred-Languages: pt-BR, en
+Canonical: https://www.fhdautomacaoindustrial.com.br/.well-known/security.txt

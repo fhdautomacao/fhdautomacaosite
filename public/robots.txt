@@ -15,6 +15,12 @@ Allow: /
 User-agent: Bingbot
 Allow: /
 
+# Crawl-delay para evitar sobrecarga
+Crawl-delay: 1
+
 # Sitemap
 Sitemap: https://www.fhdautomacaoindustrial.com.br/sitemap.xml
+
+# Host
+Host: https://www.fhdautomacaoindustrial.com.br
 
