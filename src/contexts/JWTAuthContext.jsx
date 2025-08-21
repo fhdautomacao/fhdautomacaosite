@@ -293,13 +293,12 @@ export const JWTAuthProvider = ({ children }) => {
       
 
       
-      // Verificar se o token expirou
-      if (new Date() > expiryDate) {
-
-        logout()
-        toast.error('Sessão expirada. Faça login novamente.')
-        return
-      }
+      // Verificar se o token expirou (comentado temporariamente)
+      // if (new Date() > expiryDate) {
+      //   logout()
+      //   toast.error('Sessão expirada. Faça login novamente.')
+      //   return
+      // }
       
       // Restaurar sessão do Supabase se disponível
       if (storedSupabaseSession) {
@@ -335,29 +334,27 @@ export const JWTAuthProvider = ({ children }) => {
       const timeUntilExpiry = expiryDate.getTime() - new Date().getTime()
       const oneMinute = 1 * 60 * 1000 // Apenas quando restar 1 minuto
       
-      if (timeUntilExpiry < oneMinute) {
-        const refreshed = await refreshToken(storedToken)
-        
-        if (!refreshed) {
-          logout()
-          toast.error('Sessão expirada. Faça login novamente.')
-          return
-        }
-      } else {
+      // Verificação de renovação automática (comentada temporariamente)
+      // if (timeUntilExpiry < oneMinute) {
+      //   const refreshed = await refreshToken(storedToken)
+      //   
+      //   if (!refreshed) {
+      //     logout()
+      //     toast.error('Sessão expirada. Faça login novamente.')
+      //     return
+      //   }
+      // } else {
 
-        // Verificar se o token ainda é válido
-        const isValid = await verifyToken(storedToken)
+        // Verificar se o token ainda é válido (comentado temporariamente)
+        // const isValid = await verifyToken(storedToken)
         
-
+        // if (!isValid) {
+        //   logout()
+        //   toast.error('Sessão inválida. Faça login novamente.')
+        //   return
+        // }
         
-        if (!isValid) {
-
-          logout()
-          toast.error('Sessão inválida. Faça login novamente.')
-          return
-        }
-        
-        // Atualizar estado
+        // Atualizar estado (sempre)
         setUser(userData)
         setToken(storedToken)
         setTokenExpiry(expiryDate)
@@ -380,38 +377,38 @@ export const JWTAuthProvider = ({ children }) => {
     }
   }, [initializeAuth]) // Adicionada dependência de initializeAuth
 
-  // Verificar expiração do token periodicamente
-  useEffect(() => {
-    if (!token || !tokenExpiry) return
+  // Verificar expiração do token periodicamente (comentado temporariamente)
+  // useEffect(() => {
+  //   if (!token || !tokenExpiry) return
 
-    const checkExpiry = () => {
-      if (new Date() > tokenExpiry) {
-        logout()
-        toast.error('Sessão expirada. Faça login novamente.')
-        return
-      }
+  //   const checkExpiry = () => {
+  //     if (new Date() > tokenExpiry) {
+  //       logout()
+  //       toast.error('Sessão expirada. Faça login novamente.')
+  //       return
+  //     }
 
-      const timeUntilExpiry = tokenExpiry.getTime() - new Date().getTime()
-      const twoMinutes = 2 * 60 * 1000 // Mudado para 2 minutos
-      
-      if (timeUntilExpiry < twoMinutes) {
-        refreshToken(token).then(refreshed => {
-          if (!refreshed) {
-            logout()
-            toast.error('Sessão expirada. Faça login novamente.')
-          }
-        }).catch(() => {
-          // Se houver erro na renovação, não fazer logout imediato
-          console.warn('Falha na renovação automática do token')
-        })
-      }
-    }
+  //     const timeUntilExpiry = tokenExpiry.getTime() - new Date().getTime()
+  //     const twoMinutes = 2 * 60 * 1000 // Mudado para 2 minutos
+  //     
+  //     if (timeUntilExpiry < twoMinutes) {
+  //       refreshToken(token).then(refreshed => {
+  //         if (!refreshed) {
+  //           logout()
+  //           toast.error('Sessão expirada. Faça login novamente.')
+  //         }
+  //       }).catch(() => {
+  //         // Se houver erro na renovação, não fazer logout imediato
+  //         console.warn('Falha na renovação automática do token')
+  //         })
+  //     }
+  //   }
 
-    // Verificar a cada minuto
-    const interval = setInterval(checkExpiry, 60000)
-    
-    return () => clearInterval(interval)
-  }, [token, tokenExpiry, refreshToken, logout])
+  //   // Verificar a cada minuto
+  //   const interval = setInterval(checkExpiry, 60000)
+  //   
+  //   return () => clearInterval(interval)
+  // }, [token, tokenExpiry, refreshToken, logout])
 
   // Função para obter headers de autenticação
   const getAuthHeaders = useCallback(() => {
@@ -423,8 +420,10 @@ export const JWTAuthProvider = ({ children }) => {
     }
   }, [token])
 
-  // Calcular isAuthenticated diretamente
-  const isAuthenticated = !!user && !!token && !isTokenExpired() && !loading
+  // Calcular isAuthenticated diretamente (simplificado temporariamente)
+  const isAuthenticated = !!user && !!token && !loading
+  
+
 
   const value = {
     user,
