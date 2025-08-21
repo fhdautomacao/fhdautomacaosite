@@ -359,9 +359,6 @@ export const JWTAuthProvider = ({ children }) => {
         setToken(storedToken)
         setTokenExpiry(expiryDate)
         checkUserPermissions(userData.email)
-      }
-      
-      
     } catch (error) {
       console.error('Erro na inicialização da autenticação:', error)
       logout()
