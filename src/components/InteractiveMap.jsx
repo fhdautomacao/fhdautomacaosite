@@ -13,7 +13,7 @@ const InteractiveMap = () => {
     address: "R. João Ediberti Biondo, 336, Jd. Res. Ravagnani, Sumaré - SP, 13171-446",
     coordinates: {
       lat: -22.8219, // Latitude aproximada de Sumaré, SP
-      lng: -47.2668  // Longitude aproximada de Sumaré, SP
+      lng: -47.2668  // Longitude aproximada de Sumaré, SP teste
     }
   }
 
