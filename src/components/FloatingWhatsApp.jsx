@@ -64,7 +64,7 @@ Vim pelo site, gostaria de conversar a respeito dos seus serviços e produtos.`)
   // Renderizar diretamente no body usando Portal
   return createPortal(
     <a 
-      href={`https://wa.me/5511917352023?text=${message}`}
+      href={`https://wa.me/5519998652144?text=${message}`}
       target="_blank" 
       rel="noopener noreferrer"
       style={buttonStyles}
