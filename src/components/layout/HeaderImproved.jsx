@@ -20,9 +20,56 @@ const Header = () => {
 
   // Função para fazer scroll até a seção de galeria
   const scrollToGallery = () => {
+    // Se não estiver na página inicial, redirecionar primeiro
+    if (location.pathname !== '/') {
+      window.location.href = '/#galeria'
+      setIsMenuOpen(false)
+      return
+    }
+    
+    // Se estiver na página inicial, fazer scroll
     const gallerySection = document.getElementById('galeria')
+    
     if (gallerySection) {
-      gallerySection.scrollIntoView({ behavior: 'smooth' })
+      // Método mais direto para mobile
+      const rect = gallerySection.getBoundingClientRect()
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      const targetPosition = rect.top + scrollTop - 100 // 100px de offset para o header
+      
+      // Detectar se é mobile para usar método mais eficaz
+      const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      
+      if (isMobile) {
+        // No mobile, usar scroll instantâneo (mais confiável)
+        window.scrollTo(0, targetPosition)
+      } else {
+        // No desktop, tentar scroll suave primeiro
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'smooth'
+        })
+        
+        // Fallback para desktop se necessário
+        setTimeout(() => {
+          const currentScroll = window.pageYOffset || document.documentElement.scrollTop
+          
+          if (Math.abs(currentScroll - scrollTop) < 50) {
+            window.scrollTo(0, targetPosition)
+          }
+        }, 300)
+      }
+      
+    } else {
+      // Fallback: tentar novamente após um pequeno delay
+      setTimeout(() => {
+        const gallerySectionRetry = document.getElementById('galeria')
+        if (gallerySectionRetry) {
+          const rect = gallerySectionRetry.getBoundingClientRect()
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+          const targetPosition = rect.top + scrollTop - 100
+          window.scrollTo({ top: targetPosition, behavior: 'smooth' })
+        }
+      }, 200)
     }
     setIsMenuOpen(false) // Fechar menu mobile se estiver aberto
   }
@@ -273,7 +320,20 @@ const Header = () => {
                 whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.2 }}
                 onClick={scrollToGallery}
-                style={{ cursor: 'pointer' }}
+                onTouchEnd={scrollToGallery}
+                style={{ 
+                  cursor: 'pointer',
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent'
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    scrollToGallery()
+                  }
+                }}
               >
                 <motion.div
                   animate={{ rotate: 0 }}
@@ -479,7 +539,20 @@ const Header = () => {
                       whileTap={{ scale: 0.98 }}
                       transition={{ duration: 0.2 }}
                       onClick={scrollToGallery}
-                      style={{ cursor: 'pointer' }}
+                      onTouchEnd={scrollToGallery}
+                      style={{ 
+                        cursor: 'pointer',
+                        touchAction: 'manipulation',
+                        WebkitTapHighlightColor: 'transparent'
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          scrollToGallery()
+                        }
+                      }}
                     >
                       {/* Animated accent bar */}
                       <motion.span
