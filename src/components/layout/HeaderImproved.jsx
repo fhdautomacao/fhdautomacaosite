@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Home, Users, Settings, UserCheck, MessageCircle, ChevronDown, Globe } from 'lucide-react'
+import { Menu, X, Home, Users, Settings, UserCheck, MessageCircle, ChevronDown, Globe, Camera } from 'lucide-react'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import { useI18n } from '@/i18n/index.jsx'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -16,6 +16,15 @@ const Header = () => {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
+  }
+
+  // Função para fazer scroll até a seção de galeria
+  const scrollToGallery = () => {
+    const gallerySection = document.getElementById('galeria')
+    if (gallerySection) {
+      gallerySection.scrollIntoView({ behavior: 'smooth' })
+    }
+    setIsMenuOpen(false) // Fechar menu mobile se estiver aberto
   }
 
   // Detect scroll for header background change
@@ -41,6 +50,15 @@ const Header = () => {
     { path: '/clientes', label: t('nav.clients','Clientes'), icon: UserCheck, color: 'yellow' },
     { path: '/contato', label: t('nav.contact','Contato'), icon: MessageCircle, color: 'purple' }
   ]
+
+  // Item especial para Fotos (scroll para seção)
+  const photosItem = { 
+    path: '#galeria', 
+    label: t('nav.photos','Fotos'), 
+    icon: Camera, 
+    color: 'cyan',
+    isScrollAction: true 
+  }
 
   const headerVariants = {
     initial: { y: -100, opacity: 0 },
@@ -241,6 +259,31 @@ const Header = () => {
                 </Link>
               </motion.div>
             ))}
+            
+            {/* Item Fotos - Scroll para seção */}
+            <motion.div
+              variants={navItemVariants}
+              initial="initial"
+              animate="animate"
+              transition={{ delay: 0.4 + navItems.length * 0.1 }}
+            >
+              <motion.div
+                className={getNavItemClasses(photosItem.path, photosItem.color)}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                onClick={scrollToGallery}
+                style={{ cursor: 'pointer' }}
+              >
+                <motion.div
+                  animate={{ rotate: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <photosItem.icon size={16} />
+                </motion.div>
+                <span className="text-sm xl:text-base">{photosItem.label}</span>
+              </motion.div>
+            </motion.div>
           </nav>
 
           {/* CTA Button - Desktop */}
@@ -425,6 +468,45 @@ const Header = () => {
                       </Link>
                     </motion.div>
                   ))}
+
+                  {/* Item Fotos - Scroll para seção no mobile */}
+                  <motion.div
+                    variants={mobileItemVariants}
+                  >
+                    <motion.div
+                      className={`relative overflow-hidden ${getMobileNavItemClasses(photosItem.path, photosItem.color)} shadow-sm`}
+                      whileHover={{ scale: 1.02, x: 5 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ duration: 0.2 }}
+                      onClick={scrollToGallery}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      {/* Animated accent bar */}
+                      <motion.span
+                        className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-cyan-400"
+                        initial={{ scaleY: 0 }}
+                        animate={{ scaleY: 1 }}
+                        transition={{ duration: 0.4, delay: 0.05 * navItems.length }}
+                      />
+
+                      <motion.div
+                        animate={{ rotate: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="z-10"
+                      >
+                        <photosItem.icon size={18} />
+                      </motion.div>
+                      <span className="z-10">{photosItem.label}</span>
+
+                      {/* Ripple highlight on hover */}
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/40 to-white/0"
+                        initial={{ x: '-100%' }}
+                        whileHover={{ x: '100%' }}
+                        transition={{ duration: 0.8 }}
+                      />
+                    </motion.div>
+                  </motion.div>
 
                   <motion.div 
                     variants={mobileItemVariants}

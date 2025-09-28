@@ -69,9 +69,9 @@ const HomePage = () => {
       <main>
         <Hero />
         <About />
+        <Gallery galleryItemsData={galleryItems} galleryCategories={galleryCategories} />
         <ServicesSection servicesData={services} serviceCategories={serviceCategories} />
         <Products productsData={products} productCategories={productCategories} />
-        <Gallery galleryItemsData={galleryItems} galleryCategories={galleryCategories} />
         <Clients clientsData={clients} enableTyping={false} />
         <Contact servicesData={services} />
       </main>
